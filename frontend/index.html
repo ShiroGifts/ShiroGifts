@@ -483,6 +483,11 @@ svg.ic{stroke:#1d2155;stroke-width:2.6px;filter:drop-shadow(0 2px 3px rgba(22,25
     *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
   }
 
+
+  .topup-button{width:32px;height:32px;border:0;border-radius:50%;background:linear-gradient(145deg,#ffe58b,#f3ad32);color:#37234f;font-size:24px;font-weight:800;line-height:1;display:grid;place-items:center;box-shadow:0 3px 10px rgba(243,173,50,.28);cursor:pointer;transition:transform .16s,filter .16s}
+  .topup-button:active{transform:scale(.9)}
+  .topup-button:focus-visible{outline:2px solid #fff;outline-offset:3px}
+
 </style>
 </head>
 <body>
@@ -498,7 +503,8 @@ svg.ic{stroke:#1d2155;stroke-width:2.6px;filter:drop-shadow(0 2px 3px rgba(22,25
       <span id="onlineCount">—</span>
     </div>
     <button class="sound-toggle" id="soundToggle" type="button" onclick="toggleSound()" aria-label="Выключить звук">🔊</button>
-    <div class="balance"><span class="star">★</span> <span id="balanceVal">1 250</span></div>
+    <button class="topup-button" type="button" onclick="topUp()" aria-label="Пополнить баланс">+</button>
+    <div class="balance"><span class="star">★</span> <span id="balanceVal">0</span></div>
   </div>
 </div>
 
@@ -771,14 +777,10 @@ const CASES = [
     ] },
 ];
 
-let balance = 1250;
-let inventory = [
-  { uid: 'u1', gift: 'bear',   status: 'owned' },
-  { uid: 'u2', gift: 'ring',   status: 'owned' },
-  { uid: 'u3', gift: 'heart',  status: 'owned' },
-  { uid: 'u4', gift: 'rocket', status: 'owned' },
-];
-let uidCounter = 10;
+let balance = 0;
+let inventory = [];
+let uidCounter = 1;
+let accountReady = false;
 
 let upgradeFromUid = null;
 let upgradeToKey = null;
@@ -918,12 +920,8 @@ function pickWeighted(drops) {
 async function openCase(caseId) {
   const c = CASES.find(x => x.id === caseId);
   if (!c) return;
-  if (balance < c.price) { haptic('error'); return toast('Недостаточно ★', true); }
-  balance -= c.price;
-  updateBalanceUI();
-  haptic('light');
-  const winnerGift = await mockApi(() => pickWeighted(c.drops), 350);
-  showCaseOverlay(c, winnerGift, false);
+  haptic('error');
+  toast('Открытие кейсов подключается к серверу. Баланс не списан.', true);
 }
 
 function showCaseOverlay(c, winnerGift, isFree = false) {
@@ -1536,12 +1534,70 @@ function copyRefLink() {
 
 /* ===== INIT ===== */
 document.querySelectorAll('[data-ic]').forEach(e => e.innerHTML = IC[e.dataset.ic]);
-renderHistory(); renderCrashUI(); requestAnimationFrame(crashFrame); MockServer.start();
+renderHistory(); renderCrashUI(); requestAnimationFrame(crashFrame);
+// No simulated rounds or seeded demo assets: a fresh account starts at 0 with an empty inventory.
 checkFreeCaseStatus();
 renderCases();
 renderInventory();
 renderUpgrade();
 updateBalanceUI();
+
+async function loadAccount() {
+  if (!tg?.initData) return;
+  try {
+    const response = await fetch('/api/me', {
+      headers: { 'x-telegram-init-data': tg.initData }
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || 'account_unavailable');
+    balance = Number(data.balance) || 0;
+    inventory = (data.inventory || []).map(item => ({
+      uid: String(item.id), gift: item.gift_key, status: item.status
+    }));
+    accountReady = true;
+    updateBalanceUI();
+    renderInventory();
+    renderUpgrade();
+  } catch (error) {
+    accountReady = false;
+    toast('Не удалось загрузить аккаунт. Попробуйте открыть приложение позже.', true);
+  }
+}
+
+async function topUp() {
+  if (!tg?.initData) {
+    toast('Пополнение доступно при запуске Mini App через Telegram.', true);
+    return;
+  }
+  const raw = window.prompt('Сколько Telegram Stars добавить? Минимум 5.');
+  if (raw === null) return;
+  const amount = Number(raw.trim());
+  if (!Number.isSafeInteger(amount) || amount < 5 || amount > 10000) {
+    toast('Введите целое число от 5 до 10 000 Stars.', true);
+    return;
+  }
+  try {
+    const response = await fetch('/api/payments/invoice', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-telegram-init-data': tg.initData },
+      body: JSON.stringify({ amount })
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || 'invoice_unavailable');
+    tg.openInvoice(data.invoice_url, async status => {
+      if (status === 'paid') {
+        await loadAccount();
+        toast('Платёж подтверждён Telegram.');
+      } else if (status === 'failed') {
+        toast('Платёж не прошёл. Баланс не изменён.', true);
+      }
+    });
+  } catch (error) {
+    toast('Не удалось создать счёт. Проверьте настройки Telegram-бота.', true);
+  }
+}
+
+loadAccount();
 
 
 

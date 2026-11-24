@@ -10,6 +10,7 @@ const upgradeRoutes = require('./routes/upgrades');
 const inventoryRoutes = require('./routes/inventory');
 const telegramWebhookRoutes = require('./routes/telegramWebhook');
 const subscriptionRoutes = require('./routes/subscription');
+const { router: crashRoutes, startCrashEngine } = require('./routes/crash');
 const { migrate } = require('./db/migrate');
 
 const app = express();
@@ -25,6 +26,7 @@ app.use('/api', upgradeRoutes);
 app.use('/api', inventoryRoutes);
 app.use('/api', telegramWebhookRoutes);
 app.use('/api', subscriptionRoutes);
+app.use('/api', crashRoutes);
 
 app.use(express.static(path.join(__dirname, '../../frontend')));
 app.get('*', (_req, res) => res.sendFile(path.join(__dirname, '../../frontend/index.html')));
@@ -57,6 +59,7 @@ async function start() {
   if (process.env.DATABASE_URL) {
     await migrate();
     console.log('[DB] Migrations applied');
+    await startCrashEngine();
   } else {
     console.warn('[DB] DATABASE_URL missing; account and payment APIs are unavailable');
   }

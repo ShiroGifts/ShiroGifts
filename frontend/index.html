@@ -529,6 +529,7 @@ body{font-family:'Manrope',system-ui,sans-serif;font-weight:500;background:radia
     <button class="btn-big" onclick="redeemPromo()">Активировать</button>
     <div class="promo-status" id="promoStatus" aria-live="polite"></div>
   </div>
+  <div class="promo-panel" id="promoAdminSetup"><div class="promo-description">Чтобы открыть панель создания промокодов, нужно один раз привязать твой Telegram ID как ID владельца.</div><div class="promo-heading" id="promoTelegramId">Telegram ID: —</div><button class="btn btn-sell" style="width:100%" onclick="copyTelegramId()">Скопировать ID</button></div>
   <div class="promo-panel promo-admin" id="promoAdminPanel" style="display:none">
     <div class="promo-heading">Создать промокод</div>
     <div class="promo-description">Панель администратора. Награда за одно успешное использование.</div>
@@ -733,9 +734,9 @@ const GIFTS = {
   rocket: { name: 'Ракета', price: 50, img: imageAsset('https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&w=420&q=85','Ракета'), rarity: 'Редкий' },
   champ: { name: 'Шампанское', price: 50, img: imageAsset('https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=420&q=85','Бутылка шампанского'), rarity: 'Редкий' },
   cup: { name: 'Кубок', price: 100, img: imageAsset('https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=420&q=85','Спортивный кубок'), rarity: 'Эпический' },
-  ring: { name: 'Кольцо', price: 100, img: imageAsset('https://www.victoria-gold.com/image/catalog/1-Logo/SEO-imgs/godezhen-prasten-s-diamant.webp','Золотое кольцо с бриллиантом'), rarity: 'Эпический' },
+  ring: { name: 'Кольцо', price: 100, img: imageAsset('https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=420&q=85','Золотое кольцо с бриллиантом'), rarity: 'Эпический' },
   diamond: { name: 'Бриллиант', price: 100, img: imageAsset('https://www.ritani.com/cdn-cgi/image/width%3D3840%2Cquality%3D90/https%3A/mp20-assets.ritani.com/cms/JM_Banner_Mobile_4538a15f38/JM_Banner_Mobile_4538a15f38.webp','Бриллиант'), rarity: 'Легендарный' },
-  random_nft: { name: 'Рандомный NFT', price: 350, img: imageAsset('https://assets.bwbx.io/images/users/iqjWHBFdfxIU/ipWUz_tt2Pcs/v0/-1x-1.webp','Коллекционный NFT'), rarity: 'Мифический' },
+  random_nft: { name: 'Рандомный NFT', price: 350, img: imageAsset('https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=420&q=85','Цифровой коллекционный арт'), rarity: 'Мифический' },
 };
 
 const CASES = [
@@ -1597,10 +1598,21 @@ window.ShiroLive = {
 
 
 async function loadPromoAdminStatus() {
+  const id = tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : '';
+  const idPanel = document.getElementById('promoAdminSetup');
+  const idLabel = document.getElementById('promoTelegramId');
+  if (idLabel) idLabel.textContent = 'Telegram ID: ' + (id || 'открой приложение через Telegram');
   try {
     const data = await apiRequest('/api/promos/admin/status');
     document.getElementById('promoAdminPanel').style.display = data.isAdmin ? 'block' : 'none';
+    if (idPanel) idPanel.style.display = data.isAdmin ? 'none' : 'block';
   } catch (_) {}
+}
+function copyTelegramId() {
+  const id = tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : '';
+  if (!id) return toast('Открой приложение через Telegram.', true);
+  if (navigator.clipboard?.writeText) navigator.clipboard.writeText(id).then(() => toast('ID скопирован')).catch(() => toast(id));
+  else toast(id);
 }
 async function redeemPromo() {
   const input = document.getElementById('promoCodeInput');

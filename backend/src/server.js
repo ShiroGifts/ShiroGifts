@@ -6,6 +6,7 @@ const accountRoutes = require('./routes/account');
 const caseRoutes = require('./routes/cases');
 const promoRoutes = require('./routes/promos');
 const adminRoutes = require('./routes/admin');
+const upgradeRoutes = require('./routes/upgrades');
 const telegramWebhookRoutes = require('./routes/telegramWebhook');
 const { migrate } = require('./db/migrate');
 
@@ -18,6 +19,7 @@ app.use('/api', accountRoutes);
 app.use('/api', caseRoutes);
 app.use('/api', promoRoutes);
 app.use('/api', adminRoutes);
+app.use('/api', upgradeRoutes);
 app.use('/api', telegramWebhookRoutes);
 
 app.use(express.static(path.join(__dirname, '../../frontend')));

@@ -1215,13 +1215,13 @@ function askWithdraw(uid) {
   const item = inventory.find(i => i.uid === uid);
   if (!item) return;
   const g = GIFTS[item.gift];
-  const isNFT = item.gift === 'random_nft';
+  const isNFT = (GIFTS[item.gift]?.rarity || '').includes('NFT');
   document.getElementById('modalImg').innerHTML = g.img;
   document.getElementById('modalTitle').textContent = isNFT ? 'Вывести рандомный NFT?' : 'Вывести подарок?';
   document.getElementById('modalText').textContent = isNFT
     ? (referralsCount < REF_NEED
         ? `Для вывода NFT нужно пригласить ${REF_NEED} друзей по вашей ссылке (сейчас ${referralsCount}/${REF_NEED}). Других условий и доплат нет. Нажмите «Подтвердить», чтобы скопировать ссылку.`
-        : `Запрос будет принят, и случайный NFT-подарок придёт с аккаунта владельца в течение ${NFT_WAIT_DAYS} дней. Доплат не требуется.`)
+        : `Запрос на вывод NFT будет принят; подарок придёт с аккаунта владельца в течение ${NFT_WAIT_DAYS} дней. Доплат не требуется.`)
     : `«${g.name}» будет отправлен вам через Telegram (sendGift). Лимит: 3 вывода в сутки.`;
   document.getElementById('modal').classList.add('show');
   modalAction = async () => {
@@ -1346,10 +1346,10 @@ function renderWheel() {
   }
   const fromItem = inventory.find(i => i.uid === upgradeFromUid);
   const chance = calcChance(fromItem.gift, upgradeToKey);
-  const pct = Math.round(chance * 100);
+  const pct = (chance * 100).toFixed(2);
   seg.style.background = `conic-gradient(
     var(--accent) 0deg ${chance * 360}deg,
-    #1b2160 ${chance * 360}deg 360deg
+    #2a2017 ${chance * 360}deg 360deg
   )`;
   seg.innerHTML = '';
   chanceEl.innerHTML = `${pct}%<small>шанс успеха</small>`;

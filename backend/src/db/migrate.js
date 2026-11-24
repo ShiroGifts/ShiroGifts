@@ -88,6 +88,14 @@ async function migrate() {
     );
     CREATE INDEX IF NOT EXISTS upgrade_events_user_idx ON upgrade_events(telegram_id, created_at DESC);
 
+
+    ALTER TABLE crash_rounds ADD COLUMN IF NOT EXISTS starts_at TIMESTAMPTZ;
+    ALTER TABLE wallet_ledger DROP CONSTRAINT IF EXISTS wallet_ledger_entry_type_check;
+    ALTER TABLE wallet_ledger ADD CONSTRAINT wallet_ledger_entry_type_check
+      CHECK (entry_type IN ('topup','case_spend','case_reward','crash_bet','crash_payout','refund','admin_adjustment','gift_purchase','sale'));
+    CREATE INDEX IF NOT EXISTS crash_rounds_status_idx ON crash_rounds(status, id DESC);
+    CREATE INDEX IF NOT EXISTS crash_bets_round_idx ON crash_bets(round_id, created_at DESC);
+
     CREATE TABLE IF NOT EXISTS promo_codes (
       id BIGSERIAL PRIMARY KEY,
       code TEXT NOT NULL UNIQUE,

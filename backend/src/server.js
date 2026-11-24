@@ -38,7 +38,7 @@ async function start() {
 }
 
 async function registerTelegramWebhook() {
-  const baseUrl = process.env.WEBAPP_URL?.replace(/\\/+$/, '');
+  const baseUrl = process.env.WEBAPP_URL?.replace(/\/+$/, '');
   if (!process.env.TELEGRAM_BOT_TOKEN || !process.env.TELEGRAM_WEBHOOK_SECRET || !baseUrl) {
     console.log('[TELEGRAM WEBHOOK] Skipped: configure TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET and WEBAPP_URL');
     return;

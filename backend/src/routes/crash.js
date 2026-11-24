@@ -102,7 +102,7 @@ async function startCrashEngine() {
 
 router.get('/crash/state', async (req, res) => {
   try {
-    const roundResult = await pool.query(`SELECT id,status,starts_at,started_at,crash_multiplier,server_seed_hash,server_seed_revealed
+    const roundResult = await pool.query(`SELECT id,status,starts_at,started_at,crash_multiplier,server_seed_hash,server_seed_revealed,client_seed,nonce
       FROM crash_rounds ORDER BY id DESC LIMIT 1`);
     if (!roundResult.rowCount) return res.status(503).json({ok:false,error:'crash_not_ready'});
     const r = roundResult.rows[0];

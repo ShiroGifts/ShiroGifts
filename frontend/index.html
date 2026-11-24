@@ -1361,55 +1361,68 @@ function updateUpgradeButton() {
   btn.textContent = ready ? 'Крутить колесо' : 'Выберите предметы';
 }
 
+let pendingUpgradeRequestId = null;
 async function doUpgrade() {
-  return toast('Апгрейд пока отключён: результат должен рассчитываться сервером.', true);
   if (upgradeBusy || !upgradeFromUid || !upgradeToKey) return;
   const fromItem = inventory.find(i => i.uid === upgradeFromUid);
   if (!fromItem || fromItem.status !== 'owned') { haptic('error'); return toast('Предмет недоступен', true); }
   const fromGift = GIFTS[fromItem.gift];
   const toGift = GIFTS[upgradeToKey];
-  const chance = calcChance(fromItem.gift, upgradeToKey);
-  if (chance <= 0) { haptic('error'); return toast('Некорректная пара', true); }
+  if (!fromGift || !toGift || toGift.price <= fromGift.price) return toast('Некорректная пара', true);
 
   upgradeBusy = true;
   updateUpgradeButton();
-  const success = Math.random() < chance;
-  const pointer = document.getElementById('wheelPointer');
-  const wheel = document.getElementById('wheel');
-  const chanceEl = document.getElementById('chanceVal');
+  if (!pendingUpgradeRequestId) pendingUpgradeRequestId = crypto.randomUUID();
+  try {
+    const result = await apiRequest('/api/upgrade', {
+      method:'POST',
+      body:JSON.stringify({ inventoryId:fromItem.uid, targetKey:upgradeToKey, requestId:pendingUpgradeRequestId })
+    });
+    const chance = Number(result.chance);
+    const success = !!result.success;
+    const pointer = document.getElementById('wheelPointer');
+    const wheel = document.getElementById('wheel');
+    const chanceEl = document.getElementById('chanceVal');
+    const sectorSize = success ? chance * 360 : (1 - chance) * 360;
+    const sectorCenter = success ? chance * 180 : chance * 360 + (1 - chance) * 180;
+    const jitter = (Math.random() - 0.5) * sectorSize * 0.7;
+    const finalRotation = 360 * 7 - (sectorCenter + jitter);
+    wheel.style.transition = 'transform 5.5s cubic-bezier(.12,.62,.22,1)';
+    wheel.style.transform = `rotate(${finalRotation}deg)`;
+    await new Promise(resolve => setTimeout(resolve, 5600));
 
-  // conic-gradient начинается сверху (там же стрелка): успех = [0, chance*360], неудача = остальное
-  const sectorSize = success ? chance * 360 : (1 - chance) * 360;
-  const sectorCenter = success ? chance * 180 : chance * 360 + (1 - chance) * 180;
-  const jitter = (Math.random() - 0.5) * sectorSize * 0.7; // остановка в любой точке сектора
-  const finalRotation = 360 * 7 - (sectorCenter + jitter);
-
-  wheel.style.transition = 'transform 5.5s cubic-bezier(.12,.62,.22,1)';
-  wheel.style.transform = `rotate(${finalRotation}deg)`;
-  await new Promise(r => setTimeout(r, 5600));
-
-  pointer.classList.toggle('fail', !success);
-  chanceEl.classList.toggle('fail', !success);
-  const idx = inventory.findIndex(i => i.uid === upgradeFromUid);
-  if (success) {
-    inventory[idx].status = 'upgraded';
-    inventory.push({ uid: 'u' + (uidCounter++), gift: upgradeToKey, status: 'owned' });
-    haptic('success');
-    toast(`Успех! ${fromGift.name} → ${toGift.name}`);
-  } else {
-    inventory[idx].status = 'burned';
-    haptic('error');
-    toast(`Неудача. ${fromGift.name} сгорел`, true);
+    pointer.classList.toggle('fail', !success);
+    chanceEl.classList.toggle('fail', !success);
+    chanceEl.innerHTML = `${(chance * 100).toFixed(2)}%<small>шанс успеха</small>`;
+    if (success) {
+      haptic('success');
+      toast(`Успех! ${fromGift.name} → ${toGift.name}`);
+    } else {
+      haptic('error');
+      toast(`Неудача. ${fromGift.name} сгорел`, true);
+    }
+    pendingUpgradeRequestId = null;
+    await loadAccount();
+    await new Promise(resolve => setTimeout(resolve, 1600));
+    wheel.style.transition = 'none';
+    wheel.style.transform = 'rotate(0deg)';
+    void wheel.offsetWidth;
+    wheel.style.transition = 'transform 5.5s cubic-bezier(.12,.62,.22,1)';
+    upgradeFromUid = null;
+    upgradeToKey = null;
+  } catch (error) {
+    const messages = {
+      inventory_item_not_found:'Предмет уже использован или не принадлежит вам.',
+      invalid_upgrade_pair:'Выберите предмет с меньшей стоимостью.',
+      invalid_upgrade_target:'Эта цель недоступна для апгрейда.'
+    };
+    toast(messages[error.message] || 'Не удалось выполнить апгрейд: ' + error.message, true);
+    if (error.message !== 'upgrade_failed') pendingUpgradeRequestId = null;
+    if (error.message === 'inventory_item_not_found') await loadAccount();
+  } finally {
+    upgradeBusy = false;
+    renderUpgrade();
   }
-  await new Promise(r => setTimeout(r, 1800)); // держим колесо на результате
-  wheel.style.transition = 'none';
-  wheel.style.transform = 'rotate(0deg)';
-  void wheel.offsetWidth;
-  wheel.style.transition = 'transform 5.5s cubic-bezier(.12,.62,.22,1)';
-  upgradeFromUid = null;
-  upgradeToKey = null;
-  upgradeBusy = false;
-  renderUpgrade();
 }
 
 /* ===== CRASH ===== */

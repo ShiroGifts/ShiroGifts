@@ -74,7 +74,7 @@ const CASES = [
     { type: 'gift', key: 'heroic_helmet', weight: 3000 },
     { type: 'gift', key: 'astral_shard', weight: 6000 },
     { type: 'gift', key: 'loot_bag', weight: 12000 },
-    { type: 'nothing', weight: 973340 }
+    { type: 'nothing', weight: 973440 }
   ]}
 ];
 

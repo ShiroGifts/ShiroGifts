@@ -444,7 +444,7 @@ svg.ic{stroke:#1d2155;stroke-width:2.6px;filter:drop-shadow(0 2px 3px rgba(22,25
       <span class="online-dot"></span>
       <span id="onlineCount">—</span>
     </div>
-    <div class="balance"><span class="star">★</span> <span id="balanceVal">1 250</span></div>
+    <div class="balance"><span class="star">★</span> <span id="balanceVal">0</span><button id="topupBtn" onclick="topUp()" aria-label="Пополнить баланс" style="margin-left:6px;border:0;border-radius:50%;width:24px;height:24px;background:var(--accent);color:#fff;font-size:19px;font-weight:900;line-height:1;cursor:pointer">+</button></div>
   </div>
 </div>
 
@@ -652,14 +652,9 @@ const CASES = [
     ] },
 ];
 
-let balance = 1250;
-let inventory = [
-  { uid: 'u1', gift: 'bear',   status: 'owned' },
-  { uid: 'u2', gift: 'ring',   status: 'owned' },
-  { uid: 'u3', gift: 'heart',  status: 'owned' },
-  { uid: 'u4', gift: 'rocket', status: 'owned' },
-];
-let uidCounter = 10;
+let balance = 0;
+let inventory = [];
+let uidCounter = 1;
 
 let upgradeFromUid = null;
 let upgradeToKey = null;
@@ -672,6 +667,70 @@ let isSubscribed = false;
 function fmt(n) { return n.toLocaleString('ru-RU'); }
 function updateBalanceUI() {
   document.getElementById('balanceVal').textContent = fmt(balance);
+}
+
+async function apiRequest(path, options = {}) {
+  const initData = tg?.initData || '';
+  if (!initData) throw new Error('Откройте приложение через Telegram, чтобы войти в аккаунт.');
+  const response = await fetch(path, {
+    ...options,
+    headers: {
+      'content-type': 'application/json',
+      'x-telegram-init-data': initData,
+      ...(options.headers || {})
+    }
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data.ok) throw new Error(data.error || 'Ошибка сервера');
+  return data;
+}
+
+async function loadAccount() {
+  try {
+    const data = await apiRequest('/api/me');
+    balance = Number(data.balance) || 0;
+    inventory = (data.inventory || []).map(item => ({
+      uid: String(item.id), gift: item.item_key, status: item.status,
+      name: item.name, emoji: item.emoji, rarity: item.rarity,
+      price: Number(item.value_stars) || 0
+    }));
+    updateBalanceUI();
+    renderInventory();
+    renderUpgrade();
+  } catch (error) {
+    toast(error.message, true);
+  }
+}
+
+async function topUp() {
+  if (!tg?.initData) return toast('Откройте Mini App через Telegram.', true);
+  const raw = window.prompt('Сколько Stars пополнить? Минимум 5.', '50');
+  if (raw === null) return;
+  const amount = Number(raw);
+  if (!Number.isSafeInteger(amount) || amount < 5 || amount > 10000) {
+    return toast('Введите целое число от 5 до 10000.', true);
+  }
+  try {
+    const result = await apiRequest('/api/payments/invoice', {
+      method: 'POST', body: JSON.stringify({ amount })
+    });
+    if (typeof tg.openInvoice !== 'function') {
+      window.open(result.invoiceUrl, '_blank');
+      return;
+    }
+    tg.openInvoice(result.invoiceUrl, async status => {
+      if (status === 'paid') {
+        toast('Платёж подтверждён. Обновляем баланс…');
+        for (let i = 0; i < 8; i++) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          await loadAccount();
+          if (balance >= amount) break;
+        }
+      } else if (status === 'failed') toast('Оплата не прошла.', true);
+    });
+  } catch (error) {
+    toast(error.message, true);
+  }
 }
 
 let toastTimer;
@@ -797,6 +856,7 @@ function pickWeighted(drops) {
 }
 
 async function openCase(caseId) {
+  return toast('Открытие кейсов подключим после серверной игровой логики. Баланс защищён.', true);
   const c = CASES.find(x => x.id === caseId);
   if (!c) return;
   if (balance < c.price) { haptic('error'); return toast('Недостаточно ★', true); }
@@ -1075,6 +1135,7 @@ function updateUpgradeButton() {
 }
 
 async function doUpgrade() {
+  return toast('Апгрейд пока отключён: результат должен рассчитываться сервером.', true);
   if (upgradeBusy || !upgradeFromUid || !upgradeToKey) return;
   const fromItem = inventory.find(i => i.uid === upgradeFromUid);
   if (!fromItem || fromItem.status !== 'owned') { haptic('error'); return toast('Предмет недоступен', true); }
@@ -1267,6 +1328,7 @@ function renderCrashUI() {
 }
 
 function crashAction() {
+  return toast('Crash пока отключён: серверная игровая логика ещё не подключена.', true);
   if (round.phase === 'betting' && !myBet) {
     const bet = parseInt(document.getElementById('crashBet').value) || 0;
     if (bet < 1) { haptic('error'); return toast('Ставка минимум 1 ★', true); }
@@ -1410,12 +1472,13 @@ function copyRefLink() {
 
 /* ===== INIT ===== */
 document.querySelectorAll('[data-ic]').forEach(e => e.innerHTML = IC[e.dataset.ic]);
-renderHistory(); renderCrashUI(); requestAnimationFrame(crashFrame); MockServer.start();
+renderHistory(); renderCrashUI(); requestAnimationFrame(crashFrame);
 checkFreeCaseStatus();
 renderCases();
 renderInventory();
 renderUpgrade();
 updateBalanceUI();
+loadAccount();
 
 
 

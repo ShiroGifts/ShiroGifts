@@ -519,7 +519,9 @@ body{background:var(--bg);color:var(--text)}
 .btn-withdraw,.btn-big,.btn-cashout{background:linear-gradient(135deg,#a77c4b,#74502e)!important;color:#f5ead8!important}
 .case-back{display:flex;align-items:center;justify-content:center;line-height:1;padding:0;font-family:Arial,sans-serif;font-size:25px;color:#e9d8bf}
 .case-back:active{transform:scale(.96)}
-.plush-royal{filter:sepia(.62) saturate(.82) hue-rotate(345deg) brightness(.86) drop-shadow(0 6px 10px rgba(0,0,0,.42))}
+ .gift-img img.plush-royal,.drop-img img.plush-royal,.big-img img.plush-royal{filter:sepia(.62) saturate(.82) hue-rotate(345deg) brightness(.86) drop-shadow(0 6px 10px rgba(0,0,0,.42))}
+.tier-ruby,.tier-diamond,.tier-cosmic{background:linear-gradient(155deg,#493626,#19120d)!important;border-color:#745638!important}
+.jackpot-tag{background:linear-gradient(135deg,#d9b77a,#80572f)!important;color:#17100a!important}
 .nft-chance{font-size:10px;color:var(--gold);font-weight:800}
 .promo-admin .promo-input,.promo-admin select{background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px;width:100%;margin:5px 0 12px}
 .case-card.tier-nft{background:radial-gradient(circle at 50% 5%,#5a4028 0,#21180f 48%,#17110d 100%);border-color:#9a7448;box-shadow:0 6px 0 #080706,inset 0 0 28px #c29a5630}
@@ -810,16 +812,16 @@ const GIFTS = {
 };
 
 const CASES = [
-  { id: 'farm', name: 'Фарм', price: 1, icon: chest('#394a5e','#8096aa'), drops: ['random_nft','nothing'] },
-  { id: 'starter', name: 'Стартовый', price: 10, icon: chest('#5e5143','#9c8565'), drops: ['bear','heart','rose','stars_5','stars_10'] },
-  { id: 'mini', name: 'Мини', price: 25, icon: chest('#70533c','#b58a59'), drops: ['bear','heart','rose','cake','stars_10','stars_25','bouquet'] },
+  { id: 'farm', name: 'Фарм', price: 1, icon: chest('#3c2b1c','#76512f'), drops: ['random_nft','nothing'] },
+  { id: 'starter', name: 'Стартовый', price: 10, icon: chest('#4a3220','#8a5e35'), drops: ['bear','heart','rose','stars_5','stars_10'] },
+  { id: 'mini', name: 'Мини', price: 25, icon: chest('#59402a','#a07343'), drops: ['bear','heart','rose','cake','stars_10','stars_25','bouquet'] },
   { id: 'bronze', name: 'Бронзовый', price: 50, icon: chest('#76502f','#b87943'), drops: ['bear','stars_10','rose','heart','stars_25','cake','rocket','bouquet','stars_50'] },
-  { id: 'silver', name: 'Серебряный', price: 75, icon: chest('#596675','#b7c3ce'), drops: ['cup','rose','stars_15','cake','ring','bouquet','stars_75','champ','rocket','stars_35'] },
-  { id: 'gold', name: 'Золотой', price: 120, icon: chest('#8a682e','#d7b66c'), drops: ['diamond','stars_25','champ','cup','cake','stars_120','ring','bouquet','stars_60','rocket'] },
-  { id: 'legend', name: 'Легендарный', price: 200, icon: chest('#554b72','#a28cc7'), drops: ['random_nft','stars_100','ring','cup','stars_500','rocket','diamond','stars_50','champ','stars_200'] },
-  { id: 'ruby', name: 'Рубиновый', price: 300, icon: chest('#733b45','#be6670'), drops: ['stars_150','diamond','bouquet','stars_750','random_nft','ring','stars_75','cup','stars_300','champ'] },
-  { id: 'diamond', name: 'Алмазный', price: 500, icon: chest('#426276','#88bdd0'), drops: ['stars_250','random_nft','stars_2500','ring','diamond','stars_100','stars_1000','cup','stars_500','stars_250'] },
-  { id: 'cosmic', name: 'Космический', price: 1000, icon: chest('#493d72','#8f75bd'), drops: ['stars_500','diamond','stars_5000','random_nft','plush_pepe_royal','stars_200','ring','stars_2000','stars_1000','stars_500','diamond'] },
+  { id: 'silver', name: 'Серебряный', price: 75, icon: chest('#554a3b','#a88e69'), drops: ['cup','rose','stars_15','cake','ring','bouquet','stars_75','champ','rocket','stars_35'] },
+  { id: 'gold', name: 'Золотой', price: 120, icon: chest('#7b5a2e','#c19a57'), drops: ['diamond','stars_25','champ','cup','cake','stars_120','ring','bouquet','stars_60','rocket'] },
+  { id: 'legend', name: 'Легендарный', price: 200, icon: chest('#3f3024','#94704a'), drops: ['random_nft','stars_100','ring','cup','stars_500','rocket','diamond','stars_50','champ','stars_200'] },
+  { id: 'ruby', name: 'Рубиновый', price: 300, icon: chest('#5b3026','#a65e40'), drops: ['stars_150','diamond','bouquet','stars_750','random_nft','ring','stars_75','cup','stars_300','champ'] },
+  { id: 'diamond', name: 'Алмазный', price: 500, icon: chest('#463a2c','#b49b74'), drops: ['stars_250','random_nft','stars_2500','ring','diamond','stars_100','stars_1000','cup','stars_500','stars_250'] },
+  { id: 'cosmic', name: 'Космический', price: 1000, icon: chest('#2c241d','#8b6944'), drops: ['stars_500','diamond','stars_5000','random_nft','plush_pepe_royal','stars_200','ring','stars_2000','stars_1000','stars_500','diamond'] },
   { id: 'nft', name: 'НФТ', price: 750, icon: chest('#21180f','#c49a61'), drops: ['plush_pepe','resistance_dog','durovs_cap','precious_peach','scared_cat','heroic_helmet','durovs_glasses','loot_bag','astral_shard','diamond_ring','nothing'] },
 ];
 
@@ -1064,10 +1066,10 @@ function openCase(caseId) {
   btn.textContent = 'Открыть за ★ ' + fmt(c.price);
   btn.disabled = false;
   const drops = c.id === 'nft' ? c.drops : shuffled(c.drops);
-  const nftChances = { plush_pepe:'0,01%', diamond_ring:'0,006%', durovs_glasses:'0,03%', durovs_cap:'0,06%', resistance_dog:'0,09%', precious_peach:'0,15%', scared_cat:'0,21%', heroic_helmet:'0,3%', astral_shard:'0,6%', loot_bag:'1,2%', nothing:'97,334%' };
+  const nftChances = { plush_pepe:'0,01%', diamond_ring:'0,006%', durovs_glasses:'0,03%', durovs_cap:'0,06%', resistance_dog:'0,09%', precious_peach:'0,15%', scared_cat:'0,21%', heroic_helmet:'0,3%', astral_shard:'0,6%', loot_bag:'1,2%', nothing:'97,344%' };
   document.getElementById('previewDrops').innerHTML = drops.map(key => {
     const item = dropMeta(key);
-    const chance = c.id === 'nft' ? (nftChances[key] || '') : '';
+    const chance = c.id === 'nft' ? (nftChances[key] || '') : (c.id === 'cosmic' && key === 'plush_pepe_royal' ? '0,1%' : '');
     return `<div class="preview-drop"><div class="drop-img">${item.img}</div><div class="drop-name">${item.name}</div>${chance ? `<div class="nft-chance">${chance}</div>` : ''}</div>`;
   }).join('');
   document.getElementById('casePreview').classList.add('show');

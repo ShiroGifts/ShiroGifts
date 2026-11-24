@@ -23,7 +23,7 @@ function validateInitData(initData, botToken, maxAgeSeconds = 3600) {
   try {
     const user = JSON.parse(params.get('user') || 'null');
     if (!user || !Number.isSafeInteger(user.id)) return null;
-    return { user, authDate };
+    return { user, authDate, startParam: params.get('start_param') || null };
   } catch {
     return null;
   }

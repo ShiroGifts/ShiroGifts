@@ -495,6 +495,16 @@ body{font-family:'Manrope',system-ui,sans-serif;font-weight:500;background:radia
 .roulette-item{font-size:11px;text-align:center;padding:5px}
 .roulette-item .gift-img{height:60px;display:flex;align-items:center;justify-content:center}
 .case-preview-drops{gap:8px}
+
+.age-gate{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(4,8,13,.92);backdrop-filter:blur(14px)}
+.age-gate.show{display:flex}
+.age-card{width:100%;max-width:370px;padding:28px 22px;background:#151e29;border:1px solid #59616a;border-radius:18px;box-shadow:0 20px 70px #0009;text-align:center}
+.age-mark{font:700 42px 'Playfair Display',serif;color:#d8b77a;margin-bottom:12px}
+.age-title{font-size:20px;font-weight:800;margin-bottom:8px}
+.age-copy{font-size:13px;color:var(--text-dim);line-height:1.5;margin-bottom:22px}
+.age-check{display:flex;align-items:center;justify-content:center;gap:10px;font-size:13px;font-weight:700;margin-bottom:18px}
+.age-check input{width:18px;height:18px;accent-color:#b99a67}
+.age-error{min-height:18px;color:#f18b82;font-size:11px;margin-top:10px}
 </style>
 </head>
 <body>
@@ -628,6 +638,16 @@ body{font-family:'Manrope',system-ui,sans-serif;font-weight:500;background:radia
   </div>
 </div>
 
+<div class="age-gate" id="ageGate">
+  <div class="age-card">
+    <div class="age-mark">18+</div>
+    <div class="age-title">Подтверждение возраста</div>
+    <div class="age-copy">ShiroGifts доступен только совершеннолетним пользователям.</div>
+    <label class="age-check"><input type="checkbox" id="ageConfirmCheck"> Мне исполнилось 18 лет</label>
+    <button class="btn-big" onclick="confirmAge()">Подтвердить и продолжить</button>
+    <div class="age-error" id="ageGateError"></div>
+  </div>
+</div>
 <div class="case-preview-overlay" id="casePreview">
   <div class="case-preview-top"><button class="case-back" onclick="closeCasePreview()">←</button><div class="case-preview-title" id="previewTitle">Кейс</div><div style="width:42px"></div></div>
   <div class="case-preview-main">
@@ -761,6 +781,7 @@ const CASES = [
 ];
 
 let balance = 0;
+let ageConfirmed = false;
 let inventory = [];
 let uidCounter = 1;
 
@@ -797,6 +818,8 @@ async function loadAccount() {
   try {
     const data = await apiRequest('/api/me');
     balance = Number(data.balance) || 0;
+    ageConfirmed = !!data.ageConfirmed;
+    document.getElementById('ageGate').classList.toggle('show', !ageConfirmed);
     inventory = (data.inventory || []).map(item => ({
       uid: String(item.id), gift: item.item_key, status: item.status,
       name: item.name, emoji: item.emoji, rarity: item.rarity,
@@ -811,6 +834,7 @@ async function loadAccount() {
 }
 
 async function topUp() {
+  if (!ageConfirmed) return toast('Сначала подтвердите возраст 18+.', true);
   if (!tg?.initData) return toast('Откройте Mini App через Telegram.', true);
   const raw = window.prompt('Сколько Stars пополнить? Минимум 5.', '50');
   if (raw === null) return;
@@ -985,6 +1009,7 @@ function shuffled(items) {
   return out;
 }
 function openCase(caseId) {
+  if (!ageConfirmed) return toast('Сначала подтвердите возраст 18+.', true);
   const c = CASES.find(x => x.id === caseId);
   if (!c) return;
   selectedCaseId = caseId;
@@ -1010,6 +1035,7 @@ function closeCasePreview() {
   pendingCaseRequest = null;
 }
 async function confirmOpenCase() {
+  if (!ageConfirmed) return toast('Сначала подтвердите возраст 18+.', true);
   const c = CASES.find(x => x.id === selectedCaseId);
   if (!c) return;
   if (balance < c.price) { haptic('error'); return toast('Недостаточно ★ для открытия кейса.', true); }
@@ -1605,6 +1631,23 @@ window.ShiroLive = {
 };
 
 
+async function confirmAge() {
+  const checkbox = document.getElementById('ageConfirmCheck');
+  const error = document.getElementById('ageGateError');
+  if (!checkbox.checked) {
+    error.textContent = 'Отметьте подтверждение, если вам уже исполнилось 18 лет.';
+    return;
+  }
+  try {
+    await apiRequest('/api/age/confirm', { method: 'POST', body: JSON.stringify({ confirmed: true }) });
+    ageConfirmed = true;
+    document.getElementById('ageGate').classList.remove('show');
+    error.textContent = '';
+    haptic('success');
+  } catch (e) {
+    error.textContent = 'Не удалось подтвердить возраст. Попробуйте ещё раз.';
+  }
+}
 async function loadPromoAdminStatus() {
   const id = tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : '';
   const idPanel = document.getElementById('promoAdminSetup');

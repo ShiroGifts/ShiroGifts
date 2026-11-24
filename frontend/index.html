@@ -1452,6 +1452,7 @@ async function loadAccount() {
 let topupBusy = false;
 
 function topUp() {
+  haptic('light');
   if (!tg?.initData) {
     toast('Пополнение доступно при запуске Mini App через Telegram.', true);
     return;
@@ -1473,6 +1474,7 @@ function closeTopUp() {
 
 async function confirmTopUp() {
   if (topupBusy) return;
+  haptic('light');
   if (!tg?.initData) {
     toast('Откройте Mini App через Telegram.', true);
     return;
@@ -1507,6 +1509,7 @@ async function confirmTopUp() {
     modal.setAttribute('aria-hidden', 'true');
     tg.openInvoice(data.invoice_url, async status => {
       if (status === 'paid') {
+        haptic('success');
         let credited = false;
         for (let attempt = 0; attempt < 10; attempt++) {
           await new Promise(resolve => setTimeout(resolve, 900));

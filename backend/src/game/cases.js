@@ -57,15 +57,29 @@ const CASES = [
     { type: 'stars', amount: 2500, weight: 6 }
   ]},
   { id: 'cosmic', name: 'Космический', price: 1000, drops: [
-    { type: 'gift', key: 'ring', weight: 8 }, { type: 'gift', key: 'diamond', weight: 15 },
-    { type: 'gift', key: 'random_nft', weight: 12 }, { type: 'stars', amount: 200, weight: 12 },
-    { type: 'stars', amount: 500, weight: 15 }, { type: 'stars', amount: 1000, weight: 15 },
-    { type: 'stars', amount: 2000, weight: 13 }, { type: 'stars', amount: 5000, weight: 10 }
+    { type: 'gift', key: 'ring', weight: 79920 }, { type: 'gift', key: 'diamond', weight: 149850 },
+    { type: 'gift', key: 'random_nft', weight: 119880 }, { type: 'gift', key: 'plush_pepe_royal', weight: 1000 },
+    { type: 'stars', amount: 200, weight: 119880 }, { type: 'stars', amount: 500, weight: 149850 },
+    { type: 'stars', amount: 1000, weight: 149850 }, { type: 'stars', amount: 2000, weight: 129870 },
+    { type: 'stars', amount: 5000, weight: 99900 }
+  ]},
+  { id: 'nft', name: 'НФТ', price: 750, drops: [
+    { type: 'gift', key: 'plush_pepe', weight: 100 },
+    { type: 'gift', key: 'diamond_ring', weight: 60 },
+    { type: 'gift', key: 'durovs_glasses', weight: 300 },
+    { type: 'gift', key: 'durovs_cap', weight: 600 },
+    { type: 'gift', key: 'resistance_dog', weight: 900 },
+    { type: 'gift', key: 'precious_peach', weight: 1500 },
+    { type: 'gift', key: 'scared_cat', weight: 2100 },
+    { type: 'gift', key: 'heroic_helmet', weight: 3000 },
+    { type: 'gift', key: 'astral_shard', weight: 6000 },
+    { type: 'gift', key: 'loot_bag', weight: 12000 },
+    { type: 'nothing', weight: 973340 }
   ]}
 ];
 
 const GIFT_DATA = {
-  bear: { name: 'Медведь', emoji: '🧸', rarity: 'Обычный', value: 15 },
+  bear: { name: 'Мишка', emoji: '🧸', rarity: 'Обычный', value: 15 },
   heart: { name: 'Сердце', emoji: '❤️', rarity: 'Обычный', value: 15 },
   rose: { name: 'Роза', emoji: '🌹', rarity: 'Обычный', value: 25 },
   cake: { name: 'Торт', emoji: '🎂', rarity: 'Редкий', value: 50 },
@@ -75,7 +89,18 @@ const GIFT_DATA = {
   cup: { name: 'Кубок', emoji: '🏆', rarity: 'Эпический', value: 100 },
   ring: { name: 'Кольцо', emoji: '💍', rarity: 'Эпический', value: 100 },
   diamond: { name: 'Бриллиант', emoji: '💎', rarity: 'Легендарный', value: 100 },
-  random_nft: { name: 'Рандомный NFT', emoji: '🎁', rarity: 'Мифический', value: 350 }
+  random_nft: { name: 'Рандомный NFT', emoji: '🎁', rarity: 'NFT', value: 350 },
+  plush_pepe: { name: 'Plush Pepe NFT', emoji: '🐸', rarity: 'NFT · Мифический', value: 480702 },
+  plush_pepe_royal: { name: 'Plush Pepe · Shiro Edition', emoji: '🐸', rarity: 'NFT · Джекпот', value: 480702 },
+  diamond_ring: { name: 'Diamond Ring NFT', emoji: '💍', rarity: 'NFT', value: 2305 },
+  durovs_glasses: { name: "Durov’s Glasses NFT", emoji: '🕶️', rarity: 'NFT', value: 11022 },
+  durovs_cap: { name: "Durov’s Cap NFT", emoji: '🧢', rarity: 'NFT', value: 28590 },
+  resistance_dog: { name: 'Resistance Dog NFT', emoji: '🐕', rarity: 'NFT', value: 35000 },
+  precious_peach: { name: 'Precious Peach NFT', emoji: '🍑', rarity: 'NFT', value: 19572 },
+  scared_cat: { name: 'Scared Cat NFT', emoji: '🐈', rarity: 'NFT', value: 19099 },
+  heroic_helmet: { name: 'Heroic Helmet NFT', emoji: '🪖', rarity: 'NFT', value: 14629 },
+  astral_shard: { name: 'Astral Shard NFT', emoji: '💠', rarity: 'NFT', value: 9819 },
+  loot_bag: { name: 'Loot Bag NFT', emoji: '🎒', rarity: 'NFT', value: 10688 }
 };
 
 function getCase(id) { return CASES.find(item => item.id === id); }

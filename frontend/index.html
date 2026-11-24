@@ -830,36 +830,17 @@ function checkFreeCaseStatus() {
 
 const CHANNEL_USERNAME = 'ShiroGifts';   // TODO: username канала
 let awaitingSub = false;
-async function checkSubscription() {
-  // прод: POST /api/subscription → сервер вызывает getChatMember(@канал, user_id), статус member/administrator/creator
-  await mockApi(() => {}, 500);
-  isSubscribed = true;   // в макете считаем, что подписался
+async async function checkSubscription() {
+  isSubscribed = false;
   renderCases();
-  toast('Подписка подтверждена. Бесплатный кейс доступен!');
+  toast('Проверка подписки ещё не подключена к Telegram.', true);
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden && awaitingSub) { awaitingSub = false; checkSubscription(); } });
 tg?.onEvent?.('activated', () => { if (awaitingSub) { awaitingSub = false; checkSubscription(); } });
 
 function tryFreeCase() {
-  if (!isSubscribed) {
-    toast('Подпишитесь на канал ShiroGifts и вернитесь в приложение', true);
-    awaitingSub = true;
-    const url = 'https://t.me/' + CHANNEL_USERNAME;
-    setTimeout(() => (tg?.openTelegramLink ? tg.openTelegramLink(url) : window.open(url, '_blank')), 700);
-    return;
-  }
-  if (!freeCaseAvailable) {
-    const remaining = Math.ceil((freeCaseCooldownEnd - Date.now()) / (1000 * 60 * 60));
-    toast(`Бесплатный кейс будет доступен через ~${remaining} ч.`, true);
-    return;
-  }
-  const c = CASES.find(x => x.id === 'bronze');
-  const winnerGift = pickWeighted(c.drops);
-  freeCaseCooldownEnd = Date.now() + 3 * 24 * 60 * 60 * 1000;
-  freeCaseAvailable = false;
-  haptic('success');
-  showCaseOverlay(c, winnerGift, true);
-  renderCases();
+  haptic('error');
+  toast('Бесплатный кейс станет доступен после серверной проверки подписки.', true);
 }
 
 function switchPage(name) {
@@ -1018,62 +999,11 @@ function renderInventory() {
 let modalAction = null;
 
 function askSell(uid) {
-  const item = inventory.find(i => i.uid === uid);
-  if (!item) return;
-  const g = GIFTS[item.gift];
-  const payout = item.gift === 'random_nft' ? 350 : Math.floor(g.price * 0.7);
-  document.getElementById('modalImg').innerHTML = g.img;
-  document.getElementById('modalTitle').textContent = 'Продать подарок?';
-  document.getElementById('modalText').textContent = item.gift === 'random_nft'
-    ? `«Рандомный NFT» будет продан за ${fmt(payout)} ★.`
-    : `«${g.name}» будет продан за ${fmt(payout)} ★ (70% от ${fmt(g.price)} ★).`;
-  document.getElementById('modal').classList.add('show');
-  modalAction = async () => {
-    closeModal();
-    showLoader('Продажа...');
-    await mockApi(() => {}, 650);
-    const idx = inventory.findIndex(i => i.uid === uid);
-    if (idx === -1) { hideLoader(); return; }
-    inventory[idx].status = 'sold';
-    balance += payout;
-    updateBalanceUI();
-    hideLoader();
-    haptic('success');
-    toast(`Продано: +${fmt(payout)} ★`);
-    const el = document.getElementById('inv-' + uid);
-    if (el) { el.classList.add('removing'); setTimeout(renderInventory, 280); }
-    else renderInventory();
-  };
+  toast('Продажа подарков будет включена после подключения серверного инвентаря.', true);
 }
 
 function askWithdraw(uid) {
-  const item = inventory.find(i => i.uid === uid);
-  if (!item) return;
-  const g = GIFTS[item.gift];
-  const isNFT = item.gift === 'random_nft';
-  document.getElementById('modalImg').innerHTML = g.img;
-  document.getElementById('modalTitle').textContent = isNFT ? 'Вывести рандомный NFT?' : 'Вывести подарок?';
-  document.getElementById('modalText').textContent = isNFT
-    ? (referralsCount < REF_NEED
-        ? `Для вывода NFT нужно пригласить ${REF_NEED} друзей по вашей ссылке (сейчас ${referralsCount}/${REF_NEED}). Других условий и доплат нет. Нажмите «Подтвердить», чтобы скопировать ссылку.`
-        : `Запрос будет принят, и случайный NFT-подарок придёт с аккаунта владельца в течение ${NFT_WAIT_DAYS} дней. Доплат не требуется.`)
-    : `«${g.name}» будет отправлен вам через Telegram (sendGift). Лимит: 3 вывода в сутки.`;
-  document.getElementById('modal').classList.add('show');
-  modalAction = async () => {
-    closeModal();
-    if (isNFT && referralsCount < REF_NEED) { copyRefLink(); return; }
-    showLoader(isNFT ? 'Отправка заявки...' : 'Отправка подарка...');
-    await mockApi(() => {}, 1000);
-    const idx = inventory.findIndex(i => i.uid === uid);
-    if (idx === -1) { hideLoader(); return; }
-    inventory[idx].status = 'withdrawn';
-    hideLoader();
-    haptic('success');
-    toast(isNFT ? `Заявка принята: NFT придёт в течение ${NFT_WAIT_DAYS} дней` : `«${g.name}» отправлен в Telegram`);
-    const el = document.getElementById('inv-' + uid);
-    if (el) { el.classList.add('removing'); setTimeout(renderInventory, 280); }
-    else renderInventory();
-  };
+  toast('Вывод подарков пока отключён до подключения безопасной серверной обработки.', true);
 }
 
 function closeModal() {
@@ -1198,54 +1128,8 @@ function updateUpgradeButton() {
   btn.textContent = ready ? 'Крутить колесо' : 'Выберите предметы';
 }
 
-async function doUpgrade() {
-  if (upgradeBusy || !upgradeFromUid || !upgradeToKey) return;
-  const fromItem = inventory.find(i => i.uid === upgradeFromUid);
-  if (!fromItem || fromItem.status !== 'owned') { haptic('error'); return toast('Предмет недоступен', true); }
-  const fromGift = GIFTS[fromItem.gift];
-  const toGift = GIFTS[upgradeToKey];
-  const chance = calcChance(fromItem.gift, upgradeToKey);
-  if (chance <= 0) { haptic('error'); return toast('Некорректная пара', true); }
-
-  upgradeBusy = true;
-  updateUpgradeButton();
-  const success = Math.random() < chance;
-  const pointer = document.getElementById('wheelPointer');
-  const wheel = document.getElementById('wheel');
-  const chanceEl = document.getElementById('chanceVal');
-
-  // conic-gradient начинается сверху (там же стрелка): успех = [0, chance*360], неудача = остальное
-  const sectorSize = success ? chance * 360 : (1 - chance) * 360;
-  const sectorCenter = success ? chance * 180 : chance * 360 + (1 - chance) * 180;
-  const jitter = (Math.random() - 0.5) * sectorSize * 0.7; // остановка в любой точке сектора
-  const finalRotation = 360 * 7 - (sectorCenter + jitter);
-
-  wheel.style.transition = 'transform 5.5s cubic-bezier(.12,.62,.22,1)';
-  wheel.style.transform = `rotate(${finalRotation}deg)`;
-  await new Promise(r => setTimeout(r, 5600));
-
-  pointer.classList.toggle('fail', !success);
-  chanceEl.classList.toggle('fail', !success);
-  const idx = inventory.findIndex(i => i.uid === upgradeFromUid);
-  if (success) {
-    inventory[idx].status = 'upgraded';
-    inventory.push({ uid: 'u' + (uidCounter++), gift: upgradeToKey, status: 'owned' });
-    haptic('success');
-    toast(`Успех! ${fromGift.name} → ${toGift.name}`);
-  } else {
-    inventory[idx].status = 'burned';
-    haptic('error');
-    toast(`Неудача. ${fromGift.name} сгорел`, true);
-  }
-  await new Promise(r => setTimeout(r, 1800)); // держим колесо на результате
-  wheel.style.transition = 'none';
-  wheel.style.transform = 'rotate(0deg)';
-  void wheel.offsetWidth;
-  wheel.style.transition = 'transform 5.5s cubic-bezier(.12,.62,.22,1)';
-  upgradeFromUid = null;
-  upgradeToKey = null;
-  upgradeBusy = false;
-  renderUpgrade();
+async async function doUpgrade() {
+  toast('Апгрейд временно отключён до переноса механики на сервер.', true);
 }
 
 /* ===== CRASH ===== */
@@ -1391,21 +1275,7 @@ function renderCrashUI() {
 }
 
 function crashAction() {
-  if (round.phase === 'betting' && !myBet) {
-    const bet = parseInt(document.getElementById('crashBet').value) || 0;
-    if (bet < 1) { haptic('error'); return toast('Ставка минимум 1 ★', true); }
-    if (balance < bet) { haptic('error'); return toast('Недостаточно ★', true); }
-    balance -= bet; updateBalanceUI(); myBet = { amount: bet, cashed: null };   // прод: POST /crash/bet
-    feedYouRowId = 'me-' + (++feedRowCounter);
-    addFeedRow({ betId: feedYouRowId, name: 'Вы', bet, isYou: true });
-    haptic('light');
-  } else if (round.phase === 'flying' && myBet && myBet.cashed === null) {
-    // прод: POST /crash/cashout — сервер фиксирует множитель по своему времени
-    const mult = crashMult, win = Math.floor(myBet.amount * mult);
-    myBet.cashed = mult; balance += win; updateBalanceUI(); haptic('success');
-    toast(`Забрано ${fmt(win)} ★ на ${mult.toFixed(2)}x`); setFeedResult(feedYouRowId, mult, win, false);
-  }
-  renderCrashUI();
+  toast('Crash временно отключён до подключения серверной игровой логики.', true);
 }
 
 function crashFrame() {

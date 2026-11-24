@@ -13,6 +13,8 @@ const timeToCrash = mult => Math.log(Math.max(1, Number(mult))) / GROWTH_K * 100
 let engineClient = null;
 let tickBusy = false;
 let engineTimer = null;
+let retryTimer = null;
+let acquiring = false;
 
 function crashPoint(seed, clientSeed, nonce) {
   const digest = createHmac('sha256', seed).update(clientSeed + ':' + nonce).digest();
@@ -65,21 +67,37 @@ async function engineTick() {
     console.error('[CRASH ENGINE ERROR]', error.code || error.message);
   } finally { tickBusy = false; }
 }
+async function acquireCrashEngine() {
+  if (engineClient || acquiring) return !!engineClient;
+  acquiring = true;
+  let client;
+  try {
+    client = await pool.connect();
+    const lock = await client.query('SELECT pg_try_advisory_lock(731902, 2026) AS locked');
+    if (!lock.rows[0].locked) {
+      client.release();
+      console.log('[CRASH] Waiting for previous instance to release the round lock');
+      return false;
+    }
+    engineClient = client;
+    // A process restart during flight ends that round immediately; no client can cash out against a stale process.
+    await pool.query(`UPDATE crash_rounds SET status='crashed', server_seed_revealed=server_seed, ended_at=NOW()
+      WHERE status='running'`);
+    await engineTick();
+    if (retryTimer) { clearInterval(retryTimer); retryTimer = null; }
+    engineTimer = setInterval(engineTick, 250);
+    console.log('[CRASH] Server-authoritative round engine started');
+    return true;
+  } catch (error) {
+    if (client && client !== engineClient) client.release();
+    console.error('[CRASH ENGINE LOCK ERROR]', error.code || error.message);
+    return false;
+  } finally { acquiring = false; }
+}
 async function startCrashEngine() {
-  if (engineTimer) return;
-  engineClient = await pool.connect();
-  const lock = await engineClient.query('SELECT pg_try_advisory_lock(731902, 2026) AS locked');
-  if (!lock.rows[0].locked) {
-    engineClient.release(); engineClient = null;
-    console.log('[CRASH] Another instance owns the round engine');
-    return;
-  }
-  // If a deployment restarts mid-round, fail closed: finish the current round as crashed.
-  await pool.query(`UPDATE crash_rounds SET status='crashed', server_seed_revealed=server_seed, ended_at=NOW()
-    WHERE status='running' AND started_at < NOW() - INTERVAL '1 second'`);
-  await engineTick();
-  engineTimer = setInterval(engineTick, 250);
-  console.log('[CRASH] Server-authoritative round engine started');
+  if (engineTimer || retryTimer) return;
+  const acquired = await acquireCrashEngine();
+  if (!acquired) retryTimer = setInterval(() => { acquireCrashEngine().catch(error => console.error('[CRASH RETRY]', error.message)); }, 1000);
 }
 
 router.get('/crash/state', async (req, res) => {

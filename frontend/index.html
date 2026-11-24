@@ -1240,6 +1240,12 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
     </div>
     <div class="hero-pills"><span class="hero-pill">✦ Telegram Gifts</span><span class="hero-pill">◈ NFT-коллекция</span><span class="hero-pill">↗ Апгрейды</span></div>
   </div>
+  <div class="promo-panel" id="dailyNameRewardPanel" style="margin:0 16px 18px">
+    <div class="promo-heading">🎁 Ежедневная награда · 25 ★</div>
+    <div class="promo-description" id="dailyNameRewardText">Добавь @ShiroGiftsBot в отображаемое имя Telegram и забирай 25 Stars раз в 24 часа.</div>
+    <button class="btn-big" id="dailyNameRewardBtn" onclick="claimDailyNameReward()">Проверить и забрать 25 ★</button>
+    <div class="promo-status" id="dailyNameRewardStatus" aria-live="polite"></div>
+  </div>
   <div class="section-title">Выбери свой кейс</div>
   <div class="cases-grid" id="casesGrid"></div>
 </div>
@@ -1617,6 +1623,8 @@ async function loadAccount() {
     updateBalanceUI();
     renderInventory();
     renderUpgrade();
+    if (ageConfirmed) loadFreeCaseStatus();
+    loadDailyNameRewardStatus();
   } catch (error) {
     toast(error.message, true);
   }
@@ -1715,21 +1723,35 @@ refreshOnlineCount();
 setInterval(refreshOnlineCount, 30000);
 
 /* ===== БЕСПЛАТНЫЙ КЕЙС ===== */
-function checkFreeCaseStatus() {
-  if (Date.now() >= freeCaseCooldownEnd) freeCaseAvailable = true;
-  else freeCaseAvailable = false;
-  renderCases();
+function formatFreeCaseWait() {
+  const ms = Math.max(0, freeCaseCooldownEnd - Date.now());
+  const hours = Math.floor(ms / 3600000);
+  const minutes = Math.floor((ms % 3600000) / 60000);
+  return hours > 0 ? `через ${hours} ч. ${minutes} мин.` : `через ${minutes} мин.`;
+}
+async function loadFreeCaseStatus() {
+  try {
+    const data = await apiRequest('/api/cases/free/status');
+    freeCaseAvailable = !!data.available;
+    freeCaseCooldownEnd = data.nextClaimAt ? new Date(data.nextClaimAt).getTime() : 0;
+    renderCases();
+  } catch (_) {
+    freeCaseAvailable = false;
+    renderCases();
+  }
 }
 
-const CHANNEL_USERNAME = 'ShiroGifts';   // TODO: username канала
+const CHANNEL_USERNAME = 'ShiroGifts';
 let awaitingSub = false;
 async function checkSubscription() {
   try {
     const result = await apiRequest('/api/subscription/status');
     isSubscribed = !!result.isMember;
     renderCases();
-    if (isSubscribed) { awaitingSub = false; haptic('success'); toast('Подписка подтверждена!'); }
-    else {
+    if (isSubscribed) {
+      awaitingSub = false; haptic('success'); toast('Подписка подтверждена!');
+      loadFreeCaseStatus();
+    } else {
       toast('Подпишитесь на @' + CHANNEL_USERNAME + ' и нажмите проверку ещё раз.', true);
       awaitingSub = true;
       const url = 'https://t.me/' + CHANNEL_USERNAME;
@@ -1743,28 +1765,96 @@ async function checkSubscription() {
 document.addEventListener('visibilitychange', () => { if (!document.hidden && awaitingSub) { awaitingSub = false; checkSubscription(); } });
 tg?.onEvent?.('activated', () => { if (awaitingSub) { awaitingSub = false; checkSubscription(); } });
 
+let pendingFreeCaseRequestId = null;
 async function tryFreeCase() {
+  if (!ageConfirmed) return toast('Сначала подтвердите возраст 18+.', true);
   if (!isSubscribed) return checkSubscription();
-  return toast('Подписка подтверждена. Бесплатный кейс подключу после серверной настройки награды и кулдауна.', true);
-  if (!isSubscribed) {
-    toast('Подпишитесь на канал ShiroGifts и вернитесь в приложение', true);
-    awaitingSub = true;
-    const url = 'https://t.me/' + CHANNEL_USERNAME;
-    setTimeout(() => (tg?.openTelegramLink ? tg.openTelegramLink(url) : window.open(url, '_blank')), 700);
-    return;
-  }
   if (!freeCaseAvailable) {
-    const remaining = Math.ceil((freeCaseCooldownEnd - Date.now()) / (1000 * 60 * 60));
-    toast(`Бесплатный кейс будет доступен через ~${remaining} ч.`, true);
-    return;
+    await loadFreeCaseStatus();
+    if (!freeCaseAvailable) return toast('Бесплатный кейс будет доступен ' + formatFreeCaseWait(), true);
   }
   const c = CASES.find(x => x.id === 'bronze');
-  const winnerGift = pickWeighted(c.drops);
-  freeCaseCooldownEnd = Date.now() + 3 * 24 * 60 * 60 * 1000;
-  freeCaseAvailable = false;
-  haptic('success');
-  showCaseOverlay(c, winnerGift, true);
-  renderCases();
+  if (!pendingFreeCaseRequestId) pendingFreeCaseRequestId = crypto.randomUUID();
+  try {
+    const data = await apiRequest('/api/cases/free/open', {
+      method: 'POST', body: JSON.stringify({ requestId: pendingFreeCaseRequestId })
+    });
+    pendingFreeCaseRequestId = null;
+    balance = Number(data.balance) || 0;
+    updateBalanceUI();
+    freeCaseAvailable = false;
+    freeCaseCooldownEnd = Date.now() + 72 * 60 * 60 * 1000;
+    renderCases();
+    haptic('success');
+    const winnerKey = data.reward.type === 'stars' ? 'stars_' + data.reward.amount : data.reward.type === 'nothing' ? 'nothing' : data.reward.key;
+    showCaseOverlay(c, winnerKey, true);
+  } catch (error) {
+    if (error.message === 'free_case_cooldown') {
+      pendingFreeCaseRequestId = null;
+      await loadFreeCaseStatus();
+      toast('Бесплатный кейс будет доступен ' + formatFreeCaseWait(), true);
+    } else if (error.message === 'subscription_required') {
+      isSubscribed = false; renderCases(); checkSubscription();
+    } else {
+      toast(error.message, true);
+    }
+  }
+}
+
+/* ===== ЕЖЕДНЕВНЫЕ 25 STARS ЗА НИК ===== */
+let dailyNameRewardNextAt = 0;
+let dailyNameRewardBusy = false;
+async function loadDailyNameRewardStatus() {
+  try {
+    const data = await apiRequest('/api/daily-name-reward/status');
+    dailyNameRewardNextAt = data.nextClaimAt ? new Date(data.nextClaimAt).getTime() : 0;
+    const text = document.getElementById('dailyNameRewardText');
+    const button = document.getElementById('dailyNameRewardBtn');
+    const status = document.getElementById('dailyNameRewardStatus');
+    if (!data.hasTag) {
+      text.textContent = 'Добавь @ShiroGiftsBot в отображаемое имя Telegram (именно имя, не @username), затем заново открой приложение.';
+      button.disabled = false;
+      button.textContent = 'Проверить ник';
+      status.textContent = '';
+    } else if (!data.canClaim) {
+      text.textContent = 'Упоминание бота найдено! Следующая награда доступна через 24 часа после прошлого получения.';
+      button.disabled = true;
+      button.textContent = '25 ★ уже получены';
+      status.textContent = dailyNameRewardNextAt ? 'Следующая награда: ' + new Date(dailyNameRewardNextAt).toLocaleString('ru-RU') : '';
+    } else {
+      text.textContent = 'Упоминание @ShiroGiftsBot найдено в имени. Забирай 25 Stars!';
+      button.disabled = false;
+      button.textContent = 'Забрать 25 ★';
+      status.textContent = '';
+    }
+  } catch (_) {}
+}
+async function claimDailyNameReward() {
+  if (dailyNameRewardBusy) return;
+  const button = document.getElementById('dailyNameRewardBtn');
+  dailyNameRewardBusy = true;
+  button.disabled = true;
+  button.textContent = 'Проверяем…';
+  try {
+    const data = await apiRequest('/api/daily-name-reward/claim', { method: 'POST', body: '{}' });
+    balance = Number(data.balance) || 0;
+    updateBalanceUI();
+    dailyNameRewardNextAt = data.nextClaimAt ? new Date(data.nextClaimAt).getTime() : Date.now() + 86400000;
+    haptic('success');
+    toast('Начислено 25 ★!');
+    await loadDailyNameRewardStatus();
+  } catch (error) {
+    if (error.message === 'daily_name_tag_required') {
+      document.getElementById('dailyNameRewardText').textContent = 'Не нашли @ShiroGiftsBot в отображаемом имени. Добавь его и заново открой Mini App.';
+      document.getElementById('dailyNameRewardStatus').textContent = '';
+    } else if (error.message === 'daily_reward_cooldown') {
+      await loadDailyNameRewardStatus();
+      toast('Награду можно получать раз в 24 часа.', true);
+    } else toast(error.message, true);
+  } finally {
+    dailyNameRewardBusy = false;
+    await loadDailyNameRewardStatus();
+  }
 }
 
 function switchPage(name) {
@@ -1790,7 +1880,7 @@ function renderCases() {
         <div class="badge">БЕСПЛАТНО</div>
         <div class="gift-img">${casePhoto}</div>
         <div class="name">Кейс подписчика</div>
-        <div class="price">${freeCaseAvailable ? 'Забрать сейчас' : 'Кулдаун 3 дня'}</div>
+        <div class="price">${freeCaseAvailable ? 'Забрать сейчас' : 'Доступен ' + formatFreeCaseWait()}</div>
       </div>`;
   } else {
     html += `

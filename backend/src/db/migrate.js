@@ -23,6 +23,9 @@ async function migrate() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
     CREATE INDEX IF NOT EXISTS inventory_user_status_idx ON inventory(telegram_id, status);
+    ALTER TABLE inventory ADD COLUMN IF NOT EXISTS source_type TEXT NOT NULL DEFAULT 'legacy';
+    ALTER TABLE inventory ADD COLUMN IF NOT EXISTS source_ref TEXT;
+
     ALTER TABLE inventory DROP CONSTRAINT IF EXISTS inventory_status_check;
     ALTER TABLE inventory ADD CONSTRAINT inventory_status_check CHECK (status IN ('owned','sold','withdrawn','upgraded','burned','withdraw_pending'));
     ALTER TABLE withdrawal_requests ADD COLUMN IF NOT EXISTS inventory_id BIGINT REFERENCES inventory(id);

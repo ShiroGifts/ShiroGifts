@@ -43,6 +43,16 @@ async function migrate() {
 
     ALTER TABLE wallet_ledger DROP CONSTRAINT IF EXISTS wallet_ledger_entry_type_check;
 
+    ALTER TABLE case_openings DROP CONSTRAINT IF EXISTS case_openings_case_price_check;
+    ALTER TABLE case_openings ADD CONSTRAINT case_openings_case_price_check CHECK (case_price >= 0);
+
+    CREATE TABLE IF NOT EXISTS daily_name_rewards (
+      telegram_id BIGINT PRIMARY KEY REFERENCES users(telegram_id),
+      last_claimed_at TIMESTAMPTZ NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS daily_name_rewards_last_claimed_idx ON daily_name_rewards(last_claimed_at);
+
+
     CREATE TABLE IF NOT EXISTS case_openings (
       id BIGSERIAL PRIMARY KEY,
       request_id UUID NOT NULL UNIQUE,

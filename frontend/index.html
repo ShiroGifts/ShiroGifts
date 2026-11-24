@@ -1263,7 +1263,7 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
   <div class="profile-hero">
     <div class="profile-avatar" id="profileAvatar">S</div>
     <div class="profile-identity">
-      <div class="profile-name-line"><div class="profile-name" id="profileName">Игрок ShiroGifts</div><span class="profile-promo-badge">+25 ★ / 24 ч</span></div>
+      <div class="profile-name-line"><div class="profile-name" id="profileName">Игрок ShiroGifts</div><span class="profile-promo-badge" id="profilePromoBadge" style="display:none">+25 ★ / 24 ч</span></div>
       <div class="profile-username" id="profileUsername">Telegram</div>
       <div class="profile-id" id="profileTelegramId"></div>
     </div>
@@ -1287,6 +1287,9 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
     <div class="promo-heading" style="margin-top:18px">Режим записи (только мой аккаунт)</div>
     <div class="promo-description">Изолированная демонстрация: тестовые выигрыши не списывают Stars и не добавляют предметы в настоящий инвентарь. Подменённый онлайн виден только в твоём окне.</div>
     <label class="promo-label"><input id="demoModeEnabled" type="checkbox" onchange="updateDemoMode()"> Включить режим записи (кейсы + апгрейд)</label>
+    <label class="promo-label"><input id="demoBoostEnabled" type="checkbox" checked onchange="updateDemoBoostUI()"> Подкручивать шансы в режиме записи</label>
+    <button class="btn btn-sell" type="button" id="disableDemoBoostBtn" onclick="disableDemoBoost()" style="width:100%;margin:6px 0 12px">Выключить подкрутку процентов</button>
+    <div class="promo-status" id="demoBoostStatus" aria-live="polite">Подкрутка шансов включена</div>
     <label class="promo-label" for="demoUpgradeChance">Фактический шанс успеха апгрейда в демо, %</label>
     <input class="promo-input" id="demoUpgradeChance" type="number" min="0" max="100" value="30">
     <label class="promo-label" for="demoCaseChance">Фактический шанс NFT в демо-кейсе, %</label>
@@ -1713,13 +1716,13 @@ async function topUp() {
 }
 
 let toastTimer;
-function toast(msg, isError) {
+function toast(msg, isError, duration = 2200) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.toggle('error', !!isError);
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  toastTimer = setTimeout(() => t.classList.remove('show'), duration);
 }
 
 function showLoader(text) {
@@ -1754,7 +1757,23 @@ function updateDemoMode() {
   if (String(tg?.initDataUnsafe?.user?.id || '') !== '8159031701') return;
   const enabled=!!document.getElementById('demoModeEnabled')?.checked;
   document.body.classList.toggle('owner-demo-mode',enabled);
+  updateDemoBoostUI();
   toast(enabled ? 'Демо-режим включён: реальные ставки и инвентарь не затрагиваются.' : 'Демо-режим выключен.');
+}
+function updateDemoBoostUI() {
+  if (String(tg?.initDataUnsafe?.user?.id || '') !== '8159031701') return;
+  const enabled = !!document.getElementById('demoBoostEnabled')?.checked;
+  const status = document.getElementById('demoBoostStatus');
+  const button = document.getElementById('disableDemoBoostBtn');
+  if (status) status.textContent = enabled ? 'Подкрутка включена: используются заданные тестовые проценты.' : 'Подкрутка выключена: используются обычные шансы.';
+  if (button) button.disabled = !enabled;
+}
+function disableDemoBoost() {
+  if (String(tg?.initDataUnsafe?.user?.id || '') !== '8159031701') return;
+  const toggle = document.getElementById('demoBoostEnabled');
+  if (toggle) toggle.checked = false;
+  updateDemoBoostUI();
+  toast('Подкрутка выключена. Режим записи остался включён.', false, 4500);
 }
 
 async function refreshOnlineCount() {
@@ -1861,11 +1880,13 @@ async function loadDailyNameRewardStatus() {
     const text = document.getElementById('dailyNameRewardText');
     const button = document.getElementById('dailyNameRewardBtn');
     const status = document.getElementById('dailyNameRewardStatus');
+    const promoBadge = document.getElementById('profilePromoBadge');
+    if (promoBadge) promoBadge.style.display = data.hasTag ? 'inline-flex' : 'none';
     if (!data.hasTag) {
-      text.textContent = 'Добавь @ShiroGiftsBot в отображаемое имя Telegram (именно имя, не @username), затем заново открой приложение.';
+      text.textContent = 'Добавь @ShiroGiftsBot в отображаемое имя Telegram (именно имя, не @username), затем нажми «Проверить ник».';
       button.disabled = false;
       button.textContent = 'Проверить ник';
-      status.textContent = '';
+      status.textContent = 'Важно: бот должен быть именно в отображаемом имени Telegram, а не только в @username. После изменения имени нажми «Проверить ник».';
     } else if (!data.canClaim) {
       text.textContent = 'Упоминание бота найдено! Следующая награда доступна через 24 часа после прошлого получения.';
       button.disabled = true;
@@ -1895,8 +1916,9 @@ async function claimDailyNameReward() {
     await loadDailyNameRewardStatus();
   } catch (error) {
     if (error.message === 'daily_name_tag_required') {
-      document.getElementById('dailyNameRewardText').textContent = 'Не нашли @ShiroGiftsBot в отображаемом имени. Добавь его и заново открой Mini App.';
-      document.getElementById('dailyNameRewardStatus').textContent = '';
+      document.getElementById('dailyNameRewardText').textContent = 'Не нашли @ShiroGiftsBot в отображаемом имени Telegram. Добавь его именно в имя профиля, затем нажми «Проверить ник».';
+      document.getElementById('dailyNameRewardStatus').textContent = 'Проверка не прошла: одного @username недостаточно. Измени отображаемое имя и повтори проверку.';
+      toast('Не нашли @ShiroGiftsBot в отображаемом имени. Добавь его именно в имя профиля Telegram.', true, 8000);
     } else if (error.message === 'daily_reward_cooldown') {
       await loadDailyNameRewardStatus();
       toast('Награду можно получать раз в 24 часа.', true);
@@ -2027,13 +2049,17 @@ async function confirmOpenCase() {
     const ownerDemo = String(tg?.initDataUnsafe?.user?.id || '') === '8159031701'
       && !!document.getElementById('demoModeEnabled')?.checked;
     if (ownerDemo) {
-      const rawChance=Number(document.getElementById('demoCaseChance')?.value);
-      const demoChance=Math.max(0,Math.min(100,Number.isFinite(rawChance)?rawChance:30))/100;
-      const isNftKey=key=>key==='random_nft'||key.includes('pepe')||key.includes('nft')||
-        ['diamond_ring','durovs_glasses','durovs_cap','resistance_dog','precious_peach','scared_cat','heroic_helmet','astral_shard','loot_bag','vice_cream','lol_pop','bunny_muffin','jolly_chimp','ginger_cookie','chill_flame','mirage_lamp','snoop_dogg'].includes(key);
-      const nftDrops=c.drops.filter(isNftKey);
-      const ordinaryDrops=c.drops.filter(key=>!isNftKey(key));
-      const pool=Math.random()<demoChance&&nftDrops.length?nftDrops:ordinaryDrops.length?ordinaryDrops:c.drops;
+      const boostEnabled = !!document.getElementById('demoBoostEnabled')?.checked;
+      let pool = c.drops;
+      if (boostEnabled) {
+        const rawChance=Number(document.getElementById('demoCaseChance')?.value);
+        const demoChance=Math.max(0,Math.min(100,Number.isFinite(rawChance)?rawChance:30))/100;
+        const isNftKey=key=>key==='random_nft'||key.includes('pepe')||key.includes('nft')||
+          ['diamond_ring','durovs_glasses','durovs_cap','resistance_dog','precious_peach','scared_cat','heroic_helmet','astral_shard','loot_bag','vice_cream','lol_pop','bunny_muffin','jolly_chimp','ginger_cookie','chill_flame','mirage_lamp','snoop_dogg'].includes(key);
+        const nftDrops=c.drops.filter(isNftKey);
+        const ordinaryDrops=c.drops.filter(key=>!isNftKey(key));
+        pool=Math.random()<demoChance&&nftDrops.length?nftDrops:ordinaryDrops.length?ordinaryDrops:c.drops;
+      }
       const winnerKey=pool[Math.floor(Math.random()*pool.length)];
       pendingCaseRequest=null;
       document.getElementById('casePreview').classList.remove('show');
@@ -2194,8 +2220,7 @@ function calcChance(fromKey, toKey) {
   const from = GIFTS[fromKey];
   const to = GIFTS[toKey];
   if (!from || !to || to.price <= from.price) return 0;
-  const raw = from.price / to.price;
-  return Math.min(0.9, 0.9 * Math.sqrt(raw));
+  return Math.min(0.9, (from.price / to.price) * 0.9);
 }
 
 function renderUpgrade() {
@@ -2388,9 +2413,13 @@ async function doUpgrade() {
       && !!document.getElementById('demoModeEnabled')?.checked;
     let result;
     if (ownerDemo) {
+      const actualChance = calcChance(fromItem.gift, upgradeToKey);
+      const boostEnabled = !!document.getElementById('demoBoostEnabled')?.checked;
       const configured = Number(document.getElementById('demoUpgradeChance')?.value);
-      const demoChance = Number.isFinite(configured) ? Math.max(0,Math.min(100,configured))/100 : 0.30;
-      result = { chance: calcChance(fromItem.gift,upgradeToKey), success: Math.random() < demoChance, demo:true };
+      const demoChance = boostEnabled
+        ? (Number.isFinite(configured) ? Math.max(0,Math.min(100,configured))/100 : 0.30)
+        : actualChance;
+      result = { chance: actualChance, success: Math.random() < demoChance, demo:true };
     } else {
       result = await apiRequest('/api/upgrade', {
         method:'POST',

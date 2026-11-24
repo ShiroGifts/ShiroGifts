@@ -34,6 +34,64 @@ router.get('/me', async (req, res) => {
   } finally { client.release(); }
 });
 
+
+function hasBotNameTag(user) {
+  const displayName = [user.first_name, user.last_name].filter(Boolean).join(' ');
+  return /@shirogiftsbot\\b/i.test(displayName);
+}
+
+router.get('/daily-name-reward/status', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT last_claimed_at FROM daily_name_rewards WHERE telegram_id = $1', [String(req.telegramUser.id)]);
+    const lastClaimedAt = result.rows[0]?.last_claimed_at ? new Date(result.rows[0].last_claimed_at) : null;
+    const nextClaimAt = lastClaimedAt ? new Date(lastClaimedAt.getTime() + 24 * 60 * 60 * 1000) : null;
+    res.json({
+      ok: true,
+      hasTag: hasBotNameTag(req.telegramUser),
+      canClaim: hasBotNameTag(req.telegramUser) && (!nextClaimAt || nextClaimAt.getTime() <= Date.now()),
+      nextClaimAt: nextClaimAt ? nextClaimAt.toISOString() : null
+    });
+  } catch (error) {
+    console.error('[DAILY NAME STATUS ERROR]', error.code || error.message);
+    res.status(500).json({ ok: false, error: 'daily_reward_status_failed' });
+  }
+});
+
+router.post('/daily-name-reward/claim', async (req, res) => {
+  const telegramId = String(req.telegramUser.id);
+  if (!hasBotNameTag(req.telegramUser)) {
+    return res.status(400).json({ ok: false, error: 'daily_name_tag_required' });
+  }
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('SELECT telegram_id FROM users WHERE telegram_id = $1 FOR UPDATE', [telegramId]);
+    const current = await client.query('SELECT last_claimed_at FROM daily_name_rewards WHERE telegram_id = $1 FOR UPDATE', [telegramId]);
+    const lastClaimedAt = current.rows[0]?.last_claimed_at ? new Date(current.rows[0].last_claimed_at) : null;
+    const nextClaimAt = lastClaimedAt ? new Date(lastClaimedAt.getTime() + 24 * 60 * 60 * 1000) : null;
+    if (nextClaimAt && nextClaimAt.getTime() > Date.now()) {
+      await client.query('ROLLBACK');
+      return res.status(429).json({ ok: false, error: 'daily_reward_cooldown', nextClaimAt: nextClaimAt.toISOString() });
+    }
+    await client.query(
+      "INSERT INTO wallet_ledger (telegram_id, amount_stars, entry_type, reference_id) VALUES ($1, 25, 'daily_reward', $2)",
+      [telegramId, 'daily-name:' + telegramId + ':' + Date.now()]
+    );
+    await client.query(
+      'INSERT INTO daily_name_rewards (telegram_id, last_claimed_at) VALUES ($1, NOW()) ON CONFLICT (telegram_id) DO UPDATE SET last_claimed_at = EXCLUDED.last_claimed_at',
+      [telegramId]
+    );
+    const wallet = await client.query('SELECT COALESCE(SUM(amount_stars), 0)::bigint AS balance FROM wallet_ledger WHERE telegram_id = $1', [telegramId]);
+    const claimed = await client.query('SELECT last_claimed_at FROM daily_name_rewards WHERE telegram_id = $1', [telegramId]);
+    await client.query('COMMIT');
+    res.json({ ok: true, amount: 25, balance: Number(wallet.rows[0].balance), nextClaimAt: new Date(new Date(claimed.rows[0].last_claimed_at).getTime() + 24 * 60 * 60 * 1000).toISOString() });
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => {});
+    console.error('[DAILY NAME CLAIM ERROR]', error.code || error.message);
+    res.status(500).json({ ok: false, error: 'daily_reward_claim_failed' });
+  } finally { client.release(); }
+});
+
 router.post('/age/confirm', async (req, res) => {
   if (!req.body || req.body.confirmed !== true) {
     return res.status(400).json({ ok: false, error: 'age_confirmation_required' });

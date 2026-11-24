@@ -25,6 +25,11 @@ router.post('/invoice', async (req, res) => {
     return res.status(400).json({ ok: false, error: 'amount_must_be_between_5_and_10000_stars' });
   }
   try {
+    await pool.query(
+      `INSERT INTO users (telegram_id, username, first_name, last_seen_at)
+       VALUES ($1, $2, $3, NOW()) ON CONFLICT (telegram_id) DO NOTHING`,
+      [String(user.id), user.username || null, user.first_name || null]
+    );
     const payload = `topup:${user.id}:${crypto.randomUUID()}`;
     await pool.query(
       'INSERT INTO pending_stars_invoices (payload, telegram_id, amount_stars) VALUES ($1, $2, $3)',

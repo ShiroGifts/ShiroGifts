@@ -23,6 +23,10 @@ async function migrate() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
     CREATE INDEX IF NOT EXISTS inventory_user_status_idx ON inventory(telegram_id, status);
+    ALTER TABLE inventory DROP CONSTRAINT IF EXISTS inventory_status_check;
+    ALTER TABLE inventory ADD CONSTRAINT inventory_status_check CHECK (status IN ('owned','sold','withdrawn','upgraded','burned','withdraw_pending'));
+    ALTER TABLE withdrawal_requests ADD COLUMN IF NOT EXISTS inventory_id BIGINT REFERENCES inventory(id);
+    CREATE UNIQUE INDEX IF NOT EXISTS withdrawal_one_pending_per_item ON withdrawal_requests(inventory_id) WHERE status = 'pending' AND inventory_id IS NOT NULL;
 
     CREATE TABLE IF NOT EXISTS pending_star_invoices (
       payload TEXT PRIMARY KEY,
@@ -36,7 +40,7 @@ async function migrate() {
 
     ALTER TABLE wallet_ledger DROP CONSTRAINT IF EXISTS wallet_ledger_entry_type_check;
     ALTER TABLE wallet_ledger ADD CONSTRAINT wallet_ledger_entry_type_check
-      CHECK (entry_type IN ('topup','case_spend','case_reward','refund','admin_adjustment','gift_purchase'));
+      CHECK (entry_type IN ('topup','case_spend','case_reward','refund','admin_adjustment','gift_purchase','sale'));
 
     CREATE TABLE IF NOT EXISTS case_openings (
       id BIGSERIAL PRIMARY KEY,

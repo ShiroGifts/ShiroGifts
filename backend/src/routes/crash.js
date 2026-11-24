@@ -106,6 +106,7 @@ router.get('/crash/state', async (req, res) => {
       FROM crash_rounds ORDER BY id DESC LIMIT 1`);
     if (!roundResult.rowCount) return res.status(503).json({ok:false,error:'crash_not_ready'});
     const r = roundResult.rows[0];
+    const isCrashed = r.status === 'crashed' || r.status === 'settled';
     const phase = r.status === 'scheduled' ? 'betting' : r.status === 'running' ? 'flying' : 'crashed';
     const userId = String(req.telegramUser.id);
     const [mine, bets, history] = await Promise.all([
@@ -119,10 +120,10 @@ router.get('/crash/state', async (req, res) => {
     const ownBet = b ? {id:String(b.id),amount:Number(b.stake_stars),cashed:b.cashout_multiplier==null?null:Number(b.cashout_multiplier),payout:b.payout_stars==null?null:Number(b.payout_stars)} : null;
     const serverTime = Date.now();
     const currentMult = r.status === 'running' ? multiplierAt(serverTime - new Date(r.started_at).getTime()) : 1;
-    res.json({ok:true,serverTime,round:{id:String(r.id),phase,startsAt:r.starts_at?new Date(r.starts_at).getTime():null,startedAt:r.started_at?new Date(r.started_at).getTime():null,crashMult:r.status==='crashed'?Number(r.crash_multiplier):null,currentMult},
+    res.json({ok:true,serverTime,round:{id:String(r.id),phase,startsAt:r.starts_at?new Date(r.starts_at).getTime():null,startedAt:r.started_at?new Date(r.started_at).getTime():null,crashMult:isCrashed?Number(r.crash_multiplier):null,currentMult},
       myBet:ownBet,history:history.rows.map(x=>Number(x.crash_multiplier)).filter(Number.isFinite),
       bets:bets.rows.map(x=>({id:String(x.id),name:x.first_name||'Игрок',bet:Number(x.stake_stars),mult:x.cashout_multiplier==null?null:Number(x.cashout_multiplier),win:x.payout_stars==null?0:Number(x.payout_stars),crashed:x.cashout_multiplier==null&&r.status==='crashed'})),
-      fairness:{serverSeedHash:r.server_seed_hash,revealedSeed:r.status==='crashed'?r.server_seed_revealed:null,clientSeed:r.status==='crashed'?r.client_seed:null,nonce:r.status==='crashed'?Number(r.nonce):null}});
+      fairness:{serverSeedHash:r.server_seed_hash,revealedSeed:isCrashed?r.server_seed_revealed:null,clientSeed:isCrashed?r.client_seed:null,nonce:isCrashed?Number(r.nonce):null}});
   } catch(error) { console.error('[CRASH STATE]',error.code||error.message); res.status(500).json({ok:false,error:'crash_state_failed'}); }
 });
 

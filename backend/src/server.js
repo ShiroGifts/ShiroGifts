@@ -5,6 +5,7 @@ const healthRoutes = require('./routes/health');
 const accountRoutes = require('./routes/account');
 const { router: paymentRoutes } = require('./routes/payments');
 const telegramWebhookRoutes = require('./routes/telegramWebhook');
+const subscriptionRoutes = require('./routes/subscription');
 const { migrate } = require('./db/migrate');
 const { telegramApi } = require('./routes/payments');
 
@@ -14,6 +15,7 @@ app.disable('x-powered-by');
 app.use(express.json({ limit: '32kb' }));
 app.use('/api', healthRoutes);
 app.use('/api', accountRoutes);
+app.use('/api', subscriptionRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/telegram', telegramWebhookRoutes);
 

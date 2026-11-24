@@ -1114,7 +1114,6 @@ body{
   padding:0 2px calc(24px + env(safe-area-inset-bottom));
   -webkit-overflow-scrolling:touch;overscroll-behavior:contain;
 }
-#upgradePickerBackdrop .picker-list[style*="display: none"]{display:none!important}
 #upgradePickerBackdrop .picker-list .picker-item{
   width:auto;min-width:0;max-width:none;height:auto;min-height:0;
   box-sizing:border-box;margin:0;padding:16px 12px;
@@ -1160,55 +1159,6 @@ body{
   background:radial-gradient(ellipse at 50% 50%,var(--case-glow,#9aaeff),transparent 72%)!important;
   left:8%!important;right:8%!important;top:10px!important;height:105px!important;
   will-change:auto!important;
-}
-
-
-/* Critical override: old compact inline picker rules had higher specificity. */
-#page-upgrade #upgradePickerBackdrop .picker-list{
-  display:grid!important;
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  flex:none!important;flex-wrap:initial!important;
-  gap:14px!important;max-height:none!important;min-height:0!important;
-  overflow-x:hidden!important;overflow-y:auto!important;
-  align-content:start!important;align-items:stretch!important;
-  padding:0 2px calc(28px + env(safe-area-inset-bottom))!important;
-  box-sizing:border-box!important;
-}
-#page-upgrade #upgradePickerBackdrop .picker-item{
-  flex:none!important;width:auto!important;min-width:0!important;max-width:none!important;
-  height:auto!important;min-height:156px!important;
-  padding:16px 12px!important;margin:0!important;box-sizing:border-box!important;
-  display:flex!important;flex-direction:column!important;
-  align-items:stretch!important;justify-content:flex-start!important;
-  gap:0!important;overflow:visible!important;border-radius:var(--radius)!important;
-}
-#page-upgrade #upgradePickerBackdrop .picker-item .gift-img{
-  width:100%!important;height:64px!important;min-height:64px!important;
-  flex:0 0 64px!important;display:flex!important;
-  align-items:center!important;justify-content:center!important;
-  margin:0 0 8px!important;font-size:48px!important;line-height:1!important;
-}
-#page-upgrade #upgradePickerBackdrop .picker-item .gift-img img,
-#page-upgrade #upgradePickerBackdrop .picker-item .gift-img svg{
-  width:58px!important;height:58px!important;max-width:100%!important;max-height:58px!important;
-  object-fit:contain!important;
-}
-#page-upgrade #upgradePickerBackdrop .picker-item .name{
-  display:block!important;width:100%!important;max-width:none!important;
-  min-height:0!important;margin:0!important;padding:0!important;
-  font-size:14px!important;line-height:1.25!important;font-weight:800!important;
-  white-space:normal!important;overflow-wrap:anywhere!important;overflow:visible!important;
-}
-#page-upgrade #upgradePickerBackdrop .picker-item .rarity{
-  display:block!important;width:100%!important;margin:3px 0 8px!important;
-  font-size:11px!important;line-height:1.25!important;white-space:normal!important;
-}
-#page-upgrade #upgradePickerBackdrop .picker-item .value{
-  display:block!important;margin:0 0 2px!important;font-size:13px!important;line-height:1.25!important;
-}
-@media(max-width:380px){
-  #page-upgrade #upgradePickerBackdrop .picker-list{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
-  #page-upgrade #upgradePickerBackdrop .picker-item{min-height:150px!important;padding:14px 10px!important}
 }
 
 
@@ -1426,8 +1376,7 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
 <div class="upgrade-picker-backdrop" id="upgradePickerBackdrop" onclick="closeUpgradePicker()">
   <div class="upgrade-picker-sheet" onclick="event.stopPropagation()">
     <div class="upgrade-picker-head"><b id="upgradePickerTitle">Выберите предмет</b><button type="button" onclick="closeUpgradePicker()">✕</button></div>
-    <div class="picker-list" id="fromPicker"></div>
-    <div class="picker-list" id="toPicker" style="display:none"></div>
+    <div class="picker-list" id="pickerList"></div>
   </div>
 </div>
 
@@ -2110,8 +2059,6 @@ function calcChance(fromKey, toKey) {
 }
 
 function renderUpgrade() {
-  renderFromPicker();
-  renderToPicker();
   updateUpgradeSlots();
   const fromShort=document.getElementById('fromSelectedShort');
   const toShort=document.getElementById('toSelectedShort');
@@ -2132,38 +2079,32 @@ function syncUpgradePickerViewport() {
 function openUpgradePicker(which) {
   if (upgradeBusy) return;
   const back = document.getElementById('upgradePickerBackdrop');
-  if (!back) return;
+  const list = document.getElementById('pickerList');
+  if (!back || !list) return;
+
   if (back.parentElement !== document.body) document.body.appendChild(back);
-
-  const from = document.getElementById('fromPicker');
-  const to = document.getElementById('toPicker');
-  const sheet = back.querySelector('.upgrade-picker-sheet');
-  const activeList = which === 'from' ? from : to;
-
-  // Set the active list before exposing the overlay.
-  from.style.display = which === 'from' ? 'grid' : 'none';
-  to.style.display = which === 'to' ? 'grid' : 'none';
   document.getElementById('upgradePickerTitle').textContent =
     which === 'from' ? 'Выберите предмет из инвентаря' : 'Выберите желаемый подарок';
 
-  syncUpgradePickerViewport();
+  // There is deliberately ONE list node. It is populated for the requested
+  // mode only, so the inventory and target grids can never stack together.
+  if (which === 'from') renderFromPicker();
+  else renderToPicker();
+  list.style.display = 'grid';
+  list.scrollTop = 0;
+
   document.body.classList.add('upgrade-picker-open');
   back.classList.add('show');
 
-  // IMPORTANT: measuring a display:none overlay returns zero and does not
-  // initialize its flex/grid geometry. The old code forced layout BEFORE
-  // adding .show, so the first picker could open with stale half-height layout.
+  // Measure only after the fixed overlay is visible.
   back.getBoundingClientRect();
-  sheet?.getBoundingClientRect();
-  activeList?.getBoundingClientRect();
-
-  // Telegram WebView may settle its viewport on the next frame after first paint.
-  requestAnimationFrame(() => requestAnimationFrame(() => {
+  back.querySelector('.upgrade-picker-sheet')?.getBoundingClientRect();
+  list.getBoundingClientRect();
+  requestAnimationFrame(() => {
     if (!back.classList.contains('show')) return;
     back.getBoundingClientRect();
-    sheet?.getBoundingClientRect();
-    activeList?.getBoundingClientRect();
-  }));
+    list.getBoundingClientRect();
+  });
 }
 function closeUpgradePicker() {
   document.getElementById('upgradePickerBackdrop')?.classList.remove('show');
@@ -2174,7 +2115,7 @@ window.addEventListener('resize', syncUpgradePickerViewport);
 window.visualViewport?.addEventListener('resize', syncUpgradePickerViewport);
 
 function renderFromPicker() {
-  const wrap = document.getElementById('fromPicker');
+  const wrap = document.getElementById('pickerList');
   const owned = inventory.filter(i => i.status === 'owned');
   if (owned.length === 0) {
     wrap.innerHTML = `<div style="color:var(--text-dim);font-size:12px;padding:8px">Инвентарь пуст</div>`;
@@ -2193,7 +2134,7 @@ function renderFromPicker() {
 }
 
 function renderToPicker() {
-  const wrap = document.getElementById('toPicker');
+  const wrap = document.getElementById('pickerList');
   const fromItem = upgradeFromUid ? inventory.find(i => i.uid === upgradeFromUid) : null;
   const minPrice = fromItem ? GIFTS[fromItem.gift].price : 0;
   const keys = Object.keys(GIFTS).filter(k => GIFTS[k].price > minPrice && k !== 'random_nft');

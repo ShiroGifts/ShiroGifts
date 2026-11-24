@@ -3,6 +3,7 @@ const { randomUUID } = require('node:crypto');
 const { pool } = require('../db/pool');
 const { requireTelegramUser, requireAgeConfirmed } = require('../telegram/auth');
 const { getCase, pickDrop, GIFT_DATA } = require('../game/cases');
+const { notifyAdminGift } = require('../telegram/notifications');
 
 const router = express.Router();
 router.use(requireTelegramUser);
@@ -100,6 +101,9 @@ router.post('/cases/open', async (req, res) => {
       [telegramId]
     );
     await client.query('COMMIT');
+    if (drop.type === 'gift') {
+      notifyAdminGift({ telegramId, username: req.telegramUser.username, firstName: req.telegramUser.first_name, itemName: GIFT_DATA[drop.key]?.name || drop.key, source: 'Выигрыш в кейсе «' + selectedCase.name + '»', inventoryId }).catch(() => {});
+    }
     res.json({ ok: true, balance: Number(newWallet.rows[0].balance), reward });
   } catch (error) {
     await client.query('ROLLBACK').catch(() => {});

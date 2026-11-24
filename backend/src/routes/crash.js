@@ -114,7 +114,7 @@ router.get('/crash/state', async (req, res) => {
       pool.query(`SELECT b.id,b.telegram_id,b.stake_stars,b.cashout_multiplier,b.payout_stars,u.first_name
         FROM crash_bets b LEFT JOIN users u ON u.telegram_id=b.telegram_id
         WHERE b.round_id=$1 ORDER BY b.created_at DESC LIMIT 12`, [r.id]),
-      pool.query(`SELECT crash_multiplier FROM crash_rounds WHERE status IN ('crashed','settled') ORDER BY id DESC LIMIT 5`)
+      pool.query(`SELECT crash_multiplier FROM crash_rounds WHERE status IN ('crashed','settled') ORDER BY id DESC LIMIT 12`)
     ]);
     const b = mine.rows[0];
     const ownBet = b ? {id:String(b.id),amount:Number(b.stake_stars),cashed:b.cashout_multiplier==null?null:Number(b.cashout_multiplier),payout:b.payout_stars==null?null:Number(b.payout_stars)} : null;

@@ -90,6 +90,7 @@ async function migrate() {
 
 
     ALTER TABLE crash_rounds ADD COLUMN IF NOT EXISTS starts_at TIMESTAMPTZ;
+    ALTER TABLE crash_rounds ADD COLUMN IF NOT EXISTS server_seed TEXT;
     ALTER TABLE wallet_ledger DROP CONSTRAINT IF EXISTS wallet_ledger_entry_type_check;
     ALTER TABLE wallet_ledger ADD CONSTRAINT wallet_ledger_entry_type_check
       CHECK (entry_type IN ('topup','case_spend','case_reward','crash_bet','crash_payout','refund','admin_adjustment','gift_purchase','sale'));

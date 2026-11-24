@@ -1155,6 +1155,64 @@ body{
   .roulette-strip{transition:none!important}
 }
 
+/* Match upgrade selection cards to the real Inventory grid and card proportions. */
+.upgrade-picker-sheet .picker-list{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:14px!important;
+  align-content:start!important;
+  align-items:stretch!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  padding:2px 2px calc(28px + env(safe-area-inset-bottom))!important;
+  -webkit-overflow-scrolling:touch;
+}
+.upgrade-picker-sheet .picker-item{
+  width:auto!important;min-width:0!important;max-width:none!important;
+  min-height:0!important;height:auto!important;
+  box-sizing:border-box!important;
+  padding:16px 12px!important;margin:0!important;
+  display:flex!important;flex-direction:column!important;
+  align-items:stretch!important;justify-content:flex-start!important;
+  gap:0!important;overflow:visible!important;
+  text-align:center!important;cursor:pointer;
+}
+.upgrade-picker-sheet .picker-item .gift-img{
+  position:static!important;display:block!important;
+  width:auto!important;height:auto!important;min-height:0!important;
+  flex:0 0 auto!important;margin:0 0 8px!important;
+  font-size:44px!important;line-height:normal!important;
+}
+.upgrade-picker-sheet .picker-item .gift-img svg,
+.upgrade-picker-sheet .picker-item .gift-img img{
+  max-width:100%!important;max-height:64px!important;object-fit:contain!important;
+}
+.upgrade-picker-sheet .picker-item .name{
+  position:static!important;display:block!important;width:100%!important;
+  min-height:0!important;max-height:none!important;margin:0!important;
+  padding:0!important;font-size:14px!important;line-height:1.25!important;
+  font-weight:800!important;white-space:normal!important;
+  overflow-wrap:anywhere!important;word-break:normal!important;
+}
+.upgrade-picker-sheet .picker-item .rarity{
+  position:static!important;display:block!important;width:100%!important;
+  margin:3px 0 8px!important;font-size:11px!important;line-height:1.25!important;
+  white-space:normal!important;overflow-wrap:anywhere!important;
+}
+.upgrade-picker-sheet .picker-item .value{
+  position:static!important;display:block!important;margin:0 0 2px!important;
+  font-size:13px!important;line-height:1.25!important;
+}
+.upgrade-picker-sheet .picker-item.selected{
+  border-color:var(--accent)!important;background:var(--surface-3)!important;
+  outline:2px solid var(--accent)!important;outline-offset:-2px!important;
+}
+.upgrade-picker-sheet .picker-item.upgrade-unavailable{opacity:.42;cursor:not-allowed}
+@media(max-width:380px){
+  .upgrade-picker-sheet .picker-list{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important}
+  .upgrade-picker-sheet .picker-item{padding:16px 10px!important}
+}
+
 </style>
 </head>
 <body>
@@ -2035,10 +2093,11 @@ function renderFromPicker() {
   wrap.innerHTML = owned.map(item => {
     const g = GIFTS[item.gift];
     const sel = item.uid === upgradeFromUid ? 'selected' : '';
-    return `<div class="picker-item ${sel}" onclick="selectFrom('${item.uid}')">
+    return `<div class="inv-item picker-item ${sel}" onclick="selectFrom('${item.uid}')">
       <span class="gift-img">${g.img}</span>
-      <div class="label">${g.name}</div>
-      <div class="price">★${g.price}</div>
+      <div class="name">${g.name}</div>
+      <div class="rarity">${g.rarity || 'Подарок'}</div>
+      <div class="value">★ ${fmt(g.price)}</div>
     </div>`;
   }).join('');
 }
@@ -2057,10 +2116,11 @@ function renderToPicker() {
     const chance = fromItem ? calcChance(fromItem.gift, k) : 0;
     const unavailable = !!fromItem && chance < 0.01;
     const sel = k === upgradeToKey ? 'selected' : '';
-    return `<div class="picker-item ${sel} ${unavailable ? 'upgrade-unavailable' : ''}" ${unavailable ? 'aria-disabled="true"' : `onclick="selectTo('${k}')"`}>
+    return `<div class="inv-item picker-item ${sel} ${unavailable ? 'upgrade-unavailable' : ''}" ${unavailable ? 'aria-disabled="true"' : `onclick="selectTo('${k}')"`}>
       <span class="gift-img">${g.img}</span>
-      <div class="label">${unavailable ? 'Нельзя апгрейдить на этот предмет' : g.name}</div>
-      <div class="price">★${g.price}</div>
+      <div class="name">${g.name}</div>
+      <div class="rarity">${unavailable ? 'Недоступно для апгрейда' : (g.rarity || 'Подарок')}</div>
+      <div class="value">★ ${fmt(g.price)}</div>
     </div>`;
   }).join('');
 }

@@ -2929,7 +2929,7 @@ function copyRefLink() {
 document.querySelectorAll('[data-ic]').forEach(e => e.innerHTML = IC[e.dataset.ic]);
 if (String(tg?.initDataUnsafe?.user?.id || '') !== '8159031701') document.querySelector('.owner-tools')?.remove();
 renderHistory(); renderCrashUI(); requestAnimationFrame(crashFrame);
-checkFreeCaseStatus();
+loadFreeCaseStatus();
 renderCases();
 renderInventory();
 renderUpgrade();

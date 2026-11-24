@@ -1247,6 +1247,19 @@ body{
 #upgradePickerBackdrop .picker-item .rarity{font-size:11px!important;line-height:1.25!important;white-space:normal!important;margin:3px 0 8px!important}
 #upgradePickerBackdrop .picker-item .value{font-size:13px!important;line-height:1.25!important;margin:0 0 2px!important}
 
+
+/* Final mobile WebView fix: use Telegram's reported viewport, not a transient 100dvh. */
+html,body{min-height:100%;}
+body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
+#upgradePickerBackdrop{
+ position:fixed!important;top:0!important;right:0!important;bottom:auto!important;left:0!important;
+ width:100%!important;height:var(--picker-viewport-height,100vh)!important;max-height:none!important;
+ min-height:0!important;inset-inline:0!important;z-index:2147483647!important;
+}
+#upgradePickerBackdrop .upgrade-picker-sheet{
+ position:relative!important;flex:1 1 auto!important;width:100%!important;
+ height:100%!important;min-height:0!important;max-height:100%!important;
+}
 </style>
 </head>
 <body>
@@ -2107,17 +2120,34 @@ function renderUpgrade() {
   renderWheel();
   updateUpgradeButton();
 }
+function syncUpgradePickerViewport() {
+  const back = document.getElementById('upgradePickerBackdrop');
+  if (!back) return;
+  // Telegram WebView may report its final visible height a moment after first paint.
+  const h = Math.round(tg?.viewportHeight || window.visualViewport?.height || window.innerHeight);
+  back.style.setProperty('--picker-viewport-height', h + 'px');
+}
 function openUpgradePicker(which) {
-  if(upgradeBusy) return;
-  const back=document.getElementById('upgradePickerBackdrop');
-  // Keep the modal outside page/section stacking contexts so it truly covers the app.
-  if(back && back.parentElement!==document.body) document.body.appendChild(back);
-  document.getElementById('fromPicker').style.display=which==='from'?'grid':'none';
-  document.getElementById('toPicker').style.display=which==='to'?'grid':'none';
-  document.getElementById('upgradePickerTitle').textContent=which==='from'?'Выберите предмет из инвентаря':'Выберите желаемый подарок';
+  if (upgradeBusy) return;
+  const back = document.getElementById('upgradePickerBackdrop');
+  if (!back) return;
+  if (back.parentElement !== document.body) document.body.appendChild(back);
+  syncUpgradePickerViewport();
+  document.getElementById('fromPicker').style.display = which === 'from' ? 'grid' : 'none';
+  document.getElementById('toPicker').style.display = which === 'to' ? 'grid' : 'none';
+  document.getElementById('upgradePickerTitle').textContent = which === 'from' ? 'Выберите предмет из инвентаря' : 'Выберите желаемый подарок';
+  // Lock the page behind the picker and commit its final geometry before showing it.
+  document.body.classList.add('upgrade-picker-open');
+  void back.offsetHeight;
   back.classList.add('show');
 }
-function closeUpgradePicker(){document.getElementById('upgradePickerBackdrop')?.classList.remove('show');}
+function closeUpgradePicker() {
+  document.getElementById('upgradePickerBackdrop')?.classList.remove('show');
+  document.body.classList.remove('upgrade-picker-open');
+}
+if (tg?.onEvent) tg.onEvent('viewportChanged', syncUpgradePickerViewport);
+window.addEventListener('resize', syncUpgradePickerViewport);
+window.visualViewport?.addEventListener('resize', syncUpgradePickerViewport);
 
 function renderFromPicker() {
   const wrap = document.getElementById('fromPicker');

@@ -998,6 +998,16 @@ function setOnline(n) {
   if (el) el.textContent = Number.isFinite(n) ? fmt(n) : '—';
 }
 
+async function refreshOnlineCount() {
+  try {
+    const response = await fetch('/api/online', { cache: 'no-store' });
+    const data = await response.json();
+    if (response.ok && data && data.ok) setOnline(Number(data.online));
+  } catch (_) {}
+}
+refreshOnlineCount();
+setInterval(refreshOnlineCount, 30000);
+
 /* ===== БЕСПЛАТНЫЙ КЕЙС ===== */
 function checkFreeCaseStatus() {
   if (Date.now() >= freeCaseCooldownEnd) freeCaseAvailable = true;

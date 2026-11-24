@@ -52,6 +52,38 @@ async function migrate() {
       )
     );
     CREATE INDEX IF NOT EXISTS case_openings_user_idx ON case_openings(telegram_id, created_at DESC);
+
+    ALTER TABLE case_openings DROP CONSTRAINT IF EXISTS case_openings_reward_type_check;
+    ALTER TABLE case_openings DROP CONSTRAINT IF EXISTS case_openings_check;
+    ALTER TABLE case_openings ADD CONSTRAINT case_openings_reward_type_check
+      CHECK (reward_type IN ('gift','stars','nothing'));
+    ALTER TABLE case_openings ADD CONSTRAINT case_openings_reward_shape_check CHECK (
+      (reward_type = 'gift' AND reward_key IS NOT NULL AND reward_stars IS NULL AND inventory_id IS NOT NULL)
+      OR (reward_type = 'stars' AND reward_key IS NULL AND reward_stars IS NOT NULL AND inventory_id IS NULL)
+      OR (reward_type = 'nothing' AND reward_key IS NULL AND reward_stars IS NULL AND inventory_id IS NULL)
+    );
+
+    CREATE TABLE IF NOT EXISTS promo_codes (
+      id BIGSERIAL PRIMARY KEY,
+      code TEXT NOT NULL UNIQUE,
+      reward_stars BIGINT NOT NULL CHECK (reward_stars > 0),
+      usage_limit INTEGER CHECK (usage_limit IS NULL OR usage_limit > 0),
+      uses_count INTEGER NOT NULL DEFAULT 0 CHECK (uses_count >= 0),
+      active BOOLEAN NOT NULL DEFAULT TRUE,
+      expires_at TIMESTAMPTZ,
+      created_by BIGINT NOT NULL REFERENCES users(telegram_id),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS promo_redemptions (
+      id BIGSERIAL PRIMARY KEY,
+      promo_id BIGINT NOT NULL REFERENCES promo_codes(id),
+      telegram_id BIGINT NOT NULL REFERENCES users(telegram_id),
+      reward_stars BIGINT NOT NULL CHECK (reward_stars > 0),
+      redeemed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE (promo_id, telegram_id)
+    );
+    CREATE INDEX IF NOT EXISTS promo_codes_active_idx ON promo_codes(active, expires_at);
+    CREATE INDEX IF NOT EXISTS promo_redemptions_user_idx ON promo_redemptions(telegram_id, redeemed_at DESC);
   `);
 }
 

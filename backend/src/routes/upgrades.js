@@ -46,7 +46,7 @@ router.post('/upgrade', async (req, res) => {
       await client.query('ROLLBACK');
       return res.status(400).json({ ok: false, error: 'invalid_upgrade_pair' });
     }
-    const chance = Math.max(0.05, Math.min(0.9, Math.floor((fromValue / target.value) * 0.9 * 100) / 100));
+    const chance = Math.max(0.05, Math.min(0.9, 0.05 + 0.85 * Math.sqrt(fromValue / target.value)));
     const success = randomInt(0, 1000000) < Math.round(chance * 1000000);
     let createdInventoryId = null;
     if (success) {

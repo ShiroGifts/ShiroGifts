@@ -1,16 +1,37 @@
-## Hi there 👋
+# ShiroGifts — стартовый проект
 
-<!--
-**ShiroGifts/ShiroGifts** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+Основа Telegram Mini App на базе исходного макета `frontend/index.html`.
 
-Here are some ideas to get you started:
+## Что уже есть
+- Исходный HTML-макет сохранён в `frontend/index.html`.
+- Node.js/Express сервер раздаёт интерфейс и имеет `/api/health`.
+- Добавлена проверка подписи Telegram Mini App `initData` на сервере.
+- Добавлена начальная PostgreSQL-схема для пользователей, журнала баланса, Stars-платежей, рефералов, Crash и заявок на вывод.
+- Добавлен `.env.example`; реальные секреты в Git не добавляются.
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+## Локальный запуск
+Требуется Node.js 20+ и PostgreSQL (для работы с базой).
+
+```bash
+npm install
+cp .env.example .env
+npm start
+```
+
+Откройте `http://localhost:3000`. Проверка сервера: `http://localhost:3000/api/health`.
+
+## Важно: пока не production
+HTML-макет содержит демонстрационные элементы и клиентскую логику. Баланс, результаты кейсов, апгрейдов и Crash в нём нельзя считать настоящими. Не принимайте реальные платежи и не запускайте игры на этой версии.
+
+Перед включением реальных операций нужно реализовать и протестировать серверные транзакции, идемпотентную обработку Stars, проверку подписки, журналирование, защиту от повторных запросов, лимиты, аудит и резервное копирование. Нужна отдельная юридическая проверка применимых правил для платных случайных механик и вывода подарков.
+
+## Переменные окружения
+См. `.env.example`. Токен бота добавляется только в Railway Variables — никогда не в GitHub и не в исходники.
+
+## Следующие этапы
+1. Подключить PostgreSQL и применить `backend/db/schema.sql` после проверки схемы.
+2. Реализовать Telegram webhook и обработку Stars `pre_checkout_query` / `successful_payment` с проверкой уникального `telegram_payment_charge_id`.
+3. Подключить проверку `@ShiroGifts` через `getChatMember`.
+4. Перевести все игровые действия на серверную авторитетную логику.
+5. Добавить самоподтверждение 18+ и хранение отметки согласия; оно не заменяет полноценную проверку возраста там, где она требуется.
+6. Настроить Mini App URL в BotFather после HTTPS-деплоя.

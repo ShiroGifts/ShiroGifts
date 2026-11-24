@@ -25,16 +25,12 @@ async function createScheduledRound() {
   const nonce = Date.now();
   const point = crashPoint(seed, clientSeed, nonce);
   const hash = createHash('sha256').update(seed).digest('hex');
-  const row = await pool.query(
-    `INSERT INTO crash_rounds (status, server_seed_hash, client_seed, nonce, crash_multiplier, starts_at)
-     VALUES ('scheduled',$1,$2,$3,$4,NOW() + INTERVAL '6 seconds') RETURNING id, starts_at`,
-    [hash, clientSeed, nonce, point]
+  await pool.query(
+    `INSERT INTO crash_rounds (status, server_seed, server_seed_hash, client_seed, nonce, crash_multiplier, starts_at)
+     VALUES ('scheduled',$1,$2,$3,$4,$5,NOW() + INTERVAL '6 seconds')`,
+    [seed, hash, clientSeed, nonce, point]
   );
-  // Seed stays in process memory until round ends; on restart it is recovered from the encrypted-at-rest
-  // deployment environment only for active rounds via the private map below.
-  seeds.set(String(row.rows[0].id), seed);
 }
-const seeds = new Map();
 
 async function engineTick() {
   if (tickBusy || !engineClient) return;
@@ -52,7 +48,7 @@ async function engineTick() {
     } else if (r.status === 'running') {
       const elapsed = now - new Date(r.started_at).getTime();
       if (elapsed >= timeToCrash(r.crash_multiplier)) {
-        const seed = seeds.get(String(r.id)) || '';
+        const seed = r.server_seed || '';
         await pool.query(
           `UPDATE crash_rounds SET status='crashed', server_seed_revealed=$2, ended_at=NOW()
            WHERE id=$1 AND status='running'`,
@@ -62,7 +58,6 @@ async function engineTick() {
     } else if (r.status === 'crashed') {
       if (now - new Date(r.ended_at).getTime() >= RESULT_PAUSE_MS) {
         await pool.query(`UPDATE crash_rounds SET status='settled' WHERE id=$1 AND status='crashed'`, [r.id]);
-        seeds.delete(String(r.id));
         await createScheduledRound();
       }
     }
@@ -80,7 +75,7 @@ async function startCrashEngine() {
     return;
   }
   // If a deployment restarts mid-round, fail closed: finish the current round as crashed.
-  await pool.query(`UPDATE crash_rounds SET status='crashed', server_seed_revealed=COALESCE(server_seed_revealed,''), ended_at=NOW()
+  await pool.query(`UPDATE crash_rounds SET status='crashed', server_seed_revealed=server_seed, ended_at=NOW()
     WHERE status='running' AND started_at < NOW() - INTERVAL '1 second'`);
   await engineTick();
   engineTimer = setInterval(engineTick, 250);

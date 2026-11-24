@@ -65,3 +65,16 @@ CREATE TABLE IF NOT EXISTS withdrawal_requests (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+
+-- Persistent gift inventory. New users have no rows and therefore an empty inventory.
+CREATE TABLE IF NOT EXISTS inventory_items (
+  id BIGSERIAL PRIMARY KEY,
+  telegram_id BIGINT NOT NULL REFERENCES users(telegram_id),
+  gift_key TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'owned' CHECK (status IN ('owned','upgraded','burned','withdrawal_pending','withdrawn')),
+  source_ref TEXT UNIQUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS inventory_items_user_status_idx
+  ON inventory_items (telegram_id, status);

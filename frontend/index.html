@@ -1279,13 +1279,14 @@ function askWithdraw(uid) {
   document.getElementById('modalTitle').textContent = isNFT ? 'Заявка на вывод NFT' : 'Заявка на вывод подарка';
   document.getElementById('modalText').textContent = isNFT
     ? `Заявка будет добавлена в очередь владельца. После ручной проверки и отправки предмет будет отмечен как выведенный. Срок обработки — до ${NFT_WAIT_DAYS} дней.`
-    : `Заявка попадёт владельцу на обработку. Лимит — 3 заявки за 24 часа. Подарок не исчезнет до обработки заявки.`;
+    : `Бот отправит подарок напрямую вам в Telegram со своей стороны и подпишет, где он выигран. Для отправки нужен доступный подарок из каталога Telegram и достаточный запас Stars у бота. Если Telegram не примет отправку, предмет останется у вас.`;
   document.getElementById('modal').classList.add('show');
   modalAction = async () => {
     closeModal(); showLoader('Создаём заявку...');
     try {
-      await apiRequest('/api/inventory/withdraw', { method:'POST', body:JSON.stringify({ inventoryId:uid }) });
-      await loadAccount(); haptic('success'); toast('Заявка отправлена владельцу на обработку');
+      const result = await apiRequest('/api/inventory/withdraw', { method:'POST', body:JSON.stringify({ inventoryId:uid }) });
+      await loadAccount(); haptic('success');
+      toast(result.delivered ? 'Подарок отправлен ботом в Telegram!' : 'Заявка на вывод NFT отправлена владельцу');
     } catch(error) { toast(error.message === 'referrals_required' ? 'Для вывода NFT нужно 5 приглашённых пользователей.' : error.message, true); }
     finally { hideLoader(); }
   };

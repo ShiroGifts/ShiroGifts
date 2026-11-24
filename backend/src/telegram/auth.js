@@ -16,6 +16,16 @@ async function requireTelegramUser(req, res, next) {
          last_seen_at = NOW()`,
       [String(u.id), u.username || null, u.first_name || '']
     );
+    const startParam = validated.startParam || '';
+    const referralMatch = /^ref_(\d{5,20})$/.exec(startParam);
+    if (referralMatch && referralMatch[1] !== String(u.id)) {
+      const referrerId = referralMatch[1];
+      await pool.query('INSERT INTO users (telegram_id) VALUES ($1) ON CONFLICT (telegram_id) DO NOTHING', [referrerId]);
+      await pool.query(
+        'INSERT INTO referrals (referred_telegram_id, referrer_telegram_id) VALUES ($1, $2) ON CONFLICT (referred_telegram_id) DO NOTHING',
+        [String(u.id), referrerId]
+      );
+    }
     req.telegramUser = u;
     next();
   } catch (error) {

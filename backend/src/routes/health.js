@@ -1,5 +1,6 @@
 const express = require('express');
-const { checkDatabase } = require('../db/pool');
+const { checkDatabase, pool } = require('../db/pool');
+const { requireTelegramUser } = require('../telegram/auth');
 const router = express.Router();
 
 router.get('/health', async (_req, res) => {
@@ -15,9 +16,9 @@ router.get('/health', async (_req, res) => {
   }
 });
 
-router.get('/online', async (_req, res) => {
+router.get('/online', requireTelegramUser, async (_req, res) => {
   try {
-    const result = await require('../db/pool').pool.query(
+    const result = await pool.query(
       "SELECT COUNT(*)::int AS count FROM users WHERE last_seen_at >= NOW() - INTERVAL '2 minutes'"
     );
     res.set('Cache-Control', 'no-store');

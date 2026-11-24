@@ -908,6 +908,7 @@ function switchPage(name) {
   if (name === 'crash') { initCrashCanvas(); startCrashFeed(); }
   if (name === 'inventory') renderInventory();
   if (name === 'upgrade') renderUpgrade();
+  if (name === 'promo') loadPromoAdminStatus();
 }
 
 function renderCases() {
@@ -917,30 +918,31 @@ function renderCases() {
     html += `
       <div class="case-card tier-free" onclick="tryFreeCase()" style="grid-column:1/-1;">
         <div class="badge">БЕСПЛАТНО</div>
-        <div class="gift-img">${chest('#2fd46b','#6dff9f')}</div>
+        <div class="gift-img">${casePhoto}</div>
         <div class="name">Кейс подписчика</div>
         <div class="price">${freeCaseAvailable ? 'Забрать сейчас' : 'Кулдаун 3 дня'}</div>
-        <div class="rarity-bar" style="opacity:.4;"></div>
       </div>`;
   } else {
     html += `
       <div class="case-card tier-lock" onclick="tryFreeCase()" style="grid-column:1/-1;">
         <div class="badge sub">ПОДПИСКА</div>
-        <div class="gift-img">${IC.lock}</div>
+        <div class="gift-img">${casePhoto}</div>
         <div class="name">Кейс подписчика</div>
         <div class="price">Подпишитесь на канал</div>
-        <div class="rarity-bar" style="opacity:.2;"></div>
       </div>`;
   }
   html += CASES.map(c => {
-    const nftHint = c.id === 'legend' ? `<div class="nft-hint"><span style="display:inline-block;width:14px;font-size:14px;vertical-align:-3px">${IC.nft}</span> Есть шанс получить NFT</div>` : '';
+    const hasNft = c.drops.includes('random_nft');
+    const jackpot = ['ruby','diamond','cosmic'].includes(c.id);
+    const tag = jackpot ? '<div class="jackpot-tag">ДЖЕКПОТ</div>' : '';
+    const nftHint = hasNft && !jackpot ? '<div class="nft-hint">Можно получить NFT</div>' : '';
     return `
       <div class="case-card tier-${c.id}" onclick="openCase('${c.id}')">
+        ${tag}
         <div class="gift-img">${c.icon}</div>
         <div class="name">${c.name}</div>
         <div class="price">★ ${fmt(c.price)}</div>
         ${nftHint}
-        <div class="rarity-bar"></div>
       </div>`;
   }).join('');
   grid.innerHTML = html;
@@ -956,6 +958,7 @@ function pickWeighted(drops) {
 let selectedCaseId = null;
 let pendingCaseRequest = null;
 function dropMeta(key) {
+  if (key === 'nothing') return { img: '<span class="empty-reward">∅</span>', name: 'Ничего', type: 'nothing' };
   if (key.startsWith('stars_')) {
     const amount = Number(key.slice(6));
     return { img: IC.star, name: `+${fmt(amount)} Stars`, amount, type: 'stars' };
@@ -963,6 +966,7 @@ function dropMeta(key) {
   const gift = GIFTS[key];
   return gift ? { img: gift.img, name: gift.name, price: gift.price, type: 'gift' } : { img: '🎁', name: 'Подарок', type: 'gift' };
 }
+
 function shuffled(items) {
   const out = items.slice();
   for (let i = out.length - 1; i > 0; i--) {
@@ -985,7 +989,8 @@ function openCase(caseId) {
   const drops = shuffled(c.drops);
   document.getElementById('previewDrops').innerHTML = drops.map(key => {
     const item = dropMeta(key);
-    return `<div class="preview-drop"><div class="drop-img">${item.img}</div><div class="drop-name">${item.name}</div></div>`;
+    const jackpot = ['ruby','diamond','cosmic'].includes(c.id) && key === 'random_nft';
+    return `<div class="preview-drop ${jackpot ? 'jackpot' : ''}">${jackpot ? '<div class="jackpot-title">ДЖЕКПОТ</div>' : ''}<div class="drop-img">${item.img}</div><div class="drop-name">${item.name}</div></div>`;
   }).join('');
   document.getElementById('casePreview').classList.add('show');
   haptic('light'); playUiSound('preview');
@@ -1009,7 +1014,7 @@ async function confirmOpenCase() {
     });
     balance = Number(data.balance) || 0;
     updateBalanceUI();
-    const winnerKey = data.reward.type === 'stars' ? 'stars_' + data.reward.amount : data.reward.key;
+    const winnerKey = data.reward.type === 'stars' ? 'stars_' + data.reward.amount : data.reward.type === 'nothing' ? 'nothing' : data.reward.key;
     pendingCaseRequest = null;
     document.getElementById('casePreview').classList.remove('show');
     showCaseOverlay(c, winnerKey);
@@ -1056,7 +1061,7 @@ function showCaseOverlay(c, winnerKey) {
       document.getElementById('caseResultImg').innerHTML = item.img;
       document.getElementById('caseResultName').textContent = item.name;
       document.getElementById('caseResultPrice').textContent = item.type === 'stars'
-        ? 'Зачислено на баланс' : 'Подарок добавлен в инвентарь';
+        ? 'Зачислено на баланс' : item.type === 'nothing' ? 'Награда не выпала' : 'Подарок добавлен в инвентарь';
       result.classList.add('show');
       loadAccount();
     }
@@ -1590,6 +1595,65 @@ window.ShiroLive = {
   setServerTime(ms) { serverOffset = ms - Date.now(); }
 };
 
+
+async function loadPromoAdminStatus() {
+  try {
+    const data = await apiRequest('/api/promos/admin/status');
+    document.getElementById('promoAdminPanel').style.display = data.isAdmin ? 'block' : 'none';
+  } catch (_) {}
+}
+async function redeemPromo() {
+  const input = document.getElementById('promoCodeInput');
+  const code = input.value.trim().toUpperCase();
+  if (!code) return toast('Введите промокод.', true);
+  try {
+    const data = await apiRequest('/api/promos/redeem', { method: 'POST', body: JSON.stringify({ code }) });
+    balance = Number(data.balance) || 0;
+    updateBalanceUI();
+    document.getElementById('promoStatus').textContent = `Готово! Начислено ${fmt(data.rewardStars)} ★`;
+    input.value = '';
+    haptic('success');
+    toast('Промокод активирован!');
+  } catch (error) {
+    const messages = {
+      promo_not_found: 'Такого промокода нет.',
+      promo_expired: 'Срок действия промокода истёк.',
+      promo_limit_reached: 'Лимит активаций исчерпан.',
+      promo_already_used: 'Вы уже использовали этот промокод.',
+      invalid_promo_code: 'Проверьте формат промокода.'
+    };
+    document.getElementById('promoStatus').textContent = messages[error.message] || 'Не удалось активировать промокод.';
+    toast(messages[error.message] || error.message, true);
+  }
+}
+async function createPromo() {
+  const code = document.getElementById('promoAdminCode').value.trim().toUpperCase();
+  const rewardStars = Number(document.getElementById('promoAdminStars').value);
+  const usageLimit = document.getElementById('promoAdminLimit').value.trim();
+  const expiresRaw = document.getElementById('promoAdminExpiry').value;
+  const expiresAt = expiresRaw ? new Date(expiresRaw).toISOString() : null;
+  try {
+    const data = await apiRequest('/api/promos/admin/create', {
+      method: 'POST', body: JSON.stringify({ code, rewardStars, usageLimit: usageLimit || null, expiresAt })
+    });
+    document.getElementById('promoAdminResult').textContent =
+      `Создан: ${data.promo.code} — ${fmt(Number(data.promo.reward_stars))} ★`;
+    haptic('success');
+    toast('Промокод создан!');
+  } catch (error) {
+    const messages = {
+      admin_only: 'Нет прав администратора. Нужна настройка доступа.',
+      promo_code_exists: 'Такой промокод уже существует.',
+      invalid_promo_code: 'Код: 3–32 символа, латиница, цифры, _ или -.',
+      invalid_reward_amount: 'Награда должна быть от 1 до 100000 Stars.',
+      invalid_usage_limit: 'Проверьте лимит активаций.',
+      invalid_expiry: 'Укажите будущую дату.'
+    };
+    document.getElementById('promoAdminResult').textContent = messages[error.message] || 'Не удалось создать промокод.';
+    toast(messages[error.message] || error.message, true);
+  }
+}
+
 /* ===== РЕФЕРАЛЫ / ВЫВОД NFT ===== */
 const BOT_USERNAME = 'ShiroGiftsBot'; // TODO: username вашего бота
 const REF_NEED = 5;
@@ -1615,7 +1679,6 @@ function copyRefLink() {
 
 /* ===== INIT ===== */
 document.querySelectorAll('[data-ic]').forEach(e => e.innerHTML = IC[e.dataset.ic]);
-syncSoundButton();
 renderHistory(); renderCrashUI(); requestAnimationFrame(crashFrame);
 checkFreeCaseStatus();
 renderCases();
@@ -1623,6 +1686,7 @@ renderInventory();
 renderUpgrade();
 updateBalanceUI();
 loadAccount();
+loadPromoAdminStatus();
 
 
 

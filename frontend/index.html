@@ -467,6 +467,7 @@ body{font-family:'Manrope',system-ui,sans-serif;font-weight:500;background:radia
 .random-nft-art{width:64px;height:64px;object-fit:contain;background:transparent;mix-blend-mode:multiply;filter:drop-shadow(0 5px 10px #0008)}
 .jackpot-item-label{font-size:10px;font-weight:900;letter-spacing:1px;color:#e6b75c;margin:4px 0 8px;text-shadow:0 0 10px #b8794355}
 .random-nft-art{width:72px;height:72px;object-fit:contain;background:transparent;mix-blend-mode:multiply;filter:drop-shadow(0 4px 10px rgba(0,0,0,.45))}
+.picker-item.upgrade-unavailable{opacity:.42;cursor:not-allowed;border-style:dashed}.picker-item.upgrade-unavailable .label{color:var(--danger);font-size:9px;line-height:1.2}
 .nft-stack{position:relative;width:82px;height:76px;margin:auto}
 .nft-stack-item{position:absolute;width:48px;height:48px;object-fit:contain;filter:drop-shadow(0 4px 6px #0009);border:1px solid #b58a5555;border-radius:8px;background:#1a130d}
 .nft-stack-0{left:17px;top:12px;z-index:5;width:54px;height:54px}
@@ -1327,7 +1328,7 @@ function selectFrom(uid) {
   upgradeFromUid = uid;
   haptic();
   const fromItem = inventory.find(i => i.uid === uid);
-  if (!upgradeToKey || GIFTS[upgradeToKey].price <= GIFTS[fromItem.gift].price) upgradeToKey = null;
+  if (!upgradeToKey || GIFTS[upgradeToKey].price <= GIFTS[fromItem.gift].price || calcChance(fromItem.gift, upgradeToKey) < 0.01) upgradeToKey = null;
   renderUpgrade();
 }
 
@@ -1441,7 +1442,8 @@ async function doUpgrade() {
     const messages = {
       inventory_item_not_found:'Предмет уже использован или не принадлежит вам.',
       invalid_upgrade_pair:'Выберите предмет с меньшей стоимостью.',
-      invalid_upgrade_target:'Эта цель недоступна для апгрейда.'
+      invalid_upgrade_target:'Эта цель недоступна для апгрейда.',
+      upgrade_chance_below_minimum:'Нельзя апгрейдить на этот предмет: шанс ниже 1%.'
     };
     toast(messages[error.message] || 'Не удалось выполнить апгрейд: ' + error.message, true);
     if (error.message !== 'upgrade_failed') pendingUpgradeRequestId = null;

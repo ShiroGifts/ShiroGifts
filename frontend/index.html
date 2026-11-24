@@ -488,6 +488,21 @@ svg.ic{stroke:#1d2155;stroke-width:2.6px;filter:drop-shadow(0 2px 3px rgba(22,25
   .topup-button:active{transform:scale(.9)}
   .topup-button:focus-visible{outline:2px solid #fff;outline-offset:3px}
 
+
+  .topup-modal{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;padding:22px}
+  .topup-modal.show{display:flex}
+  .topup-backdrop{position:absolute;inset:0;background:rgba(4,6,14,.76);backdrop-filter:blur(8px)}
+  .topup-dialog{position:relative;width:min(100%,360px);padding:24px;border:1px solid rgba(255,213,119,.22);border-radius:22px;background:linear-gradient(145deg,#242234,#171923 72%);box-shadow:0 24px 80px rgba(0,0,0,.55);animation:sectionIn .2s ease both}
+  .topup-dialog h3{margin:0 0 8px;font-size:20px;color:#fff}
+  .topup-dialog p{margin:0 0 18px;color:var(--muted);font-size:13px;line-height:1.5}
+  .topup-input{width:100%;height:52px;padding:0 15px;border:1px solid rgba(255,213,119,.3);border-radius:13px;background:rgba(255,255,255,.06);color:#fff;font-size:20px;font-weight:800;outline:none}
+  .topup-input:focus{border-color:#ffd477;box-shadow:0 0 0 3px rgba(255,212,119,.12)}
+  .topup-actions{display:flex;gap:10px;margin-top:18px}
+  .topup-actions button{flex:1;min-height:44px;border:0;border-radius:12px;font-weight:800;cursor:pointer}
+  .topup-cancel{background:rgba(255,255,255,.08);color:#ddd}
+  .topup-confirm{background:linear-gradient(135deg,#ffe58b,#eda52a);color:#32233f}
+  .topup-confirm:disabled{opacity:.6;cursor:wait}
+
 </style>
 </head>
 <body>
@@ -1434,23 +1449,50 @@ async function loadAccount() {
   }
 }
 
-async function topUp() {
+let topupBusy = false;
+
+function topUp() {
   if (!tg?.initData) {
     toast('Пополнение доступно при запуске Mini App через Telegram.', true);
+    return;
+  }
+  const modal = document.getElementById('topupModal');
+  const input = document.getElementById('topupAmount');
+  input.value = '5';
+  modal.classList.add('show');
+  modal.setAttribute('aria-hidden', 'false');
+  setTimeout(() => input.focus(), 30);
+}
+
+function closeTopUp() {
+  if (topupBusy) return;
+  const modal = document.getElementById('topupModal');
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden', 'true');
+}
+
+async function confirmTopUp() {
+  if (topupBusy) return;
+  if (!tg?.initData) {
+    toast('Откройте Mini App через Telegram.', true);
     return;
   }
   if (!accountReady && !(await loadAccount())) {
     toast('Сначала нужно загрузить аккаунт. Попробуйте ещё раз.', true);
     return;
   }
-  const startingBalance = balance;
-  const raw = window.prompt('Сколько Telegram Stars добавить? Минимум 5.');
-  if (raw === null) return;
-  const amount = Number(raw.trim());
+
+  const amount = Number(document.getElementById('topupAmount').value);
   if (!Number.isSafeInteger(amount) || amount < 5 || amount > 10000) {
     toast('Введите целое число от 5 до 10 000 Stars.', true);
     return;
   }
+
+  const startingBalance = balance;
+  const confirmButton = document.getElementById('topupConfirm');
+  topupBusy = true;
+  confirmButton.disabled = true;
+  confirmButton.textContent = 'Создаём счёт…';
   try {
     const response = await fetch('/api/payments/invoice', {
       method: 'POST',
@@ -1459,6 +1501,10 @@ async function topUp() {
     });
     const data = await response.json();
     if (!response.ok || !data.ok) throw new Error(data.error || 'invoice_unavailable');
+
+    const modal = document.getElementById('topupModal');
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
     tg.openInvoice(data.invoice_url, async status => {
       if (status === 'paid') {
         let credited = false;
@@ -1480,6 +1526,10 @@ async function topUp() {
     });
   } catch (error) {
     toast('Не удалось создать счёт. Проверьте настройки Telegram-бота.', true);
+  } finally {
+    topupBusy = false;
+    confirmButton.disabled = false;
+    confirmButton.textContent = 'Продолжить';
   }
 }
 
@@ -1491,5 +1541,17 @@ window.addEventListener('resize', () => {
   if (document.getElementById('page-crash').classList.contains('active')) initCrashCanvas();
 });
 </script>
+<div class="topup-modal" id="topupModal" aria-hidden="true">
+  <div class="topup-backdrop" onclick="closeTopUp()"></div>
+  <section class="topup-dialog" role="dialog" aria-modal="true" aria-labelledby="topupTitle">
+    <h3 id="topupTitle">Пополнить баланс</h3>
+    <p>Укажите сумму в Telegram Stars. Минимальное пополнение — 5 Stars.</p>
+    <input class="topup-input" id="topupAmount" type="number" inputmode="numeric" min="5" max="10000" step="1" value="5" aria-label="Количество Telegram Stars" onkeydown="if(event.key==='Enter')confirmTopUp()">
+    <div class="topup-actions">
+      <button class="topup-cancel" type="button" onclick="closeTopUp()">Отмена</button>
+      <button class="topup-confirm" id="topupConfirm" type="button" onclick="confirmTopUp()">Продолжить</button>
+    </div>
+  </section>
+</div>
 </body>
 </html>

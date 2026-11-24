@@ -19,6 +19,7 @@ async function migrate() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
     CREATE INDEX IF NOT EXISTS inventory_user_status_idx ON inventory(telegram_id, status);
+
     CREATE TABLE IF NOT EXISTS pending_star_invoices (
       payload TEXT PRIMARY KEY,
       telegram_id BIGINT NOT NULL REFERENCES users(telegram_id),
@@ -28,6 +29,29 @@ async function migrate() {
       paid_at TIMESTAMPTZ,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+
+    ALTER TABLE wallet_ledger DROP CONSTRAINT IF EXISTS wallet_ledger_entry_type_check;
+    ALTER TABLE wallet_ledger ADD CONSTRAINT wallet_ledger_entry_type_check
+      CHECK (entry_type IN ('topup','case_spend','case_reward','refund','admin_adjustment','gift_purchase'));
+
+    CREATE TABLE IF NOT EXISTS case_openings (
+      id BIGSERIAL PRIMARY KEY,
+      request_id UUID NOT NULL UNIQUE,
+      telegram_id BIGINT NOT NULL REFERENCES users(telegram_id),
+      case_id TEXT NOT NULL,
+      case_price BIGINT NOT NULL CHECK (case_price > 0),
+      reward_type TEXT NOT NULL CHECK (reward_type IN ('gift','stars')),
+      reward_key TEXT,
+      reward_stars BIGINT CHECK (reward_stars IS NULL OR reward_stars > 0),
+      inventory_id BIGINT REFERENCES inventory(id),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      CHECK (
+        (reward_type = 'gift' AND reward_key IS NOT NULL AND reward_stars IS NULL AND inventory_id IS NOT NULL)
+        OR
+        (reward_type = 'stars' AND reward_key IS NULL AND reward_stars IS NOT NULL AND inventory_id IS NULL)
+      )
+    );
+    CREATE INDEX IF NOT EXISTS case_openings_user_idx ON case_openings(telegram_id, created_at DESC);
   `);
 }
 

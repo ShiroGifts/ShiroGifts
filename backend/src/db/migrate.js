@@ -74,7 +74,7 @@ async function migrate() {
 
     ALTER TABLE inventory DROP CONSTRAINT IF EXISTS inventory_status_check;
     ALTER TABLE inventory ADD CONSTRAINT inventory_status_check
-      CHECK (status IN ('owned','sold','withdrawn','upgraded','burned'));
+      CHECK (status IN ('owned','sold','withdrawn','upgraded','burned','withdraw_pending'));
 
     CREATE TABLE IF NOT EXISTS upgrade_events (
       request_id UUID PRIMARY KEY,

@@ -1000,7 +1000,12 @@ function setOnline(n) {
 
 async function refreshOnlineCount() {
   try {
-    const response = await fetch('/api/online', { cache: 'no-store' });
+    const initData = tg?.initData || '';
+    if (!initData) return;
+    const response = await fetch('/api/online', {
+      cache: 'no-store',
+      headers: { 'x-telegram-init-data': initData }
+    });
     const data = await response.json();
     if (response.ok && data && data.ok) setOnline(Number(data.online));
   } catch (_) {}

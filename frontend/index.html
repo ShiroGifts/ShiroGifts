@@ -430,6 +430,59 @@ svg.ic{stroke:#1d2155;stroke-width:2.6px;filter:drop-shadow(0 2px 3px rgba(22,25
 .tier-bronze{background:linear-gradient(160deg,#f59a45,#d4622a)}.tier-silver{background:linear-gradient(160deg,#6db6f5,#3f7ae8)}
 .tier-gold{background:linear-gradient(160deg,#f6cf56,#ec9b22)}.tier-legend{background:linear-gradient(160deg,#b865f2,#6f38d8)}
 .tier-free{background:linear-gradient(160deg,#47d886,#1fa862)}
+
+  /* ShiroGifts visual refresh: richer case palettes, motion and sound control */
+  .sound-toggle {
+    width:36px;height:36px;flex:0 0 36px;border:2px solid var(--ink);
+    border-radius:12px;background:linear-gradient(145deg,#fff2b8,#ffc857);
+    color:#38224f;font-size:17px;display:grid;place-items:center;
+    box-shadow:0 3px 0 rgba(22,25,74,.45);cursor:pointer;
+    transition:transform .16s,filter .16s;
+  }
+  .sound-toggle:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(22,25,74,.45)}
+  .sound-toggle.muted{background:var(--surface-2);filter:grayscale(.8);color:var(--text-dim)}
+  .case-card {
+    isolation:isolate;
+    background:linear-gradient(145deg,rgba(255,255,255,.16),rgba(255,255,255,.025)),var(--surface);
+    box-shadow:0 7px 18px rgba(14,12,45,.22),inset 0 1px 0 rgba(255,255,255,.25);
+    transform:translateZ(0);
+  }
+  .case-card::before{
+    content:"";position:absolute;inset:-70% -35%;z-index:-1;pointer-events:none;
+    background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.18) 49%,transparent 60%);
+    transform:translateX(-75%) rotate(8deg);transition:transform .7s ease;
+  }
+  .case-card:active::before,.case-card:focus-visible::before{transform:translateX(75%) rotate(8deg)}
+  .case-card .gift-img{animation:caseFloat 3.2s ease-in-out infinite;will-change:transform}
+  .case-card:nth-child(2) .gift-img{animation-delay:-.7s}
+  .case-card:nth-child(3) .gift-img{animation-delay:-1.4s}
+  .case-card:nth-child(4) .gift-img{animation-delay:-2.1s}
+  @keyframes caseFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-5px) rotate(2deg)}}
+  .tier-bronze{background:radial-gradient(circle at 15% 0%,rgba(255,221,153,.65),transparent 44%),linear-gradient(145deg,#f59a45,#a94322 88%)!important}
+  .tier-silver{background:radial-gradient(circle at 85% 5%,rgba(255,255,255,.72),transparent 42%),linear-gradient(145deg,#b6d9ed,#537cae 88%)!important}
+  .tier-gold{background:radial-gradient(circle at 15% 0%,rgba(255,255,220,.78),transparent 43%),linear-gradient(145deg,#ffe17a,#d77b17 90%)!important}
+  .tier-legend{background:radial-gradient(circle at 80% 0%,rgba(255,221,255,.68),transparent 40%),linear-gradient(145deg,#e07cff,#6432bd 90%)!important}
+  .tier-free{background:radial-gradient(circle at 15% 0%,rgba(220,255,220,.7),transparent 42%),linear-gradient(145deg,#6be6a0,#168a68 90%)!important}
+  .tier-lock{background:radial-gradient(circle at 85% 0%,rgba(225,225,255,.28),transparent 42%),linear-gradient(145deg,#777fa8,#454c7d 90%)!important}
+  .case-card .name,.case-card .price,.case-card .nft-hint{color:#fff;text-shadow:0 2px 5px rgba(25,16,48,.35)}
+  .case-card .price{background:rgba(30,20,50,.24);border:1px solid rgba(255,255,255,.2)}
+  .case-card .rarity-bar{height:4px;background:linear-gradient(90deg,rgba(255,255,255,.35),#fff,rgba(255,255,255,.35));opacity:.8}
+  .case-open-overlay{
+    background:radial-gradient(ellipse at 50% 42%,rgba(116,58,176,.32),transparent 58%),rgba(9,8,24,.94);
+  }
+  .roulette-strip-wrap{border-color:rgba(255,255,255,.22);box-shadow:0 16px 50px rgba(0,0,0,.42),0 0 32px rgba(193,111,255,.16)}
+  .roulette-pointer{background:#ffe07a;box-shadow:0 0 18px #ffe07a}
+  .roulette-item.winner{color:#ffe07a;text-shadow:0 0 14px rgba(255,224,122,.6)}
+  .case-open-result.show{animation:resultPop .42s cubic-bezier(.2,.9,.25,1.25)}
+  @keyframes resultPop{from{opacity:0;transform:translateY(18px) scale(.82)}to{opacity:1;transform:translateY(0) scale(1)}}
+  .case-open-result .big-img{filter:drop-shadow(0 8px 24px rgba(255,220,120,.28));animation:rewardFloat 2s ease-in-out infinite}
+  @keyframes rewardFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-7px) scale(1.04)}}
+  .page.active .section-title{animation:sectionIn .35s ease both}
+  @keyframes sectionIn{from{opacity:0;transform:translateX(-9px)}to{opacity:1;transform:none}}
+  @media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+  }
+
 </style>
 </head>
 <body>
@@ -444,6 +497,7 @@ svg.ic{stroke:#1d2155;stroke-width:2.6px;filter:drop-shadow(0 2px 3px rgba(22,25
       <span class="online-dot"></span>
       <span id="onlineCount">—</span>
     </div>
+    <button class="sound-toggle" id="soundToggle" type="button" onclick="toggleSound()" aria-label="Выключить звук">🔊</button>
     <div class="balance"><span class="star">★</span> <span id="balanceVal">1 250</span></div>
   </div>
 </div>
@@ -566,7 +620,71 @@ if (tg) {
   if (tg.setHeaderColor) tg.setHeaderColor('#12141a');
 }
 
+let audioContext = null;
+let soundEnabled = (() => { try { return localStorage.getItem('shiro-sound') !== 'off'; } catch(e) { return true; } })();
+
+function updateSoundButton() {
+  const button = document.getElementById('soundToggle');
+  if (!button) return;
+  button.textContent = soundEnabled ? '🔊' : '🔇';
+  button.classList.toggle('muted', !soundEnabled);
+  button.setAttribute('aria-label', soundEnabled ? 'Выключить звук' : 'Включить звук');
+}
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  try { localStorage.setItem('shiro-sound', soundEnabled ? 'on' : 'off'); } catch(e) {}
+  updateSoundButton();
+  if (soundEnabled) playUiSound('confirm');
+}
+function playUiSound(kind = 'tap') {
+  if (!soundEnabled) return;
+  try {
+    const AudioCtor = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtor) return;
+    if (!audioContext) audioContext = new AudioCtor();
+    if (audioContext.state === 'suspended') audioContext.resume();
+    const ctx = audioContext;
+    const now = ctx.currentTime;
+    const presets = {
+      tap: [620, 0.055, 'sine', 0.045],
+      tick: [880, 0.035, 'square', 0.025],
+      confirm: [740, 0.11, 'sine', 0.055],
+      success: [880, 0.18, 'triangle', 0.075],
+      error: [180, 0.16, 'triangle', 0.06],
+      whoosh: [360, 0.48, 'sawtooth', 0.035]
+    };
+    const [frequency, duration, wave, volume] = presets[kind] || presets.tap;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    osc.type = wave;
+    osc.frequency.setValueAtTime(kind === 'whoosh' ? 520 : frequency, now);
+    if (kind === 'whoosh') osc.frequency.exponentialRampToValueAtTime(95, now + duration);
+    if (kind === 'success') osc.frequency.setValueAtTime(988, now + 0.08);
+    if (kind === 'error') osc.frequency.exponentialRampToValueAtTime(105, now + duration);
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(kind === 'whoosh' ? 1800 : 4200, now);
+    filter.frequency.exponentialRampToValueAtTime(kind === 'whoosh' ? 240 : 900, now + duration);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(volume, now + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    osc.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    osc.start(now); osc.stop(now + duration + 0.02);
+    if (kind === 'success') {
+      const second = ctx.createOscillator();
+      const secondGain = ctx.createGain();
+      second.type = 'sine';
+      second.frequency.setValueAtTime(1318, now + 0.08);
+      secondGain.gain.setValueAtTime(0.0001, now);
+      secondGain.gain.exponentialRampToValueAtTime(0.035, now + 0.09);
+      secondGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.27);
+      second.connect(secondGain); secondGain.connect(ctx.destination);
+      second.start(now + 0.08); second.stop(now + 0.3);
+    }
+  } catch(e) {}
+}
 function haptic(type) {
+  playUiSound(type === 'success' ? 'success' : type === 'error' ? 'error' : 'tap');
   if (!tg?.HapticFeedback) return;
   try {
     if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
@@ -574,6 +692,7 @@ function haptic(type) {
     else tg.HapticFeedback.impactOccurred('light');
   } catch(e) {}
 }
+updateSoundButton();
 
 
 const S=b=>`<svg class="ic" viewBox="0 0 64 64" fill="none" stroke="#0a0c12" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">${b}</svg>`;
@@ -808,6 +927,7 @@ async function openCase(caseId) {
 }
 
 function showCaseOverlay(c, winnerGift, isFree = false) {
+  playUiSound('whoosh');
   const overlay = document.getElementById('caseOverlay');
   const strip = document.getElementById('rouletteStrip');
   const result = document.getElementById('caseResult');
@@ -841,12 +961,18 @@ function showCaseOverlay(c, winnerGift, isFree = false) {
 
   const duration = 4500;
   const start = performance.now();
+  let lastTickIndex = -1;
   function easeOutQuad(t) { return 1 - (1 - t) * (1 - t); }
 
   function tick(now) {
     const t = Math.min((now - start) / duration, 1);
     const eased = easeOutQuad(t);
     const current = finalOffset * eased;
+    const itemIndex = Math.floor(current / itemWidth);
+    if (itemIndex !== lastTickIndex && itemIndex % 4 === 0) {
+      playUiSound('tick');
+      lastTickIndex = itemIndex;
+    }
     strip.style.transform = `translateX(-${current}px)`;
     if (t < 1) {
       requestAnimationFrame(tick);

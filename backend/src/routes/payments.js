@@ -1,6 +1,7 @@
 const express = require('express');
 const crypto = require('node:crypto');
 const { telegramUserFromRequest } = require('../telegram/auth');
+const { pool } = require('../db/pool');
 const router = express.Router();
 
 async function telegramApi(method, body) {
@@ -25,13 +26,23 @@ router.post('/invoice', async (req, res) => {
   }
   try {
     const payload = `topup:${user.id}:${crypto.randomUUID()}`;
-    const invoiceUrl = await telegramApi('createInvoiceLink', {
+    await pool.query(
+      'INSERT INTO pending_stars_invoices (payload, telegram_id, amount_stars) VALUES ($1, $2, $3)',
+      [payload, String(user.id), amount]
+    );
+    let invoiceUrl;
+    try {
+      invoiceUrl = await telegramApi('createInvoiceLink', {
       title: 'Пополнение ShiroGifts',
       description: `Пополнение баланса на ${amount} Telegram Stars`,
       payload,
       currency: 'XTR',
       prices: [{ label: 'Пополнение баланса', amount }]
-    });
+      });
+    } catch (error) {
+      await pool.query('DELETE FROM pending_stars_invoices WHERE payload = $1', [payload]).catch(() => {});
+      throw error;
+    }
     return res.json({ ok: true, invoice_url: invoiceUrl });
   } catch (error) {
     console.error('[STARS INVOICE ERROR]', error.message);

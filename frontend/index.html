@@ -464,6 +464,13 @@ body{font-family:'Manrope',system-ui,sans-serif;font-weight:500;background:radia
 .case-card .badge{top:9px;right:9px;background:#c6a56e;color:#111820;border-radius:7px;font-size:9px;letter-spacing:.7px}.case-card .badge.sub{background:#465b74;color:#e7edf4}
 .case-card .jackpot-tag{position:absolute;top:9px;left:9px;background:#9e773c;color:#fff1ce;border:1px solid #e3c48a;border-radius:7px;padding:4px 7px;font-size:9px;font-weight:800;letter-spacing:1px}
 .case-card .nft-hint{font-size:10px;color:#d7b36b;font-weight:700;margin-top:7px;letter-spacing:.2px}.case-card .rarity-bar{display:none}
+.nft-stack{position:relative;width:82px;height:76px;margin:auto}
+.nft-stack-item{position:absolute;width:48px;height:48px;object-fit:contain;filter:drop-shadow(0 4px 6px #0009);border:1px solid #b58a5555;border-radius:8px;background:#1a130d}
+.nft-stack-0{left:17px;top:12px;z-index:5;width:54px;height:54px}
+.nft-stack-1{left:0;top:4px;transform:rotate(-18deg);z-index:2}
+.nft-stack-2{right:0;top:3px;transform:rotate(17deg);z-index:3}
+.nft-stack-3{left:4px;bottom:0;transform:rotate(-12deg);z-index:1}
+.nft-stack-4{right:3px;bottom:0;transform:rotate(12deg);z-index:4}
 .gift-img img,.drop-img img,.big-img img,.case-preview-art img{display:block;max-width:100%;max-height:100%;object-fit:contain;margin:auto;border-radius:10px}
 .inv-item .gift-img{height:92px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}.inv-item .gift-img img{height:88px;width:100%;object-fit:contain}
 .picker-item .gift-img{height:48px;display:flex;align-items:center;justify-content:center}.picker-item .gift-img img{width:48px;height:48px;object-fit:contain}
@@ -786,6 +793,10 @@ brand:S('<path d="M17 14h21a11 11 0 010 22H26a10 10 0 000 20h21" fill="none" str
 
 const tgGift = (id, alt) => imageAsset('https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/gift_' + id + '.webp', alt);
 const tgNft = (name, alt) => imageAsset('https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/' + name + '.webp', alt);
+const nftStack = () => '<div class="nft-stack">' +
+  ['plush_pepe','diamond_ring','durovs_glasses','vice_cream','snoop_dogg'].map((name,i) =>
+    '<img class="nft-stack-item nft-stack-'+i+'" src="https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/'+name+'.webp" alt="Telegram NFT" loading="lazy" onerror="this.style.display=\'none\'">').join('') +
+  '</div>';
 const GIFTS = {
   bear: { name: 'Мишка', price: 15, img: tgGift('5170233102089322756','Telegram подарок — плюшевый мишка'), rarity: 'Обычный' },
   heart: { name: 'Сердце', price: 15, img: tgGift('5170145012310081615','Telegram подарок — сердце'), rarity: 'Обычный' },
@@ -797,18 +808,26 @@ const GIFTS = {
   cup: { name: 'Кубок', price: 100, img: tgGift('5168043875654172773','Telegram подарок — кубок'), rarity: 'Эпический' },
   ring: { name: 'Кольцо', price: 100, img: tgGift('5170690322832818290','Telegram подарок — кольцо'), rarity: 'Эпический' },
   diamond: { name: 'Бриллиант', price: 100, img: tgGift('5170521118301225164','Telegram подарок — бриллиант'), rarity: 'Легендарный' },
-  random_nft: { name: 'Рандомный NFT', price: 350, img: tgNft('plush_pepe','Telegram NFT — случайный подарок'), rarity: 'NFT' },
+  random_nft: { name: 'Рандомный NFT', price: 350, img: nftStack(), rarity: 'NFT' },
   plush_pepe: { name: 'Plush Pepe NFT', price: 480702, img: tgNft('plush_pepe','Plush Pepe NFT'), rarity: 'NFT · Мифический' },
   plush_pepe_royal: { name: 'Plush Pepe · Shiro Edition', price: 480702, img: tgNft('plush_pepe','Plush Pepe — Shiro Edition').replace('<img ', '<img class="plush-royal" '), rarity: 'NFT · Джекпот' },
   diamond_ring: { name: 'Diamond Ring NFT', price: 2305, img: tgNft('diamond_ring','Diamond Ring NFT'), rarity: 'NFT' },
   durovs_glasses: { name: 'Durov’s Glasses NFT', price: 11022, img: tgNft('durovs_glasses','Durov’s Glasses NFT'), rarity: 'NFT' },
   durovs_cap: { name: 'Durov’s Cap NFT', price: 28590, img: tgNft('durovs_cap','Durov’s Cap NFT'), rarity: 'NFT' },
-  resistance_dog: { name: 'Resistance Dog NFT', price: 35000, img: tgNft('resistance_dog','Resistance Dog NFT'), rarity: 'NFT' },
+  resistance_dog: { name: 'Resistance Dog NFT', price: 35000, img: tgNft('resistance_dog','Resistance Dog NFT').replace('<img ', '<img onerror="this.onerror=null;this.src=\'https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/snoop_dogg.webp\'" '), rarity: 'NFT' },
   precious_peach: { name: 'Precious Peach NFT', price: 19572, img: tgNft('precious_peach','Precious Peach NFT'), rarity: 'NFT' },
   scared_cat: { name: 'Scared Cat NFT', price: 19099, img: tgNft('scared_cat','Scared Cat NFT'), rarity: 'NFT' },
   heroic_helmet: { name: 'Heroic Helmet NFT', price: 14629, img: tgNft('heroic_helmet','Heroic Helmet NFT'), rarity: 'NFT' },
   astral_shard: { name: 'Astral Shard NFT', price: 9819, img: tgNft('astral_shard','Astral Shard NFT'), rarity: 'NFT' },
   loot_bag: { name: 'Loot Bag NFT', price: 10688, img: tgNft('loot_bag','Loot Bag NFT'), rarity: 'NFT' },
+  vice_cream: { name: 'Vice Cream NFT', price: 90, img: tgNft('vice_cream','Vice Cream NFT'), rarity: 'NFT' },
+  lol_pop: { name: 'Lol Pop NFT', price: 95, img: tgNft('lol_pop','Lol Pop NFT'), rarity: 'NFT' },
+  bunny_muffin: { name: 'Bunny Muffin NFT', price: 110, img: tgNft('bunny_muffin','Bunny Muffin NFT'), rarity: 'NFT' },
+  jolly_chimp: { name: 'Jolly Chimp NFT', price: 120, img: tgNft('jolly_chimp','Jolly Chimp NFT'), rarity: 'NFT' },
+  ginger_cookie: { name: 'Ginger Cookie NFT', price: 130, img: tgNft('ginger_cookie','Ginger Cookie NFT'), rarity: 'NFT' },
+  chill_flame: { name: 'Chill Flame NFT', price: 145, img: tgNft('chill_flame','Chill Flame NFT'), rarity: 'NFT' },
+  mirage_lamp: { name: 'Mirage Lamp NFT', price: 170, img: tgNft('mirage_lamp','Mirage Lamp NFT'), rarity: 'NFT' },
+  snoop_dogg: { name: 'Snoop Dogg NFT', price: 210, img: tgNft('snoop_dogg','Snoop Dogg NFT'), rarity: 'NFT' }
 };
 
 const CASES = [
@@ -1066,11 +1085,11 @@ function openCase(caseId) {
   btn.textContent = 'Открыть за ★ ' + fmt(c.price);
   btn.disabled = false;
   const drops = c.id === 'nft' ? c.drops : shuffled(c.drops);
-  const nftChances = { plush_pepe:'0,01%', diamond_ring:'0,006%', durovs_glasses:'0,03%', durovs_cap:'0,06%', resistance_dog:'0,09%', precious_peach:'0,15%', scared_cat:'0,21%', heroic_helmet:'0,3%', astral_shard:'0,6%', loot_bag:'1,2%', nothing:'97,344%' };
+
   document.getElementById('previewDrops').innerHTML = drops.map(key => {
     const item = dropMeta(key);
-    const chance = c.id === 'nft' ? (nftChances[key] || '') : (c.id === 'cosmic' && key === 'plush_pepe_royal' ? '0,1%' : '');
-    return `<div class="preview-drop"><div class="drop-img">${item.img}</div><div class="drop-name">${item.name}</div>${chance ? `<div class="nft-chance">${chance}</div>` : ''}</div>`;
+
+    return `<div class="preview-drop"><div class="drop-img">${item.img}</div><div class="drop-name">${item.name}</div></div>`;
   }).join('');
   document.getElementById('casePreview').classList.add('show');
   haptic('light'); playUiSound('preview');

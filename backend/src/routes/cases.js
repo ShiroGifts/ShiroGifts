@@ -1,11 +1,12 @@
 const express = require('express');
 const { randomUUID } = require('node:crypto');
 const { pool } = require('../db/pool');
-const { requireTelegramUser } = require('../telegram/auth');
+const { requireTelegramUser, requireAgeConfirmed } = require('../telegram/auth');
 const { getCase, pickDrop, GIFT_DATA } = require('../game/cases');
 
 const router = express.Router();
 router.use(requireTelegramUser);
+router.use(requireAgeConfirmed);
 
 router.post('/cases/open', async (req, res) => {
   const caseId = String(req.body && req.body.caseId || '');

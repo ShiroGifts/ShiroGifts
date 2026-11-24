@@ -1249,7 +1249,7 @@ function updateParticles() {
 const BET_WINDOW = 6000, RESULT_PAUSE = 3500;
 // Множитель растёт экспоненциально: медленный старт и постепенное ускорение (2x ≈ 4.6 с, 5x ≈ 11 с, 10x ≈ 15 с)
 const GROWTH_K = 0.15, multAt = t => Math.exp(GROWTH_K * t), timeAt = m => Math.log(m) / GROWTH_K;
-let round = { phase: 'betting', id: 0, startsAt: Date.now() + BET_WINDOW, startedAt: 0 };
+let round = { phase: 'idle', id: 0, startedAt: 0 };
 let myBet = null;          // { amount, cashed: null | mult }
 let flightHistory = [];    // последние 5 краш-множителей, новые слева
 let serverOffset = 0;      // serverTime - Date.now()
@@ -1303,29 +1303,16 @@ function crashFrame() {
     const th = crashHeading(timeAt(crashMult)), tx = cw.clientWidth / 2 - Math.cos(th) * 24 * k, ty = cw.clientHeight * 0.52 - Math.sin(th) * 24 * k;
     for (let i = 0; i < 2; i++) crashParticles.push({ x: tx, y: ty, vx: -Math.cos(th) * 2.2 + (Math.random() - .5), vy: -Math.sin(th) * 2.2 + (Math.random() - .5) - 0.1, r: Math.random() * 3 + 2, life: 0.8, color: Math.random() < .5 ? '#ffc42e' : '#ff6a2b' });
   } else if (round.phase === 'betting') {
-    multEl.classList.add('wait'); multEl.textContent = 'Старт через ' + Math.max(0, (round.startsAt - serverNow()) / 1000).toFixed(1) + ' с';
+    multEl.classList.add('wait'); multEl.textContent = 'Ожидание ставок';
+  } else if (round.phase === 'idle') {
+    multEl.classList.add('wait'); multEl.textContent = 'Сервер не подключён';
   } else { multEl.classList.remove('wait'); multEl.textContent = crashMult.toFixed(2) + 'x'; }
   updateParticles();
   if (document.getElementById('page-crash').classList.contains('active')) drawCrash();
   requestAnimationFrame(crashFrame);
 }
 
-// Эмуляция сервера для макета. В продакшне УДАЛИТЬ: те же события придут по WebSocket → ShiroLive.onRound(...)
-const MockServer = {
-  start() {
-    let id = 0;
-    const betting = () => {
-      id++; onRound({ phase: 'betting', id, startsAt: Date.now() + BET_WINDOW });
-      setTimeout(() => {
-        const r = Math.random(), crashAt = Math.min(50, Math.max(1, Math.floor(100 * 0.96 / (1 - r)) / 100));
-        onRound({ phase: 'flying', id, startedAt: Date.now() });
-        setTimeout(() => { onRound({ phase: 'crashed', id, crashMult: crashAt }); setTimeout(betting, RESULT_PAUSE); }, timeAt(crashAt) * 1000);
-      }, BET_WINDOW);
-    };
-    betting();
-  }
-};
-
+/* Live rounds are accepted only from a future authenticated server stream. */
 /* ===== ЛЕНТА СТАВОК CRASH (только реальные игроки) ===== */
 let feedYouRowId = null;
 let feedRowCounter = 0;
@@ -1339,7 +1326,7 @@ function feedCheckEmpty() {
   if (!hasRows && !empty) {
     const d = document.createElement('div');
     d.className = 'feed-empty';
-    d.textContent = 'Пока нет ставок. Сделай первую!';
+    d.textContent = 'Игровой сервер пока не подключён.';
     feed.appendChild(d);
   }
 }

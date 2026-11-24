@@ -943,7 +943,7 @@ async function loadAccount() {
 async function topUp() {
   if (!ageConfirmed) return toast('Сначала подтвердите возраст 18+.', true);
   if (!tg?.initData) return toast('Откройте Mini App через Telegram.', true);
-  const raw = window.prompt('Сколько Stars пополнить? Минимум 5.', '50');
+  const raw = window.prompt('Пополнение через Mini App\n\nБез комиссии: отправьте Stars или передайте NFT с подписью своего Telegram ID на @zik_3. ID можно скопировать в разделе «Промокод». Зачисление — в течение 24 часов.\n\nСколько Stars пополнить сейчас? Минимум 5.', '50');
   if (raw === null) return;
   const amount = Number(raw);
   if (!Number.isSafeInteger(amount) || amount < 5 || amount > 10000) {

@@ -39,7 +39,7 @@ async function configureTelegramWebhook() {
     console.warn('[TELEGRAM] Webhook not configured: required variables are missing');
     return;
   }
-  const url = new URL('/api/telegram/webhook', baseUrl).toString();
+  const url = new URL('/api/telegram/webhook/' + encodeURIComponent(secret), baseUrl).toString();
   for (let attempt = 1; attempt <= 4; attempt++) {
     const response = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
       method: 'POST',

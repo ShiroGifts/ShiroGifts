@@ -36,6 +36,18 @@ router.post('/webhook', async (req, res) => {
     if (update.message?.successful_payment) {
       const payment = update.message.successful_payment;
       const telegramId = String(update.message.from.id);
+      const existing = await pool.query(
+        `SELECT telegram_id, amount_stars, currency FROM star_payments
+         WHERE telegram_payment_charge_id = $1`,
+        [payment.telegram_payment_charge_id]
+      );
+      if (existing.rowCount) {
+        const prior = existing.rows[0];
+        if (prior.telegram_id === telegramId && Number(prior.amount_stars) === payment.total_amount && prior.currency === 'XTR') {
+          return res.json({ ok: true });
+        }
+        return res.status(400).json({ ok: false });
+      }
       const pending = await pool.query(
         `SELECT telegram_id, amount_stars FROM pending_stars_invoices
          WHERE payload = $1 AND status = 'pending' AND expires_at > NOW()`,

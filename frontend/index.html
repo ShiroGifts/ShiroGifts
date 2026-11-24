@@ -1444,9 +1444,11 @@ async function loadAccount() {
     updateBalanceUI();
     renderInventory();
     renderUpgrade();
+    return true;
   } catch (error) {
     accountReady = false;
     toast('Не удалось загрузить аккаунт. Попробуйте открыть приложение позже.', true);
+    return false;
   }
 }
 
@@ -1455,6 +1457,11 @@ async function topUp() {
     toast('Пополнение доступно при запуске Mini App через Telegram.', true);
     return;
   }
+  if (!accountReady && !(await loadAccount())) {
+    toast('Сначала нужно загрузить аккаунт. Попробуйте ещё раз.', true);
+    return;
+  }
+  const startingBalance = balance;
   const raw = window.prompt('Сколько Telegram Stars добавить? Минимум 5.');
   if (raw === null) return;
   const amount = Number(raw.trim());
@@ -1472,10 +1479,21 @@ async function topUp() {
     if (!response.ok || !data.ok) throw new Error(data.error || 'invoice_unavailable');
     tg.openInvoice(data.invoice_url, async status => {
       if (status === 'paid') {
-        await loadAccount();
-        toast('Платёж подтверждён Telegram.');
+        let credited = false;
+        for (let attempt = 0; attempt < 10; attempt++) {
+          await new Promise(resolve => setTimeout(resolve, 900));
+          if (await loadAccount() && balance >= startingBalance + amount) {
+            credited = true;
+            break;
+          }
+        }
+        toast(credited
+          ? 'Платёж подтверждён, баланс пополнен.'
+          : 'Telegram подтвердил платёж. Зачисление обрабатывается и появится после синхронизации.');
       } else if (status === 'failed') {
         toast('Платёж не прошёл. Баланс не изменён.', true);
+      } else if (status === 'cancelled') {
+        toast('Пополнение отменено.');
       }
     });
   } catch (error) {

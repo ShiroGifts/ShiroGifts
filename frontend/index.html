@@ -1083,6 +1083,78 @@ body{
 @media(max-width:360px){.upgrade-picker-sheet .picker-list{grid-template-columns:repeat(2,minmax(0,1fr))}.upgrade-picker-sheet .picker-item{min-height:108px}}
 
 
+/* Stability/performance hotfix: keep case glow static while scrolling. */
+.case-card:after{
+  animation:none!important;
+  filter:none!important;
+  transform:none!important;
+  opacity:.18!important;
+  background:radial-gradient(ellipse at 50% 50%,var(--case-glow,#9aaeff),transparent 72%)!important;
+  left:8%!important;right:8%!important;top:10px!important;height:105px!important;
+  will-change:auto!important;
+}
+/* Upgrade picker: consistent two-column cards with bounded artwork and readable text. */
+.upgrade-picker-backdrop{overscroll-behavior:contain}
+.upgrade-picker-sheet{overscroll-behavior:contain}
+.upgrade-picker-sheet .picker-list{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:10px!important;
+  align-content:start!important;
+  align-items:stretch!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  padding:4px 3px calc(24px + env(safe-area-inset-bottom))!important;
+  -webkit-overflow-scrolling:touch;
+}
+.upgrade-picker-sheet .picker-item{
+  width:auto!important;min-width:0!important;max-width:none!important;
+  min-height:132px!important;height:auto!important;
+  box-sizing:border-box!important;
+  padding:10px 8px!important;margin:0!important;
+  display:flex!important;flex-direction:column!important;
+  align-items:center!important;justify-content:flex-start!important;
+  gap:0!important;overflow:hidden!important;
+  transform:none;
+}
+.upgrade-picker-sheet .picker-item .gift-img{
+  position:static!important;display:flex!important;
+  width:100%!important;height:52px!important;min-height:52px!important;
+  flex:0 0 52px!important;margin:0 0 7px!important;
+  align-items:center!important;justify-content:center!important;
+  font-size:36px!important;line-height:1!important;
+}
+.upgrade-picker-sheet .picker-item .gift-img svg,
+.upgrade-picker-sheet .picker-item .gift-img img{
+  display:block!important;width:48px!important;height:48px!important;
+  max-width:100%!important;max-height:48px!important;object-fit:contain!important;
+}
+.upgrade-picker-sheet .picker-item .label{
+  position:static!important;display:-webkit-box!important;
+  width:100%!important;min-height:2.4em!important;max-height:2.4em!important;
+  margin:0!important;padding:0!important;
+  font-size:11px!important;line-height:1.2!important;text-align:center!important;
+  white-space:normal!important;overflow:hidden!important;
+  overflow-wrap:anywhere!important;word-break:normal!important;
+  -webkit-box-orient:vertical;-webkit-line-clamp:2;
+}
+.upgrade-picker-sheet .picker-item .price{
+  position:static!important;display:block!important;
+  margin:7px 0 0!important;font-size:11px!important;line-height:1.2!important;
+  flex:0 0 auto!important;
+}
+.upgrade-picker-sheet .picker-item.selected{
+  outline:2px solid var(--accent)!important;outline-offset:-2px!important;
+  filter:none!important;
+}
+@media(min-width:560px){
+  .upgrade-picker-sheet .picker-list{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .case-card:after{animation:none!important}
+  .roulette-strip{transition:none!important}
+}
+
 </style>
 </head>
 <body>
@@ -1810,26 +1882,25 @@ function showCaseOverlay(c, winnerKey, free = false, demo = false) {
   const wrapWidth = strip.parentElement.clientWidth;
   const targetOffset = winnerIndex * itemWidth - wrapWidth / 2 + itemWidth / 2;
   const finalOffset = targetOffset + (Math.random() - 0.5) * 30;
-  const duration = 4500;
-  const start = performance.now();
-  function easeOutQuad(t) { return 1 - (1 - t) * (1 - t); }
-  function tick(now) {
-    const t = Math.min((now - start) / duration, 1);
-    strip.style.transform = `translateX(-${finalOffset * easeOutQuad(t)}px)`;
-    if (t < 1) requestAnimationFrame(tick);
-    else {
-      haptic('success'); playUiSound('win');
-      const item = dropMeta(winnerKey);
-      document.getElementById('caseResultImg').innerHTML = item.img;
-      document.getElementById('caseResultName').textContent = item.name;
-      document.getElementById('caseResultPrice').textContent = demo
-        ? '🎬 ДЕМО-НАГРАДА · не добавлена в настоящий инвентарь'
-        : item.type === 'stars' ? 'Зачислено на баланс' : item.type === 'nothing' ? 'Награда не выпала' : 'Подарок добавлен в инвентарь';
-      result.classList.add('show');
-      if (!demo) loadAccount();
-    }
-  }
-  requestAnimationFrame(tick);
+  // Animate only the compositor transform; avoid per-frame JS/layout work.
+  strip.style.transition = 'none';
+  strip.style.transform = 'translate3d(0,0,0)';
+  void strip.offsetWidth;
+  requestAnimationFrame(() => {
+    strip.style.transition = 'transform 4.5s cubic-bezier(.12,.62,.22,1)';
+    strip.style.transform = `translate3d(-${finalOffset}px,0,0)`;
+  });
+  setTimeout(() => {
+    haptic('success'); playUiSound('win');
+    const item = dropMeta(winnerKey);
+    document.getElementById('caseResultImg').innerHTML = item.img;
+    document.getElementById('caseResultName').textContent = item.name;
+    document.getElementById('caseResultPrice').textContent = demo
+      ? '🎬 ДЕМО-НАГРАДА · не добавлена в настоящий инвентарь'
+      : item.type === 'stars' ? 'Зачислено на баланс' : item.type === 'nothing' ? 'Награда не выпала' : 'Подарок добавлен в инвентарь';
+    result.classList.add('show');
+    if (!demo) loadAccount();
+  }, 4600);
 }
 
 function closeCaseOverlay() {

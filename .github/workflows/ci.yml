@@ -7,11 +7,38 @@ on:
     branches: [main]
 
 jobs:
-  syntax:
+  syntax-and-auth:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - run: npm install --no-audit --no-fund
       - run: npm run check
+
+  database:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: shiro
+          POSTGRES_PASSWORD: shiro_test
+          POSTGRES_DB: shirogifts_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U shiro -d shirogifts_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund
+      - run: npm run test:db
+        env:
+          DATABASE_URL: postgres://shiro:shiro_test@localhost:5432/shirogifts_test

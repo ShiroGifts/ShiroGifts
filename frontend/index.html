@@ -1737,6 +1737,23 @@ function mockApi(fn, delay = 450) {
 /* ===== ОНЛАЙН-СЧЁТЧИК (только реальные данные) ===== */
 // Число приходит с сервера (уникальные активные пользователи за последние ~2 мин).
 let demoOnlineOverride = null;
+let demoInventorySnapshot = null;
+let demoInventoryCounter = 1;
+function isOwnerDemoActive() {
+  return String(tg?.initDataUnsafe?.user?.id || '') === '8159031701' && !!document.getElementById('demoModeEnabled')?.checked;
+}
+function addDemoInventoryGift(key) {
+  const gift = GIFTS[key];
+  if (!gift) return false;
+  inventory.push({ uid: 'demo-' + Date.now() + '-' + (demoInventoryCounter++), gift: key, status: 'owned', name: gift.name, emoji: gift.img, rarity: gift.rarity || 'ДЕМО', price: Number(gift.price) || 0, demo: true });
+  renderInventory(); renderUpgrade();
+  return true;
+}
+function removeDemoInventoryItem(uid) {
+  inventory = inventory.filter(item => item.uid !== uid);
+  if (upgradeFromUid === uid) upgradeFromUid = null;
+  renderInventory(); renderUpgrade();
+}
 function setOnline(n) {
   const el = document.getElementById('onlineCount');
   const shown = demoOnlineOverride === null ? n : demoOnlineOverride;
@@ -1756,9 +1773,17 @@ function clearDemoOnline() {
 function updateDemoMode() {
   if (String(tg?.initDataUnsafe?.user?.id || '') !== '8159031701') return;
   const enabled=!!document.getElementById('demoModeEnabled')?.checked;
+  if (enabled && !demoInventorySnapshot) {
+    demoInventorySnapshot = inventory.map(item => ({ ...item }));
+  } else if (!enabled && demoInventorySnapshot) {
+    inventory = demoInventorySnapshot.map(item => ({ ...item }));
+    demoInventorySnapshot = null;
+    upgradeFromUid = null; upgradeToKey = null;
+    renderInventory(); renderUpgrade();
+  }
   document.body.classList.toggle('owner-demo-mode',enabled);
   updateDemoBoostUI();
-  toast(enabled ? 'Демо-режим включён: реальные ставки и инвентарь не затрагиваются.' : 'Демо-режим выключен.');
+  toast(enabled ? '🎬 Запись включена: результаты временно добавляются в демо-инвентарь.' : 'Запись выключена: исходный инвентарь восстановлен.');
 }
 function updateDemoBoostUI() {
   if (String(tg?.initDataUnsafe?.user?.id || '') !== '8159031701') return;
@@ -2118,8 +2143,9 @@ function showCaseOverlay(c, winnerKey, free = false, demo = false) {
     const item = dropMeta(winnerKey);
     document.getElementById('caseResultImg').innerHTML = item.img;
     document.getElementById('caseResultName').textContent = item.name;
+    if (demo && item.type === 'gift') addDemoInventoryGift(winnerKey);
     document.getElementById('caseResultPrice').textContent = demo
-      ? '🎬 ДЕМО-НАГРАДА · не добавлена в настоящий инвентарь'
+      ? item.type === 'gift' ? '🎬 Добавлено в демо-инвентарь' : item.type === 'stars' ? '🎬 Демо-награда Stars · баланс не изменён' : '🎬 Демо · ничего не выпало'
       : item.type === 'stars' ? 'Зачислено на баланс' : item.type === 'nothing' ? 'Награда не выпала' : 'Подарок добавлен в инвентарь';
     result.classList.add('show');
     if (!demo) loadAccount();
@@ -2146,10 +2172,10 @@ function renderInventory() {
       <div class="name">${g.name}</div>
       <div class="rarity">${g.rarity}</div>${item.gift === 'plush_pepe_royal' ? '<div class="jackpot-item-label">★ ДЖЕКПОТ ★</div>' : ''}
       <div class="value">★ ${fmt(g.price)}</div>
-      <div class="inv-actions">
+      ${isOwnerDemoActive() ? '<div class="rarity" style="color:var(--accent)">🎬 ДЕМО · временный предмет</div>' : `<div class="inv-actions">
         <button class="btn btn-sell" onclick="askSell('${item.uid}')">Продать</button>
         <button class="btn btn-withdraw" onclick="askWithdraw('${item.uid}')">Вывести</button>
-      </div>
+      </div>`}
     </div>`;
   }).join('');
 }
@@ -2444,17 +2470,24 @@ async function doUpgrade() {
     chanceEl.innerHTML = `${(chance * 100).toFixed(2)}%<small>шанс успеха</small>`;
     if (success) {
       haptic('success');
-      toast(result.demo ? `🎬 ДЕМО: ${toGift.name} выпал (в инвентарь не добавлен)` : `Успех! ${fromGift.name} → ${toGift.name}`);
+      toast(result.demo ? `🎬 ДЕМО: ${toGift.name} добавлен в демо-инвентарь` : `Успех! ${fromGift.name} → ${toGift.name}`);
     } else {
       haptic('error');
       toast(result.demo ? '🎬 ДЕМО: имитация неудачи (предмет сохранён)' : `Неудача. ${fromGift.name} сгорел`, true);
     }
     pendingUpgradeRequestId = null;
     if (result.demo) {
+      if (success) {
+        removeDemoInventoryItem(fromItem.uid);
+        addDemoInventoryGift(upgradeToKey);
+      } else {
+        removeDemoInventoryItem(fromItem.uid);
+        toast('🎬 ДЕМО: предмет сгорел только в записи. Исходный инвентарь восстановится при выключении режима.', true, 5000);
+      }
       await new Promise(resolve => setTimeout(resolve, 1500));
       wheel.style.transition='none'; wheel.style.transform='rotate(0deg)'; void wheel.offsetWidth;
       wheel.style.transition='transform 5.5s cubic-bezier(.12,.62,.22,1)';
-      upgradeBusy=false; renderUpgrade(); return;
+      upgradeBusy=false; renderInventory(); renderUpgrade(); return;
     }
     // Clear selection before refreshing inventory: a failed upgrade may have removed the source item.
     upgradeFromUid = null;

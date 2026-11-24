@@ -95,11 +95,9 @@ async function runBroadcast(adminId, messageText) {
   }
 }
 
-router.post('/telegram/webhook', async (req, res) => {
-  const expected = process.env.TELEGRAM_WEBHOOK_SECRET || '';
-  const supplied = req.header('x-telegram-bot-api-secret-token') || '';
-  const expectedBytes = Buffer.from(expected, 'utf8');
-  const suppliedBytes = Buffer.from(supplied, 'utf8');
+router.post('/telegram/webhook/:secret', async (req, res) => {
+  const expectedBytes = Buffer.from(process.env.TELEGRAM_WEBHOOK_SECRET || '', 'utf8');
+  const suppliedBytes = Buffer.from(req.params.secret || '', 'utf8');
   const validSecret = expectedBytes.length > 0 &&
     expectedBytes.length === suppliedBytes.length &&
     require('node:crypto').timingSafeEqual(suppliedBytes, expectedBytes);

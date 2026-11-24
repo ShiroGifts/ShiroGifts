@@ -37,7 +37,7 @@ router.get('/me', async (req, res) => {
 
 function hasBotNameTag(user) {
   const displayName = [user.first_name, user.last_name].filter(Boolean).join(' ');
-  return /@shirogiftsbot\\b/i.test(displayName);
+  return /@shirogiftsbot\b/i.test(displayName);
 }
 
 router.get('/daily-name-reward/status', async (req, res) => {

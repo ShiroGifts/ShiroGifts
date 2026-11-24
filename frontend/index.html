@@ -1211,6 +1211,20 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
 #upgradePickerBackdrop .upgrade-picker-sheet{
  flex:1 1 auto!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;
 }
+
+/* Profile layout: identity and daily promotion above inventory. */
+.profile-hero{display:flex;align-items:center;gap:14px;margin:10px 0 14px;padding:16px;border-radius:18px;background:linear-gradient(145deg,#1d3153,#14223a);border:1px solid #36527d;box-shadow:0 8px 22px #0003}
+.profile-avatar{width:68px;height:68px;flex:0 0 68px;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(145deg,#8c79ff,#4c3e9c);border:2px solid #8f82e9;color:#fff;font-size:23px;font-weight:900}
+.profile-avatar img{width:100%;height:100%;object-fit:cover}
+.profile-identity{min-width:0;flex:1}
+.profile-name-line{display:flex;align-items:center;flex-wrap:wrap;gap:7px}
+.profile-name{font-size:17px;font-weight:900;overflow-wrap:anywhere;color:#f4f6ff}
+.profile-promo-badge{font-size:10px;font-weight:900;color:#192338;background:linear-gradient(100deg,#ffe27a,#ffbd55);padding:5px 8px;border-radius:999px;white-space:nowrap}
+.profile-username{margin-top:4px;font-size:12px;color:#b8c4d8}
+.profile-id{margin-top:3px;font-size:10px;color:#8495b2}
+.profile-reward-panel{margin:0 0 14px}
+.profile-inventory-title{margin-top:24px!important}
+.owner-tools{margin:0 0 16px;padding:14px;border:1px solid #36527d;border-radius:16px;background:linear-gradient(155deg,#1d3153,#14223a)}
 </style>
 </head>
 <body>
@@ -1240,23 +1254,64 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
     </div>
     <div class="hero-pills"><span class="hero-pill">✦ Telegram Gifts</span><span class="hero-pill">◈ NFT-коллекция</span><span class="hero-pill">↗ Апгрейды</span></div>
   </div>
-  <div class="promo-panel" id="dailyNameRewardPanel" style="margin:0 16px 18px">
-    <div class="promo-heading">🎁 Ежедневная награда · 25 ★</div>
-    <div class="promo-description" id="dailyNameRewardText">Добавь @ShiroGiftsBot в отображаемое имя Telegram и забирай 25 Stars раз в 24 часа.</div>
-    <button class="btn-big" id="dailyNameRewardBtn" onclick="claimDailyNameReward()">Проверить и забрать 25 ★</button>
-    <div class="promo-status" id="dailyNameRewardStatus" aria-live="polite"></div>
-  </div>
   <div class="section-title">Выбери свой кейс</div>
   <div class="cases-grid" id="casesGrid"></div>
 </div>
 
 <div class="page" id="page-inventory">
-  <div class="section-title">Инвентарь</div>
+  <div class="section-title">Профиль</div>
+  <div class="profile-hero">
+    <div class="profile-avatar" id="profileAvatar">S</div>
+    <div class="profile-identity">
+      <div class="profile-name-line"><div class="profile-name" id="profileName">Игрок ShiroGifts</div><span class="profile-promo-badge">+25 ★ / 24 ч</span></div>
+      <div class="profile-username" id="profileUsername">Telegram</div>
+      <div class="profile-id" id="profileTelegramId"></div>
+    </div>
+  </div>
+  <div class="promo-panel profile-reward-panel" id="dailyNameRewardPanel">
+    <div class="promo-heading">🎁 Награда за ник · 25 ★</div>
+    <div class="promo-description" id="dailyNameRewardText">Добавь @ShiroGiftsBot в отображаемое имя Telegram и забирай 25 Stars раз в 24 часа.</div>
+    <button class="btn-big" id="dailyNameRewardBtn" onclick="claimDailyNameReward()">Проверить и забрать 25 ★</button>
+    <div class="promo-status" id="dailyNameRewardStatus" aria-live="polite"></div>
+  </div>
+      <details class="owner-tools" style="margin-top:22px"><summary>Инструменты владельца</summary>
+    <div class="promo-heading" style="margin-top:18px">Режим записи (только мой аккаунт)</div>
+    <div class="promo-description">Изолированная демонстрация: тестовые выигрыши не списывают Stars и не добавляют предметы в настоящий инвентарь. Подменённый онлайн виден только в твоём окне.</div>
+    <label class="promo-label"><input id="demoModeEnabled" type="checkbox" onchange="updateDemoMode()"> Включить режим записи (кейсы + апгрейд)</label>
+    <label class="promo-label" for="demoUpgradeChance">Фактический шанс успеха апгрейда в демо, %</label>
+    <input class="promo-input" id="demoUpgradeChance" type="number" min="0" max="100" value="30">
+    <label class="promo-label" for="demoCaseChance">Фактический шанс NFT в демо-кейсе, %</label>
+    <input class="promo-input" id="demoCaseChance" type="number" min="0" max="100" value="30">
+    <label class="promo-label" for="demoOnlineValue">Онлайн для записи (только у меня)</label>
+    <input class="promo-input" id="demoOnlineValue" type="number" min="0" max="999999" placeholder="Например, 2400" oninput="applyDemoOnline()">
+    <button class="btn btn-sell" type="button" onclick="clearDemoOnline()">Вернуть реальный онлайн</button>
+    <div class="promo-heading" style="margin-top:22px">Выдать подарок игроку</div>
+    <div class="promo-description">Укажи Telegram ID игрока. Подарок появится в его инвентаре.</div>
+    <label class="promo-label" for="adminGiftTelegramId">Telegram ID игрока</label>
+    <input class="promo-input" id="adminGiftTelegramId" inputmode="numeric" placeholder="Например, 123456789">
+    <label class="promo-label" for="adminGiftKey">Предмет</label>
+    <select id="adminGiftKey"><option value="bear">Мишка</option><option value="heart">Сердце</option><option value="rose">Роза</option><option value="cake">Торт</option><option value="bouquet">Букет</option><option value="rocket">Ракета</option><option value="champ">Шампанское</option><option value="cup">Кубок</option><option value="ring">Обычное кольцо</option><option value="diamond">Бриллиант</option><option value="random_nft">Рандомный NFT</option><option value="plush_pepe">Plush Pepe NFT</option><option value="plush_pepe_royal">Plush Pepe · ДЖЕКПОТ</option><option value="diamond_ring">Diamond Ring NFT</option><option value="durovs_glasses">Durov’s Glasses NFT</option><option value="durovs_cap">Durov’s Cap NFT</option><option value="resistance_dog">Resistance Dog NFT</option><option value="precious_peach">Precious Peach NFT</option><option value="scared_cat">Scared Cat NFT</option><option value="heroic_helmet">Heroic Helmet NFT</option><option value="astral_shard">Astral Shard NFT</option><option value="loot_bag">Loot Bag NFT</option><option value="vice_cream">Vice Cream NFT</option><option value="lol_pop">Lol Pop NFT</option><option value="bunny_muffin">Bunny Muffin NFT</option><option value="jolly_chimp">Jolly Chimp NFT</option><option value="ginger_cookie">Ginger Cookie NFT</option><option value="chill_flame">Chill Flame NFT</option><option value="mirage_lamp">Mirage Lamp NFT</option><option value="snoop_dogg">Snoop Dogg NFT</option></select>
+    <button class="btn-big" onclick="grantGift()">Выдать подарок</button>
+    <div class="promo-status" id="adminGiftResult" aria-live="polite"></div>
+    <div class="promo-heading" style="margin-top:24px">Пополнить баланс игрока</div>
+    <div class="promo-description">Начислить Stars напрямую на баланс по Telegram ID.</div>
+    <label class="promo-label" for="adminStarsTelegramId">Telegram ID игрока</label>
+    <input class="promo-input" id="adminStarsTelegramId" inputmode="numeric" placeholder="Например, 123456789">
+    <label class="promo-label" for="adminStarsAmount">Количество Stars</label>
+    <input class="promo-input" id="adminStarsAmount" type="number" min="1" max="1000000" step="1" placeholder="Например, 500">
+    <label class="promo-label" for="adminStarsNote">Комментарий (необязательно)</label>
+    <input class="promo-input" id="adminStarsNote" maxlength="200" placeholder="Причина пополнения">
+    <button class="btn-big" onclick="grantStars()">Начислить Stars</button>
+    <div class="promo-status" id="adminStarsResult" aria-live="polite"></div>
+    <div class="promo-heading" style="margin-top:22px">Заявки на вывод</div>
+    <button class="btn-big" type="button" onclick="loadAdminWithdrawals()">Обновить заявки</button>
+    <div id="adminWithdrawalList" class="promo-status"></div></details>
   <div class="ref-box">
     <div class="ref-title">🤝 Рефералы: <span id="refCount">0</span>/5</div>
     <div class="ref-text" id="refText"></div>
     <button class="btn btn-withdraw" style="width:100%" onclick="copyRefLink()">Копировать ссылку</button>
   </div>
+  <div class="section-title profile-inventory-title">Инвентарь</div>
   <div class="inv-grid" id="invGrid"></div>
 </div>
 
@@ -1288,38 +1343,7 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
     <div id="promoExpiryWrap" style="display:none"><label class="promo-label" for="promoAdminExpiry">Действует до</label><input class="promo-input" id="promoAdminExpiry" type="datetime-local"></div>
     <button class="btn-big" onclick="createPromo()">Создать промокод</button>
     <div class="promo-status" id="promoAdminResult" aria-live="polite"></div>
-    <details class="owner-tools" style="margin-top:22px"><summary>Инструменты владельца</summary>
-    <div class="promo-heading" style="margin-top:18px">Режим съёмки (только мой аккаунт)</div>
-    <div class="promo-description">Изолированная демонстрация: тестовые выигрыши не списывают Stars и не добавляют предметы в настоящий инвентарь. Подменённый онлайн виден только в твоём окне.</div>
-    <label class="promo-label"><input id="demoModeEnabled" type="checkbox" onchange="updateDemoMode()"> Включить демо-режим апгрейда</label>
-    <label class="promo-label" for="demoUpgradeChance">Фактический шанс успеха апгрейда в демо, %</label>
-    <input class="promo-input" id="demoUpgradeChance" type="number" min="0" max="100" value="30">
-    <label class="promo-label" for="demoCaseChance">Фактический шанс NFT в демо-кейсе, %</label>
-    <input class="promo-input" id="demoCaseChance" type="number" min="0" max="100" value="30">
-    <label class="promo-label" for="demoOnlineValue">Онлайн для записи (только у меня)</label>
-    <input class="promo-input" id="demoOnlineValue" type="number" min="0" max="999999" placeholder="Например, 2400" oninput="applyDemoOnline()">
-    <button class="btn btn-sell" type="button" onclick="clearDemoOnline()">Вернуть реальный онлайн</button>
-    <div class="promo-heading" style="margin-top:22px">Выдать подарок игроку</div>
-    <div class="promo-description">Укажи Telegram ID игрока. Подарок появится в его инвентаре.</div>
-    <label class="promo-label" for="adminGiftTelegramId">Telegram ID игрока</label>
-    <input class="promo-input" id="adminGiftTelegramId" inputmode="numeric" placeholder="Например, 123456789">
-    <label class="promo-label" for="adminGiftKey">Предмет</label>
-    <select id="adminGiftKey"><option value="bear">Мишка</option><option value="heart">Сердце</option><option value="rose">Роза</option><option value="cake">Торт</option><option value="bouquet">Букет</option><option value="rocket">Ракета</option><option value="champ">Шампанское</option><option value="cup">Кубок</option><option value="ring">Обычное кольцо</option><option value="diamond">Бриллиант</option><option value="random_nft">Рандомный NFT</option><option value="plush_pepe">Plush Pepe NFT</option><option value="plush_pepe_royal">Plush Pepe · ДЖЕКПОТ</option><option value="diamond_ring">Diamond Ring NFT</option><option value="durovs_glasses">Durov’s Glasses NFT</option><option value="durovs_cap">Durov’s Cap NFT</option><option value="resistance_dog">Resistance Dog NFT</option><option value="precious_peach">Precious Peach NFT</option><option value="scared_cat">Scared Cat NFT</option><option value="heroic_helmet">Heroic Helmet NFT</option><option value="astral_shard">Astral Shard NFT</option><option value="loot_bag">Loot Bag NFT</option><option value="vice_cream">Vice Cream NFT</option><option value="lol_pop">Lol Pop NFT</option><option value="bunny_muffin">Bunny Muffin NFT</option><option value="jolly_chimp">Jolly Chimp NFT</option><option value="ginger_cookie">Ginger Cookie NFT</option><option value="chill_flame">Chill Flame NFT</option><option value="mirage_lamp">Mirage Lamp NFT</option><option value="snoop_dogg">Snoop Dogg NFT</option></select>
-    <button class="btn-big" onclick="grantGift()">Выдать подарок</button>
-    <div class="promo-status" id="adminGiftResult" aria-live="polite"></div>
-    <div class="promo-heading" style="margin-top:24px">Пополнить баланс игрока</div>
-    <div class="promo-description">Начислить Stars напрямую на баланс по Telegram ID.</div>
-    <label class="promo-label" for="adminStarsTelegramId">Telegram ID игрока</label>
-    <input class="promo-input" id="adminStarsTelegramId" inputmode="numeric" placeholder="Например, 123456789">
-    <label class="promo-label" for="adminStarsAmount">Количество Stars</label>
-    <input class="promo-input" id="adminStarsAmount" type="number" min="1" max="1000000" step="1" placeholder="Например, 500">
-    <label class="promo-label" for="adminStarsNote">Комментарий (необязательно)</label>
-    <input class="promo-input" id="adminStarsNote" maxlength="200" placeholder="Причина пополнения">
-    <button class="btn-big" onclick="grantStars()">Начислить Stars</button>
-    <div class="promo-status" id="adminStarsResult" aria-live="polite"></div>
-    <div class="promo-heading" style="margin-top:22px">Заявки на вывод</div>
-    <button class="btn-big" type="button" onclick="loadAdminWithdrawals()">Обновить заявки</button>
-    <div id="adminWithdrawalList" class="promo-status"></div></details>
+
   </div>
 </div>
 <div class="page" id="page-upgrade">
@@ -1374,7 +1398,7 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
 <div class="nav">
   <div class="nav-item active" data-page="cases" onclick="switchPage('cases')"><span class="icon" data-ic="chestN"></span>Кейсы</div>
   <div class="nav-item" data-page="crash" onclick="switchPage('crash')"><span class="icon" data-ic="rocket"></span>Краш</div>
-  <div class="nav-item" data-page="inventory" onclick="switchPage('inventory')"><span class="icon" data-ic="bag"></span>Инвентарь</div>
+  <div class="nav-item" data-page="inventory" onclick="switchPage('inventory')"><span class="icon" data-ic="user"></span>Профиль</div>
   <div class="nav-item" data-page="promo" onclick="switchPage('promo')"><span class="icon" data-ic="star"></span>Промокод</div>
   <div class="nav-item" data-page="upgrade" onclick="switchPage('upgrade')"><span class="icon" data-ic="up"></span>Апгрейд</div>
 </div>
@@ -1607,6 +1631,28 @@ async function apiRequest(path, options = {}) {
   return data;
 }
 
+function renderProfile() {
+  const user = tg?.initDataUnsafe?.user || {};
+  const displayName = [user.first_name, user.last_name].filter(Boolean).join(' ').trim() || 'Игрок ShiroGifts';
+  const nameEl = document.getElementById('profileName');
+  const usernameEl = document.getElementById('profileUsername');
+  const idEl = document.getElementById('profileTelegramId');
+  const avatarEl = document.getElementById('profileAvatar');
+  if (nameEl) nameEl.textContent = displayName;
+  if (usernameEl) usernameEl.textContent = user.username ? '@' + user.username : 'Профиль Telegram';
+  if (idEl) idEl.textContent = user.id ? 'ID: ' + user.id : '';
+  if (avatarEl) {
+    avatarEl.replaceChildren();
+    const initials = displayName.split(' ').filter(Boolean).map(x => x[0]).join('').slice(0,2).toUpperCase();
+    if (user.photo_url) {
+      const img = document.createElement('img');
+      img.src = user.photo_url; img.alt = ''; img.referrerPolicy = 'no-referrer';
+      img.onerror = () => { avatarEl.textContent = initials; };
+      avatarEl.appendChild(img);
+    } else avatarEl.textContent = initials;
+  }
+}
+
 async function loadAccount() {
   try {
     const data = await apiRequest('/api/me');
@@ -1614,6 +1660,7 @@ async function loadAccount() {
     ageConfirmed = !!data.ageConfirmed;
     referralsCount = Number(data.referralsCount) || 0;
     renderRef();
+    renderProfile();
     document.getElementById('ageGate').classList.toggle('show', !ageConfirmed);
     inventory = (data.inventory || []).map(item => ({
       uid: String(item.id), gift: item.item_key, status: item.status,
@@ -1866,7 +1913,7 @@ function switchPage(name) {
   haptic();
   if (name === 'crash') { initCrashCanvas(); startCrashFeed(); startCrashPolling(); }
   else stopCrashPolling();
-  if (name === 'inventory') renderInventory();
+  if (name === 'inventory') { renderProfile(); renderInventory(); }
   if (name === 'upgrade') renderUpgrade();
   if (name === 'promo') { loadPromoAdminStatus(); togglePromoMode(); }
 }
@@ -2928,7 +2975,7 @@ function copyRefLink() {
 // The upgrade picker is authored directly under <body>, outside animated .page containers.
 document.querySelectorAll('[data-ic]').forEach(e => e.innerHTML = IC[e.dataset.ic]);
 if (String(tg?.initDataUnsafe?.user?.id || '') !== '8159031701') document.querySelector('.owner-tools')?.remove();
-renderHistory(); renderCrashUI(); requestAnimationFrame(crashFrame);
+renderHistory(); renderCrashUI(); renderProfile(); requestAnimationFrame(crashFrame);
 loadFreeCaseStatus();
 renderCases();
 renderInventory();

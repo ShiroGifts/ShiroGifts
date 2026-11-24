@@ -2,6 +2,7 @@ const express = require('express');
 const { randomUUID } = require('node:crypto');
 const { pool } = require('../db/pool');
 const { requireTelegramUser, requireAgeConfirmed } = require('../telegram/auth');
+const { notifyAdminGift } = require('../telegram/notifications');
 
 const router = express.Router();
 router.use(requireTelegramUser, requireAgeConfirmed);
@@ -123,6 +124,7 @@ router.post('/inventory/withdraw', async (req, res) => {
       );
       await client.query("UPDATE inventory SET status='withdrawn' WHERE id=$1",[id]);
       await client.query('COMMIT');
+      notifyAdminGift({ telegramId, username: req.telegramUser.username, firstName: req.telegramUser.first_name, itemName: gift.name, source: 'Подарок отправлен в Telegram', inventoryId: id }).catch(() => {});
       return res.json({ok:true,delivered:true,requestId:String(request.rows[0].id),type:'ordinary_gift'});
     }
     const request = await client.query(
@@ -132,6 +134,7 @@ router.post('/inventory/withdraw', async (req, res) => {
     );
     await client.query("UPDATE inventory SET status='withdraw_pending' WHERE id=$1",[id]);
     await client.query('COMMIT');
+    notifyAdminGift({ telegramId, username: req.telegramUser.username, firstName: req.telegramUser.first_name, itemName: gift.name, source: 'Заявка на вывод NFT', inventoryId: id }).catch(() => {});
     return res.json({ok:true,delivered:false,requestId:String(request.rows[0].id),status:request.rows[0].status,type:'random_nft'});
   } catch(error) {
     await client.query('ROLLBACK').catch(()=>{});

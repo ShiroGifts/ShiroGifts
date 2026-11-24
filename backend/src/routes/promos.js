@@ -1,9 +1,10 @@
 const express = require('express');
 const { pool } = require('../db/pool');
-const { requireTelegramUser } = require('../telegram/auth');
+const { requireTelegramUser, requireAgeConfirmed } = require('../telegram/auth');
 
 const router = express.Router();
 router.use(requireTelegramUser);
+router.use(requireAgeConfirmed);
 
 function adminIds() {
   return new Set(String(process.env.ADMIN_TELEGRAM_IDS || '')

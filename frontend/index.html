@@ -769,16 +769,15 @@ function checkFreeCaseStatus() {
 const CHANNEL_USERNAME = 'ShiroGifts';   // TODO: username канала
 let awaitingSub = false;
 async function checkSubscription() {
-  // прод: POST /api/subscription → сервер вызывает getChatMember(@канал, user_id), статус member/administrator/creator
-  await mockApi(() => {}, 500);
-  isSubscribed = true;   // в макете считаем, что подписался
+  isSubscribed = false;
   renderCases();
-  toast('Подписка подтверждена. Бесплатный кейс доступен!');
+  toast('Проверка подписки ещё не подключена.', true);
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden && awaitingSub) { awaitingSub = false; checkSubscription(); } });
 tg?.onEvent?.('activated', () => { if (awaitingSub) { awaitingSub = false; checkSubscription(); } });
 
 function tryFreeCase() {
+  return toast('Бесплатный кейс пока отключён до подключения серверной проверки подписки.', true);
   if (!isSubscribed) {
     toast('Подпишитесь на канал ShiroGifts и вернитесь в приложение', true);
     awaitingSub = true;
@@ -937,7 +936,7 @@ function renderInventory() {
     return;
   }
   grid.innerHTML = owned.map(item => {
-    const g = GIFTS[item.gift];
+    const g = GIFTS[item.gift] || { img: item.emoji || '🎁', name: item.name || 'Подарок', rarity: item.rarity || '—', price: item.price || 0 };
     return `<div class="inv-item" id="inv-${item.uid}">
       <span class="gift-img">${g.img}</span>
       <div class="name">${g.name}</div>
@@ -954,6 +953,7 @@ function renderInventory() {
 let modalAction = null;
 
 function askSell(uid) {
+  return toast('Продажа будет доступна после подключения серверной операции.', true);
   const item = inventory.find(i => i.uid === uid);
   if (!item) return;
   const g = GIFTS[item.gift];
@@ -983,6 +983,7 @@ function askSell(uid) {
 }
 
 function askWithdraw(uid) {
+  return toast('Вывод подарков пока не подключён.', true);
   const item = inventory.find(i => i.uid === uid);
   if (!item) return;
   const g = GIFTS[item.gift];

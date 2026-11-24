@@ -40,19 +40,30 @@ async function configureTelegramWebhook() {
     return;
   }
   const url = new URL('/api/telegram/webhook', baseUrl).toString();
-  const response = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
-      url,
-      secret_token: secret,
-      allowed_updates: ['message', 'pre_checkout_query'],
-      drop_pending_updates: false
-    })
-  });
-  const data = await response.json();
-  if (!response.ok || !data.ok) throw new Error(data.description || 'Telegram setWebhook failed');
-  console.log('[TELEGRAM] Webhook registered');
+  for (let attempt = 1; attempt <= 4; attempt++) {
+    const response = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        url,
+        secret_token: secret,
+        allowed_updates: ['message', 'pre_checkout_query'],
+        drop_pending_updates: false
+      })
+    });
+    const data = await response.json();
+    if (response.ok && data.ok) {
+      console.log('[TELEGRAM] Webhook registered');
+      return;
+    }
+    if (data.error_code === 429 && attempt < 4) {
+      const retryMs = Math.max(1000, Number(data.parameters?.retry_after || 1) * 1000 + 200);
+      console.warn('[TELEGRAM] setWebhook rate limited; retrying', { attempt, retryMs });
+      await new Promise(resolve => setTimeout(resolve, retryMs));
+      continue;
+    }
+    throw new Error(data.description || 'Telegram setWebhook failed');
+  }
 }
 
 async function start() {
@@ -63,7 +74,11 @@ async function start() {
   } else {
     console.warn('[DB] DATABASE_URL missing; account and payment APIs are unavailable');
   }
-  await configureTelegramWebhook();
+  try {
+    await configureTelegramWebhook();
+  } catch (error) {
+    console.error('[TELEGRAM WEBHOOK CONFIG ERROR]', error.message);
+  }
   app.listen(port, () => console.log(`ShiroGifts server listening on ${port}`));
 }
 

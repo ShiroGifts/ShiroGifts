@@ -99,7 +99,7 @@ const GIFT_DATA = {
   diamond: { name: 'Бриллиант', emoji: '💎', rarity: 'Легендарный', value: 100 },
   random_nft: { name: 'Рандомный NFT', emoji: '🎁', rarity: 'NFT', value: 350 },
   plush_pepe: { name: 'Plush Pepe NFT', emoji: '🐸', rarity: 'NFT · Мифический', value: 480702 },
-  plush_pepe_royal: { name: 'Plush Pepe · Shiro Edition', emoji: '🐸', rarity: 'NFT · Джекпот', value: 480702 },
+  plush_pepe_royal: { name: 'Plush Pepe', emoji: '🐸', rarity: 'NFT · ДЖЕКПОТ', value: 480702 },
   diamond_ring: { name: 'Diamond Ring NFT', emoji: '💍', rarity: 'NFT', value: 2305 },
   durovs_glasses: { name: "Durov’s Glasses NFT", emoji: '🕶️', rarity: 'NFT', value: 11022 },
   durovs_cap: { name: "Durov’s Cap NFT", emoji: '🧢', rarity: 'NFT', value: 28590 },

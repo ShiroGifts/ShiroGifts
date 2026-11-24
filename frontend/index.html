@@ -822,6 +822,129 @@ body{
 .chance{letter-spacing:-1px}
 @media(max-width:380px){.h-chip{min-width:56px;padding:7px 7px!important}.crash-history{gap:6px!important}}
 
+
+/* SHIRO VISUAL PASS 3 — model tint, compact upgrade layout, refined flight art.
+   The cases hero panel above is deliberately left untouched. */
+/* Case tiles stay in the same deep navy family; only the chest artwork changes hue. */
+.case-card[class*="tier-"]{
+  background:
+    radial-gradient(ellipse at 50% 0%,rgba(132,157,220,.14),transparent 58%),
+    linear-gradient(155deg,#1b2a45 0%,#101a2d 78%)!important;
+  border-color:rgba(155,180,226,.22)!important;
+}
+.case-card:before{opacity:.34!important}
+.case-card:after{opacity:.32!important;background:var(--case-glow,#9aaeff)!important}
+.case-card .gift-img svg{filter:drop-shadow(0 10px 13px rgba(0,0,0,.48))!important}
+.case-card.tier-farm .gift-img svg{filter:hue-rotate(95deg) saturate(.82) drop-shadow(0 10px 13px #0008)!important}
+.case-card.tier-starter .gift-img svg{filter:hue-rotate(18deg) saturate(1.1) drop-shadow(0 10px 13px #0008)!important}
+.case-card.tier-mini .gift-img svg{filter:hue-rotate(32deg) saturate(.95) drop-shadow(0 10px 13px #0008)!important}
+.case-card.tier-bronze .gift-img svg{filter:hue-rotate(12deg) saturate(1.35) drop-shadow(0 10px 13px #0008)!important}
+.case-card.tier-silver .gift-img svg{filter:grayscale(.72) brightness(1.32) saturate(.45) drop-shadow(0 10px 13px #0008)!important}
+.case-card.tier-gold .gift-img svg{filter:sepia(.8) saturate(1.55) hue-rotate(2deg) brightness(1.08) drop-shadow(0 10px 13px #0008)!important}
+.case-card.tier-legend .gift-img svg{filter:hue-rotate(245deg) saturate(1.25) drop-shadow(0 10px 13px #0008)!important}
+.case-card.tier-ruby .gift-img svg{filter:hue-rotate(305deg) saturate(1.5) drop-shadow(0 10px 13px #0008)!important}
+.case-card.tier-diamond .gift-img svg{filter:hue-rotate(165deg) saturate(1.1) brightness(1.1) drop-shadow(0 10px 13px #0008)!important}
+.case-card.tier-cosmic .gift-img svg{filter:hue-rotate(225deg) saturate(1.4) drop-shadow(0 10px 13px #0008)!important}
+.case-card.tier-nft .gift-img svg{filter:sepia(.9) saturate(1.45) hue-rotate(350deg) drop-shadow(0 10px 13px #0008)!important}
+.case-card.tier-free .gift-img svg,.case-card.tier-lock .gift-img svg{filter:hue-rotate(125deg) saturate(.9) drop-shadow(0 10px 13px #0008)!important}
+/* Compact upgrade workbench: fit the complete workflow in the viewport. */
+#page-upgrade{padding-bottom:calc(74px + env(safe-area-inset-bottom))!important}
+#page-upgrade>.section-title{margin:9px 2px 8px!important;font-size:10px!important}
+#page-upgrade .upgrade-box{
+  padding:10px 10px 12px!important;border-radius:17px!important;
+  display:flex;flex-direction:column;gap:0
+}
+#page-upgrade .upgrade-box:before{font-size:8px;margin:0 0 7px;letter-spacing:2px}
+#page-upgrade .upgrade-row{gap:7px!important;margin:0 0 7px!important;align-items:stretch}
+#page-upgrade .upgrade-slot{
+  min-width:0;min-height:0!important;height:82px!important;max-height:82px;
+  padding:5px!important;border-radius:12px!important;overflow:hidden!important;
+  flex:1 1 0!important;display:flex;justify-content:center;align-items:center
+}
+#page-upgrade .upgrade-slot .gift-img{
+  width:48px!important;height:43px!important;max-width:48px!important;max-height:43px!important;
+  display:flex;align-items:center;justify-content:center;font-size:30px!important;
+  line-height:1;overflow:hidden;flex:0 0 43px
+}
+#page-upgrade .upgrade-slot .gift-img img,
+#page-upgrade .upgrade-slot .gift-img svg{
+  display:block;width:42px!important;height:42px!important;max-width:42px!important;max-height:42px!important;
+  object-fit:contain!important;transform:none!important
+}
+#page-upgrade .upgrade-slot .label{
+  display:block;width:100%;max-width:100%;margin-top:3px!important;
+  font-size:9px!important;line-height:1.15!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+#page-upgrade .upgrade-arrow{width:25px;height:25px;flex:0 0 25px;align-self:center;font-size:17px!important}
+#page-upgrade .picker-title{margin:5px 2px 3px!important;font-size:9px!important;letter-spacing:.8px}
+#page-upgrade .picker-list{
+  display:flex;flex-wrap:nowrap;gap:6px!important;overflow-x:auto;overflow-y:hidden;
+  padding:2px 1px 5px!important;min-height:0;max-height:69px;scrollbar-width:none
+}
+#page-upgrade .picker-item{
+  flex:0 0 64px!important;width:64px!important;min-width:64px!important;
+  height:62px!important;padding:4px 3px!important;border-radius:10px!important;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  transform:none!important;transition:border-color .15s,background .15s,box-shadow .15s!important;
+  overflow:hidden
+}
+#page-upgrade .picker-item:active,
+#page-upgrade .picker-item.selected{transform:none!important;scale:1!important}
+#page-upgrade .picker-item.selected{
+  border-width:1px!important;border-color:#c6baff!important;
+  background:linear-gradient(150deg,#504a7e,#263553)!important;
+  box-shadow:inset 0 0 0 1px rgba(198,186,255,.22),0 0 10px rgba(155,139,255,.12)!important
+}
+#page-upgrade .picker-item .gift-img{
+  height:31px!important;width:100%!important;min-height:31px!important;
+  display:flex;align-items:center;justify-content:center;font-size:25px!important;line-height:1
+}
+#page-upgrade .picker-item .gift-img img,
+#page-upgrade .picker-item .gift-img svg{
+  width:29px!important;height:29px!important;max-width:29px!important;max-height:29px!important;
+  object-fit:contain!important;transform:none!important
+}
+#page-upgrade .picker-item .label{
+  max-width:100%;font-size:8px!important;line-height:1.05!important;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0!important
+}
+#page-upgrade .picker-item .price{font-size:8px!important;line-height:1.05;margin:0!important}
+#page-upgrade .wheel-wrap{
+  width:clamp(104px,30vw,132px)!important;height:clamp(104px,30vw,132px)!important;
+  margin:5px auto 3px!important;filter:drop-shadow(0 5px 12px rgba(0,0,0,.25))
+}
+#page-upgrade .wheel{
+  width:100%!important;height:100%!important;border-width:4px!important;
+  transition:transform 5.5s cubic-bezier(.12,.62,.22,1)
+}
+#page-upgrade .wheel-center{width:34px!important;height:34px!important;border-width:2px!important}
+#page-upgrade .wheel-pointer{top:-5px!important;border-left-width:8px!important;border-right-width:8px!important;border-top-width:13px!important}
+#page-upgrade .chance{font-size:23px!important;line-height:1.05;margin:2px 0 5px!important}
+#page-upgrade .chance small{font-size:8px!important;margin-top:2px!important}
+#page-upgrade #upgradeBtn{margin-top:0!important;padding:11px 12px!important;min-height:40px;font-size:12px!important}
+#page-upgrade .upgrade-box:after{display:none!important}
+@media(max-height:760px){
+ #page-upgrade>.section-title{margin-top:4px!important;margin-bottom:5px!important}
+ #page-upgrade .upgrade-box{padding:7px 9px 9px!important}
+ #page-upgrade .upgrade-slot{height:70px!important;max-height:70px}
+ #page-upgrade .picker-list{max-height:61px}
+ #page-upgrade .picker-item{height:56px!important}
+ #page-upgrade .wheel-wrap{width:98px!important;height:98px!important;margin:3px auto!important}
+ #page-upgrade .chance{font-size:20px!important}
+ #page-upgrade #upgradeBtn{min-height:36px;padding:8px!important}
+}
+/* Refined rocket: enamel body, metal fins, glass cockpit and layered exhaust. */
+.crash-canvas-wrap{
+ background:radial-gradient(ellipse at 50% 0%,rgba(106,125,218,.2),transparent 58%),
+ linear-gradient(160deg,#14213a 0%,#0b1427 72%,#101a30 100%)!important;
+ border-color:rgba(145,165,220,.28)!important
+}
+#page-crash .crash-box{
+ background:radial-gradient(ellipse at 50% 0%,rgba(102,122,211,.14),transparent 52%),
+ linear-gradient(155deg,#15243c,#0b1425 78%)!important;
+ border-color:rgba(132,156,215,.22)!important
+}
+
 </style>
 </head>
 <body>
@@ -1819,16 +1942,43 @@ function initCrashCanvas() {
 function crashHeading(t) { return Math.atan2(-15 * Math.sqrt(Math.max(t, 0.01)), 30 + 2.4 * t); }
 
 function drawRocket(ctx, u, flame) {
-  ctx.lineWidth = 2.2; ctx.strokeStyle = '#2a1c12'; ctx.lineJoin = 'round';
-  const fs = (pts, col) => { ctx.fillStyle = col; ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0]*u, p[1]*u) : ctx.moveTo(p[0]*u, p[1]*u)); ctx.closePath(); ctx.fill(); ctx.stroke(); };
-  if (flame) { const f = 1.1 + Math.random() * 0.7; fs([[-.38,1],[0,1+f*1.3],[.38,1]], '#d9b77a'); fs([[-.2,1],[0,1+f*.7],[.2,1]], '#8b542d'); }
-  fs([[-.5,.2],[-1.05,1.15],[-.45,.95]], '#6f4a2a'); fs([[.5,.2],[1.05,1.15],[.45,.95]], '#6f4a2a');
-  ctx.fillStyle = '#d8c5a6'; ctx.beginPath(); ctx.moveTo(0, -1.7*u);
-  ctx.bezierCurveTo(.95*u, -.8*u, .75*u, .6*u, .5*u, 1.05*u); ctx.lineTo(-.5*u, 1.05*u);
-  ctx.bezierCurveTo(-.75*u, .6*u, -.95*u, -.8*u, 0, -1.7*u); ctx.closePath(); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = '#8d633c'; ctx.beginPath(); ctx.moveTo(0, -1.7*u); ctx.bezierCurveTo(.4*u, -1.3*u, .5*u, -1.0*u, .52*u, -.8*u);
-  ctx.lineTo(-.52*u, -.8*u); ctx.bezierCurveTo(-.5*u, -1.0*u, -.4*u, -1.3*u, 0, -1.7*u); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = '#6e5435'; ctx.beginPath(); ctx.arc(0, -.1*u, .34*u, 0, 7); ctx.fill(); ctx.stroke();
+  ctx.save();
+  ctx.lineJoin='round'; ctx.lineCap='round';
+  const path=(points,fill,stroke='#17243a',width=.09)=>{
+    ctx.beginPath(); points.forEach((p,i)=>i?ctx.lineTo(p[0]*u,p[1]*u):ctx.moveTo(p[0]*u,p[1]*u));
+    ctx.closePath(); ctx.fillStyle=fill; ctx.fill(); ctx.lineWidth=width*u; ctx.strokeStyle=stroke; ctx.stroke();
+  };
+  if(flame){
+    const pulse=1+Math.random()*.42;
+    const exhaust=ctx.createLinearGradient(0,.8*u,0,(1.8+pulse)*u);
+    exhaust.addColorStop(0,'#fff3c4');exhaust.addColorStop(.35,'#ffbd69');exhaust.addColorStop(1,'rgba(111,151,255,0)');
+    path([[-.29,.72],[0,1.05+pulse],[.29,.72]],exhaust,'rgba(255,211,150,.65)',.04);
+    path([[-.13,.76],[0,.96+pulse*.58],[.13,.76]],'#fff1bd','rgba(255,255,255,.45)',.025);
+  }
+  // Stabilizers and metallic trim
+  path([[-.43,.15],[-1.02,1.02],[-.34,.83]],'#7085b2','#182844',.1);
+  path([[.43,.15],[1.02,1.02],[.34,.83]],'#7085b2','#182844',.1);
+  path([[-.47,.43],[-.72,.9],[-.37,.72]],'#c1d2ee','#263957',.045);
+  path([[.47,.43],[.72,.9],[.37,.72]],'#c1d2ee','#263957',.045);
+  // Main pearl-white fuselage
+  ctx.beginPath();ctx.moveTo(0,-1.72*u);
+  ctx.bezierCurveTo(.82*u,-1.08*u,.78*u,.28*u,.48*u,.92*u);
+  ctx.lineTo(-.48*u,.92*u);ctx.bezierCurveTo(-.78*u,.28*u,-.82*u,-1.08*u,0,-1.72*u);
+  const hull=ctx.createLinearGradient(-.6*u,0,.6*u,0);
+  hull.addColorStop(0,'#7186b1');hull.addColorStop(.24,'#e8f0ff');hull.addColorStop(.55,'#fffdf5');hull.addColorStop(1,'#91a8d2');
+  ctx.fillStyle=hull;ctx.fill();ctx.lineWidth=.1*u;ctx.strokeStyle='#263958';ctx.stroke();
+  // Nose cap and center stripe
+  path([[0,-1.72],[-.36,-1.03],[.36,-1.03]],'#8c7bff','#34446c',.055);
+  ctx.beginPath();ctx.moveTo(0,-.92*u);ctx.lineTo(0,.76*u);ctx.strokeStyle='rgba(255,255,255,.52)';ctx.lineWidth=.075*u;ctx.stroke();
+  // Porthole with glass reflection
+  ctx.beginPath();ctx.arc(0,-.08*u,.34*u,0,Math.PI*2);
+  const glass=ctx.createRadialGradient(-.1*u,-.2*u,.02*u,0,-.08*u,.35*u);
+  glass.addColorStop(0,'#d9f7ff');glass.addColorStop(.45,'#58b8e9');glass.addColorStop(1,'#263c70');
+  ctx.fillStyle=glass;ctx.fill();ctx.lineWidth=.11*u;ctx.strokeStyle='#263958';ctx.stroke();
+  ctx.beginPath();ctx.arc(-.1*u,-.2*u,.09*u,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,.8)';ctx.fill();
+  // Gold collar and engine ring
+  ctx.beginPath();ctx.moveTo(-.45*u,.68*u);ctx.lineTo(.45*u,.68*u);ctx.strokeStyle='#e7c987';ctx.lineWidth=.09*u;ctx.stroke();
+  ctx.restore();
 }
 
 function drawCrash() {

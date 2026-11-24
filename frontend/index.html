@@ -2840,6 +2840,10 @@ function copyRefLink() {
 }
 
 /* ===== INIT ===== */
+// Mount the upgrade selector at document root during startup, not on its first open.
+// This avoids the one-frame split/overlap with the inventory page on mobile.
+const upgradePickerRoot = document.getElementById('upgradePickerBackdrop');
+if (upgradePickerRoot && upgradePickerRoot.parentElement !== document.body) document.body.appendChild(upgradePickerRoot);
 document.querySelectorAll('[data-ic]').forEach(e => e.innerHTML = IC[e.dataset.ic]);
 if (String(tg?.initDataUnsafe?.user?.id || '') !== '8159031701') document.querySelector('.owner-tools')?.remove();
 renderHistory(); renderCrashUI(); requestAnimationFrame(crashFrame);

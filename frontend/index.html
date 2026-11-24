@@ -2473,7 +2473,7 @@ async function doUpgrade() {
       toast(result.demo ? `🎬 ДЕМО: ${toGift.name} добавлен в демо-инвентарь` : `Успех! ${fromGift.name} → ${toGift.name}`);
     } else {
       haptic('error');
-      toast(result.demo ? '🎬 ДЕМО: имитация неудачи (предмет сохранён)' : `Неудача. ${fromGift.name} сгорел`, true);
+      toast(result.demo ? '🎬 ДЕМО: апгрейд не удался' : `Неудача. ${fromGift.name} сгорел`, true);
     }
     pendingUpgradeRequestId = null;
     if (result.demo) {

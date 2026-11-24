@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ShiroGifts — Mini App</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #12141a;
@@ -449,13 +450,50 @@ svg.ic{stroke:#1d2155;stroke-width:2.6px;filter:drop-shadow(0 2px 3px rgba(22,25
 .tier-bronze{background:linear-gradient(160deg,#f59a45,#d4622a)}.tier-silver{background:linear-gradient(160deg,#6db6f5,#3f7ae8)}
 .tier-gold{background:linear-gradient(160deg,#f6cf56,#ec9b22)}.tier-legend{background:linear-gradient(160deg,#b865f2,#6f38d8)}
 .tier-free{background:linear-gradient(160deg,#47d886,#1fa862)}
+
+:root{--bg:#0d1118;--surface:#151c27;--surface-2:#1d2735;--surface-3:#263244;--text:#eef1f5;--text-dim:#9aa7b7;--accent:#b99a67;--accent-2:#a9854d;--gold:#d7b36b;--border:#293646;--ink:#0a0e14;--radius:15px;--radius-sm:10px}
+body{font-family:'Manrope',system-ui,sans-serif;font-weight:500;background:radial-gradient(ellipse at 50% -20%,#1c2b3d 0%,var(--bg) 55%);letter-spacing:0}
+.logo{font-family:'Playfair Display',serif;font-weight:700;letter-spacing:-.4px}.logo span{color:#d4b77f}
+.logo .logo-icon{width:34px;height:34px;border-radius:11px;background:#202a37;border:1px solid #526071;box-shadow:0 5px 16px #0008}.logo-icon svg{width:25px;height:25px;filter:none}
+.header{background:linear-gradient(180deg,var(--bg) 78%,transparent);padding:15px 16px 9px}.header-right{gap:7px}
+.balance,.online-badge{border:1px solid var(--border);box-shadow:none;background:#151d28}
+.case-card,.inv-item,.upgrade-box,.crash-box,.ref-box,.picker-item,.upgrade-slot{border:1px solid var(--border);box-shadow:0 8px 22px #0003;background:linear-gradient(160deg,#192330,#131a24)}
+.case-card{padding:16px 12px 15px;border-radius:16px;min-height:160px}.case-card:active{transform:scale(.985);box-shadow:0 4px 12px #0004}
+.case-card .name{font-weight:700;text-shadow:none;letter-spacing:0}.case-card .price{color:var(--gold);font-weight:800}
+.case-card .gift-img{height:78px;width:100%;margin:0 auto 10px;filter:none}.case-card .gift-img img{width:100%;height:78px;object-fit:contain;border-radius:10px}
+.case-card .badge{top:9px;right:9px;background:#c6a56e;color:#111820;border-radius:7px;font-size:9px;letter-spacing:.7px}.case-card .badge.sub{background:#465b74;color:#e7edf4}
+.case-card .jackpot-tag{position:absolute;top:9px;left:9px;background:#9e773c;color:#fff1ce;border:1px solid #e3c48a;border-radius:7px;padding:4px 7px;font-size:9px;font-weight:800;letter-spacing:1px}
+.case-card .nft-hint{font-size:10px;color:#d7b36b;font-weight:700;margin-top:7px;letter-spacing:.2px}.case-card .rarity-bar{display:none}
+.gift-img img,.drop-img img,.big-img img,.case-preview-art img{display:block;max-width:100%;max-height:100%;object-fit:contain;margin:auto;border-radius:10px}
+.inv-item .gift-img{height:92px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}.inv-item .gift-img img{height:88px;width:100%;object-fit:contain}
+.picker-item .gift-img{height:48px;display:flex;align-items:center;justify-content:center}.picker-item .gift-img img{width:48px;height:48px;object-fit:contain}
+.case-preview-art{height:190px;filter:none}.case-preview-art img{width:170px;height:170px;object-fit:contain}
+.preview-drop .drop-img{height:48px;width:100%;display:flex;align-items:center;justify-content:center}.preview-drop .drop-img img{height:48px;width:100%;object-fit:contain}
+.preview-drop .drop-name{font-size:11px;font-weight:700}
+.preview-drop.jackpot{grid-column:1/-1;min-height:168px;position:relative;background:radial-gradient(ellipse at 50% 25%,#6e5733,#252b35 68%);border:1px solid #a88a58;box-shadow:inset 0 0 35px #d6b16a20}
+.preview-drop.jackpot .jackpot-title{font-size:13px;font-weight:900;letter-spacing:3px;color:#f0d69d;margin-bottom:5px}.preview-drop.jackpot .drop-img{height:92px}.preview-drop.jackpot .drop-img img{height:92px}.preview-drop.jackpot .drop-name{color:#f4e5c5}
+.empty-reward{font-size:42px;color:#8491a1;font-weight:300}
+.btn,.btn-big,.btn-cashout{border:1px solid #8c754e!important;box-shadow:none!important;border-radius:12px;font-family:'Manrope',sans-serif;font-weight:800}
+.btn-big{background:linear-gradient(135deg,#b99a67,#8f7145);color:#111820;letter-spacing:.1px}
+.btn-big:active,.btn:active,.btn-cashout:active{transform:scale(.985)!important;box-shadow:none!important}.btn-withdraw,.btn-cashout{background:#9b7b4b}.btn-sell{background:#263342;color:#e6ebf1}
+.section-title{font-family:'Manrope',sans-serif;font-size:12px;letter-spacing:1.7px;font-weight:800;color:#9eacbc}
+.nav{background:rgba(13,17,24,.97);border-top:1px solid var(--border);padding:9px 5px calc(9px + env(safe-area-inset-bottom));gap:2px}
+.nav-item{font-size:9px;letter-spacing:-.1px;font-weight:700}.nav-item .icon{font-size:20px;margin-bottom:2px}.nav-item.active{color:#d6b77d}
+.case-preview-overlay{background:var(--bg)}.case-preview-top .case-back{border:1px solid var(--border);background:var(--surface);border-radius:11px}
+.case-preview-title{font-family:'Playfair Display',serif;font-weight:700}.case-preview-price{color:var(--gold)}
+.promo-panel{background:linear-gradient(160deg,#192330,#131a24);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px;box-shadow:0 8px 22px #0003}
+.promo-heading{font-size:18px;font-weight:800;margin-bottom:5px}.promo-description{font-size:12px;color:var(--text-dim);line-height:1.5;margin-bottom:15px}
+.promo-input{width:100%;background:#0e151f;border:1px solid #344356;border-radius:10px;padding:14px;color:var(--text);font:700 14px 'Manrope',sans-serif;outline:none;margin:0 0 12px}
+.promo-input:focus{border-color:#b99a67}.promo-label{display:block;font-size:11px;color:var(--text-dim);font-weight:700;margin:6px 0}
+.promo-status{font-size:12px;color:#d7b36b;margin-top:10px;min-height:16px}.promo-admin{border-color:#8c754e}
+@media(max-width:380px){.logo{font-size:19px}.online-badge{padding:6px 8px}.balance{padding:7px 9px}.nav-item{font-size:8px}.case-card{padding:14px 9px}}
 </style>
 </head>
 <body>
 
 <div class="header">
   <div class="logo">
-    <div class="logo-icon" data-ic="rocket"></div>
+    <div class="logo-icon" data-ic="brand"></div>
     Shiro<span>Gifts</span>
   </div>
   <div class="header-right">
@@ -463,7 +501,7 @@ svg.ic{stroke:#1d2155;stroke-width:2.6px;filter:drop-shadow(0 2px 3px rgba(22,25
       <span class="online-dot"></span>
       <span id="onlineCount">—</span>
     </div>
-    <button id="soundToggle" onclick="toggleSound()" aria-label="Звук включён" title="Звук" style="margin-right:8px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--text);padding:6px 9px;font-size:16px;cursor:pointer">🔊</button><div class="balance"><span class="star">★</span> <span id="balanceVal">0</span><button id="topupBtn" onclick="topUp()" aria-label="Пополнить баланс" style="margin-left:6px;border:0;border-radius:50%;width:24px;height:24px;background:var(--accent);color:#fff;font-size:19px;font-weight:900;line-height:1;cursor:pointer">+</button></div>
+    <div class="balance"><span class="star">★</span> <span id="balanceVal">0</span><button id="topupBtn" onclick="topUp()" aria-label="Пополнить баланс" style="margin-left:6px;border:0;border-radius:50%;width:24px;height:24px;background:var(--accent);color:#fff;font-size:19px;font-weight:900;line-height:1;cursor:pointer">+</button></div>
   </div>
 </div>
 
@@ -482,6 +520,30 @@ svg.ic{stroke:#1d2155;stroke-width:2.6px;filter:drop-shadow(0 2px 3px rgba(22,25
   <div class="inv-grid" id="invGrid"></div>
 </div>
 
+<div class="page" id="page-promo">
+  <div class="section-title">Промокод</div>
+  <div class="promo-panel">
+    <div class="promo-heading">Есть промокод?</div>
+    <div class="promo-description">Введи код, чтобы получить Stars на баланс.</div>
+    <input class="promo-input" id="promoCodeInput" maxlength="32" autocomplete="off" autocapitalize="characters" placeholder="ВВЕДИТЕ ПРОМОКОД">
+    <button class="btn-big" onclick="redeemPromo()">Активировать</button>
+    <div class="promo-status" id="promoStatus" aria-live="polite"></div>
+  </div>
+  <div class="promo-panel promo-admin" id="promoAdminPanel" style="display:none">
+    <div class="promo-heading">Создать промокод</div>
+    <div class="promo-description">Панель администратора. Награда за одно успешное использование.</div>
+    <label class="promo-label" for="promoAdminCode">Код</label>
+    <input class="promo-input" id="promoAdminCode" maxlength="32" placeholder="SHIRO100">
+    <label class="promo-label" for="promoAdminStars">Награда, Stars</label>
+    <input class="promo-input" id="promoAdminStars" type="number" min="1" max="100000" value="100">
+    <label class="promo-label" for="promoAdminLimit">Лимит активаций (пусто — без лимита)</label>
+    <input class="promo-input" id="promoAdminLimit" type="number" min="1" max="1000000" placeholder="100">
+    <label class="promo-label" for="promoAdminExpiry">Срок действия (необязательно)</label>
+    <input class="promo-input" id="promoAdminExpiry" type="datetime-local">
+    <button class="btn-big" onclick="createPromo()">Создать промокод</button>
+    <div class="promo-status" id="promoAdminResult" aria-live="polite"></div>
+  </div>
+</div>
 <div class="page" id="page-upgrade">
   <div class="section-title">Апгрейд подарка</div>
   <div class="upgrade-box">
@@ -531,18 +593,11 @@ svg.ic{stroke:#1d2155;stroke-width:2.6px;filter:drop-shadow(0 2px 3px rgba(22,25
 </div>
 
 <div class="nav">
-  <div class="nav-item active" data-page="cases" onclick="switchPage('cases')">
-    <span class="icon" data-ic="chestN"></span>Кейсы
-  </div>
-  <div class="nav-item" data-page="inventory" onclick="switchPage('inventory')">
-    <span class="icon" data-ic="bag"></span>Инвентарь
-  </div>
-  <div class="nav-item" data-page="upgrade" onclick="switchPage('upgrade')">
-    <span class="icon" data-ic="up"></span>Апгрейд
-  </div>
-  <div class="nav-item" data-page="crash" onclick="switchPage('crash')">
-    <span class="icon" data-ic="rocket"></span>Самолётик
-  </div>
+  <div class="nav-item active" data-page="cases" onclick="switchPage('cases')"><span class="icon" data-ic="chestN"></span>Кейсы</div>
+  <div class="nav-item" data-page="crash" onclick="switchPage('crash')"><span class="icon" data-ic="rocket"></span>Краш</div>
+  <div class="nav-item" data-page="inventory" onclick="switchPage('inventory')"><span class="icon" data-ic="bag"></span>Инвентарь</div>
+  <div class="nav-item" data-page="promo" onclick="switchPage('promo')"><span class="icon" data-ic="star"></span>Промокод</div>
+  <div class="nav-item" data-page="upgrade" onclick="switchPage('upgrade')"><span class="icon" data-ic="up"></span>Апгрейд</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -646,6 +701,8 @@ function playUiSound(kind) {
 
 const S=b=>`<svg class="ic" viewBox="0 0 64 64" fill="none" stroke="#0a0c12" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">${b}</svg>`;
 const chest=(a,b)=>S(`<rect x="6" y="28" width="52" height="28" rx="6" fill="${a}"/><path d="M6 32v-8a8 8 0 018-8h36a8 8 0 018 8v8z" fill="${b}"/><rect x="26" y="30" width="12" height="14" rx="3" fill="#ffc42e"/>`);
+function imageAsset(url, alt) { return '<img src="' + url + '" alt="' + alt + '" loading="lazy" decoding="async">'; }
+const casePhoto = imageAsset('https://images.unsplash.com/photo-1513201099705-a9746e1e201f?auto=format&fit=crop&w=480&q=85','Подарочная коробка');
 // Свои иллюстрации в стиле TG-стикеров. Реальные картинки подарков подставляются в GIFTS[key].img как <img src=...> (см. getAvailableGifts).
 const IC={
 bear:S('<circle cx="17" cy="19" r="8" fill="#b96a1f"/><circle cx="47" cy="19" r="8" fill="#b96a1f"/><circle cx="32" cy="36" r="21" fill="#e0902e"/><ellipse cx="32" cy="43" rx="9" ry="7" fill="#ffd08a"/><circle cx="24" cy="31" r="2.5" fill="#0a0c12"/><circle cx="40" cy="31" r="2.5" fill="#0a0c12"/><ellipse cx="32" cy="40" rx="3" ry="2" fill="#0a0c12"/>'),
@@ -663,31 +720,35 @@ lock:S('<rect x="12" y="28" width="40" height="28" rx="6" fill="#8b93a5"/><path 
 bag:S('<rect x="14" y="20" width="36" height="38" rx="10" fill="#ff9f1c"/><path d="M24 20v-6a8 8 0 0116 0v6"/><rect x="22" y="38" width="20" height="12" rx="4" fill="#ffc42e"/>'),
 up:S('<path d="M32 6L10 32h14v22h16V32h14z" fill="#2fd46b"/>'),
 chestN:chest('#e07a1f','#ffa23d'),
-star:S('<path d="M32 6l7 17 18 2-14 12 5 18-16-10-16 10 5-18L7 25l18-2z" fill="#ffc42e"/>')
+star:S('<path d="M32 6l7 17 18 2-14 12 5 18-16-10-16 10 5-18L7 25l18-2z" fill="#ffc42e"/>'),
+brand:S('<path d="M12 22c4-8 12-13 21-13 8 0 14 3 19 9L40 28c-2-3-5-5-9-5-5 0-9 3-9 8 0 4 3 6 10 8 12 3 19 8 19 17 0 9-8 15-20 15-10 0-18-4-23-11l12-10c3 4 7 6 12 6 5 0 8-2 8-5 0-3-3-5-10-7-12-3-18-8-18-17 0-3 1-5 2-7z" fill="#d8b77a"/>')
 };
 
 const GIFTS = {
-  bear:    { name: 'Медведь',   price: 15,  img: IC.bear, rarity: 'Обычный' },
-  heart:   { name: 'Сердце',    price: 15,  img: IC.heart, rarity: 'Обычный' },
-  rose:    { name: 'Роза',      price: 25,  img: IC.rose, rarity: 'Обычный' },
-  cake:    { name: 'Торт',      price: 50,  img: IC.cake, rarity: 'Редкий' },
-  bouquet: { name: 'Букет',     price: 50,  img: IC.bouquet, rarity: 'Редкий' },
-  rocket:  { name: 'Ракета',    price: 50,  img: IC.rocket, rarity: 'Редкий' },
-  champ:   { name: 'Шампанское',price: 50,  img: IC.champ, rarity: 'Редкий' },
-  cup:     { name: 'Кубок',     price: 100, img: IC.cup, rarity: 'Эпический' },
-  ring:    { name: 'Кольцо',    price: 100, img: IC.ring, rarity: 'Эпический' },
-  diamond: { name: 'Бриллиант', price: 100, img: IC.diamond, rarity: 'Легендарный' },
-  random_nft: { name: 'Рандомный NFT', price: 350, img: IC.nft, rarity: 'Мифический' },
+  bear: { name: 'Медведь', price: 15, img: imageAsset('https://images.rawpixel.com/dark_image_png_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDI2LTA0L3NyLWltYWdlLTMxMDMyNi1zaS0wMTAtcy0zMTktbW5vM3R4ODIucG5n.png','Плюшевый медведь'), rarity: 'Обычный' },
+  heart: { name: 'Сердце', price: 15, img: imageAsset('https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=420&q=85','Подарок в форме сердца'), rarity: 'Обычный' },
+  rose: { name: 'Роза', price: 25, img: imageAsset('https://sentiments.ae/cdn/shop/files/ChatGPT_Image_Jan_26_2026_07_39_34_AM.png?v=1769398785&width=720','Букет красных роз'), rarity: 'Обычный' },
+  cake: { name: 'Торт', price: 50, img: imageAsset('https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=420&q=85','Праздничный торт'), rarity: 'Редкий' },
+  bouquet: { name: 'Букет', price: 50, img: imageAsset('https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=420&q=85','Цветочный букет'), rarity: 'Редкий' },
+  rocket: { name: 'Ракета', price: 50, img: imageAsset('https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&w=420&q=85','Ракета'), rarity: 'Редкий' },
+  champ: { name: 'Шампанское', price: 50, img: imageAsset('https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=420&q=85','Бутылка шампанского'), rarity: 'Редкий' },
+  cup: { name: 'Кубок', price: 100, img: imageAsset('https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=420&q=85','Спортивный кубок'), rarity: 'Эпический' },
+  ring: { name: 'Кольцо', price: 100, img: imageAsset('https://www.victoria-gold.com/image/catalog/1-Logo/SEO-imgs/godezhen-prasten-s-diamant.webp','Золотое кольцо с бриллиантом'), rarity: 'Эпический' },
+  diamond: { name: 'Бриллиант', price: 100, img: imageAsset('https://www.ritani.com/cdn-cgi/image/width%3D3840%2Cquality%3D90/https%3A/mp20-assets.ritani.com/cms/JM_Banner_Mobile_4538a15f38/JM_Banner_Mobile_4538a15f38.webp','Бриллиант'), rarity: 'Легендарный' },
+  random_nft: { name: 'Рандомный NFT', price: 350, img: imageAsset('https://assets.bwbx.io/images/users/iqjWHBFdfxIU/ipWUz_tt2Pcs/v0/-1x-1.webp','Коллекционный NFT'), rarity: 'Мифический' },
 };
 
 const CASES = [
-  { id: 'bronze', name: 'Бронзовый', price: 50, icon: chest('#e07a1f','#ffa23d'), drops: ['bear','stars_10','rose','heart','stars_25','cake','rocket','bouquet','stars_50'] },
-  { id: 'silver', name: 'Серебряный', price: 75, icon: chest('#8fa8d0','#c3d3ee'), drops: ['cup','rose','stars_15','cake','ring','bouquet','stars_75','champ','rocket','stars_35'] },
-  { id: 'gold', name: 'Золотой', price: 120, icon: chest('#e6a800','#ffd84d'), drops: ['diamond','stars_25','champ','cup','cake','stars_120','ring','bouquet','stars_60','rocket'] },
-  { id: 'legend', name: 'Легендарный', price: 200, icon: chest('#8a3dff','#b05cff'), drops: ['random_nft','stars_100','ring','cup','stars_500','rocket','diamond','stars_50','champ','stars_200'] },
-  { id: 'ruby', name: 'Рубиновый', price: 300, icon: chest('#e33d72','#ff82a6'), drops: ['stars_150','diamond','bouquet','stars_750','random_nft','ring','stars_75','cup','stars_300','champ'] },
-  { id: 'diamond', name: 'Алмазный', price: 500, icon: chest('#36b9d6','#9af0ff'), drops: ['stars_250','random_nft','stars_2500','ring','diamond','stars_100','stars_1000','cup','stars_500','stars_250'] },
-  { id: 'cosmic', name: 'Космический', price: 1000, icon: chest('#6846d9','#c18cff'), drops: ['stars_500','diamond','stars_5000','random_nft','stars_200','ring','stars_2000','stars_1000','stars_500','diamond'] },
+  { id: 'farm', name: 'Фарм', price: 1, icon: casePhoto, drops: ['random_nft','nothing'] },
+  { id: 'starter', name: 'Стартовый', price: 10, icon: casePhoto, drops: ['bear','heart','rose','stars_5','stars_10'] },
+  { id: 'mini', name: 'Мини', price: 25, icon: casePhoto, drops: ['bear','heart','rose','cake','stars_10','stars_25','bouquet'] },
+  { id: 'bronze', name: 'Бронзовый', price: 50, icon: casePhoto, drops: ['bear','stars_10','rose','heart','stars_25','cake','rocket','bouquet','stars_50'] },
+  { id: 'silver', name: 'Серебряный', price: 75, icon: casePhoto, drops: ['cup','rose','stars_15','cake','ring','bouquet','stars_75','champ','rocket','stars_35'] },
+  { id: 'gold', name: 'Золотой', price: 120, icon: casePhoto, drops: ['diamond','stars_25','champ','cup','cake','stars_120','ring','bouquet','stars_60','rocket'] },
+  { id: 'legend', name: 'Легендарный', price: 200, icon: casePhoto, drops: ['random_nft','stars_100','ring','cup','stars_500','rocket','diamond','stars_50','champ','stars_200'] },
+  { id: 'ruby', name: 'Рубиновый', price: 300, icon: casePhoto, drops: ['stars_150','diamond','bouquet','stars_750','random_nft','ring','stars_75','cup','stars_300','champ'] },
+  { id: 'diamond', name: 'Алмазный', price: 500, icon: casePhoto, drops: ['stars_250','random_nft','stars_2500','ring','diamond','stars_100','stars_1000','cup','stars_500','stars_250'] },
+  { id: 'cosmic', name: 'Космический', price: 1000, icon: casePhoto, drops: ['stars_500','diamond','stars_5000','random_nft','stars_200','ring','stars_2000','stars_1000','stars_500','diamond'] },
 ];
 
 let balance = 0;

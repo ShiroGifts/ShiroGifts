@@ -464,7 +464,7 @@ body{font-family:'Manrope',system-ui,sans-serif;font-weight:500;background:radia
 .case-card .badge{top:9px;right:9px;background:#c6a56e;color:#111820;border-radius:7px;font-size:9px;letter-spacing:.7px}.case-card .badge.sub{background:#465b74;color:#e7edf4}
 .case-card .jackpot-tag{position:absolute;top:9px;left:9px;background:#9e773c;color:#fff1ce;border:1px solid #e3c48a;border-radius:7px;padding:4px 7px;font-size:9px;font-weight:800;letter-spacing:1px}
 .case-card .nft-hint{font-size:10px;color:#d7b36b;font-weight:700;margin-top:7px;letter-spacing:.2px}.case-card .rarity-bar{display:none}
-.random-nft-art{width:64px;height:64px;object-fit:contain;background:transparent;mix-blend-mode:screen;filter:drop-shadow(0 5px 10px #0008)}
+.random-nft-art{width:64px;height:64px;object-fit:contain;background:transparent;mix-blend-mode:multiply;filter:drop-shadow(0 5px 10px #0008)}
 .jackpot-item-label{font-size:10px;font-weight:900;letter-spacing:1px;color:#e6b75c;margin:4px 0 8px;text-shadow:0 0 10px #b8794355}
 .nft-stack{position:relative;width:82px;height:76px;margin:auto}
 .nft-stack-item{position:absolute;width:48px;height:48px;object-fit:contain;filter:drop-shadow(0 4px 6px #0009);border:1px solid #b58a5555;border-radius:8px;background:#1a130d}
@@ -598,9 +598,12 @@ body{background:var(--bg);color:var(--text)}
     <label class="promo-label" for="adminGiftTelegramId">Telegram ID игрока</label>
     <input class="promo-input" id="adminGiftTelegramId" inputmode="numeric" placeholder="Например, 123456789">
     <label class="promo-label" for="adminGiftKey">Предмет</label>
-    <select id="adminGiftKey"><option value="bear">Мишка</option><option value="heart">Сердце</option><option value="rose">Роза</option><option value="cake">Торт</option><option value="bouquet">Букет</option><option value="rocket">Ракета</option><option value="champ">Шампанское</option><option value="cup">Кубок</option><option value="ring">Обычное кольцо</option><option value="diamond">Бриллиант</option><option value="random_nft">Рандомный NFT</option><option value="plush_pepe">Plush Pepe NFT</option><option value="plush_pepe_royal">Plush Pepe · Shiro Edition</option><option value="diamond_ring">Diamond Ring NFT</option><option value="durovs_glasses">Durov’s Glasses NFT</option><option value="durovs_cap">Durov’s Cap NFT</option><option value="resistance_dog">Resistance Dog NFT</option><option value="precious_peach">Precious Peach NFT</option><option value="scared_cat">Scared Cat NFT</option><option value="heroic_helmet">Heroic Helmet NFT</option><option value="astral_shard">Astral Shard NFT</option><option value="loot_bag">Loot Bag NFT</option></select>
+    <select id="adminGiftKey"><option value="bear">Мишка</option><option value="heart">Сердце</option><option value="rose">Роза</option><option value="cake">Торт</option><option value="bouquet">Букет</option><option value="rocket">Ракета</option><option value="champ">Шампанское</option><option value="cup">Кубок</option><option value="ring">Обычное кольцо</option><option value="diamond">Бриллиант</option><option value="random_nft">Рандомный NFT</option><option value="plush_pepe">Plush Pepe NFT</option><option value="plush_pepe_royal">Plush Pepe · ДЖЕКПОТ</option><option value="diamond_ring">Diamond Ring NFT</option><option value="durovs_glasses">Durov’s Glasses NFT</option><option value="durovs_cap">Durov’s Cap NFT</option><option value="resistance_dog">Resistance Dog NFT</option><option value="precious_peach">Precious Peach NFT</option><option value="scared_cat">Scared Cat NFT</option><option value="heroic_helmet">Heroic Helmet NFT</option><option value="astral_shard">Astral Shard NFT</option><option value="loot_bag">Loot Bag NFT</option></select>
     <button class="btn-big" onclick="grantGift()">Выдать подарок</button>
-    <div class="promo-status" id="adminGiftResult" aria-live="polite"></div></details>
+    <div class="promo-status" id="adminGiftResult" aria-live="polite"></div>
+    <div class="promo-heading" style="margin-top:22px">Заявки на вывод</div>
+    <button class="btn-big" type="button" onclick="loadAdminWithdrawals()">Обновить заявки</button>
+    <div id="adminWithdrawalList" class="promo-status"></div></details>
   </div>
 </div>
 <div class="page" id="page-upgrade">
@@ -816,7 +819,7 @@ const GIFTS = {
   diamond_ring: { name: 'Diamond Ring NFT', price: 2305, img: tgNft('diamond_ring','Diamond Ring NFT'), rarity: 'NFT' },
   durovs_glasses: { name: 'Durov’s Glasses NFT', price: 11022, img: tgNft('durovs_glasses','Durov’s Glasses NFT'), rarity: 'NFT' },
   durovs_cap: { name: 'Durov’s Cap NFT', price: 28590, img: tgNft('durovs_cap','Durov’s Cap NFT'), rarity: 'NFT' },
-  resistance_dog: { name: 'Resistance Dog NFT', price: 35000, img: tgNft('resistance_dog','Resistance Dog NFT').replace('<img ', '<img onerror="this.onerror=null;this.src=\'https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/resistance-dog.webp\'" '), rarity: 'NFT' },
+  resistance_dog: { name: 'Resistance Dog NFT', price: 35000, img: tgNft('snoop_dogg','Resistance Dog NFT'), rarity: 'NFT' },
   precious_peach: { name: 'Precious Peach NFT', price: 19572, img: tgNft('precious_peach','Precious Peach NFT'), rarity: 'NFT' },
   scared_cat: { name: 'Scared Cat NFT', price: 19099, img: tgNft('scared_cat','Scared Cat NFT'), rarity: 'NFT' },
   heroic_helmet: { name: 'Heroic Helmet NFT', price: 14629, img: tgNft('heroic_helmet','Heroic Helmet NFT'), rarity: 'NFT' },
@@ -828,7 +831,7 @@ const GIFTS = {
   jolly_chimp: { name: 'Jolly Chimp NFT', price: 800, img: tgNft('jolly_chimp','Jolly Chimp NFT'), rarity: 'NFT' },
   ginger_cookie: { name: 'Ginger Cookie NFT', price: 850, img: tgNft('ginger_cookie','Ginger Cookie NFT'), rarity: 'NFT' },
   chill_flame: { name: 'Chill Flame NFT', price: 900, img: tgNft('chill_flame','Chill Flame NFT'), rarity: 'NFT' },
-  mirage_lamp: { name: 'Mirage Lamp NFT', price: 950, img: tgNft('mirage_lamp','Mirage Lamp NFT'), rarity: 'NFT' },
+  mirage_lamp: { name: 'Mirage Lamp NFT', price: 950, img: tgNft('astral_shard','Mirage Lamp NFT'), rarity: 'NFT' },
   snoop_dogg: { name: 'Snoop Dogg NFT', price: 1000, img: tgNft('snoop_dogg','Snoop Dogg NFT'), rarity: 'NFT' }
 };
 
@@ -1736,6 +1739,30 @@ function togglePromoMode() {
   const limit = document.getElementById('promoLimitWrap'), expiry = document.getElementById('promoExpiryWrap');
   if (limit) limit.style.display = mode === 'activations' ? 'block' : 'none';
   if (expiry) expiry.style.display = mode === 'duration' ? 'block' : 'none';
+}
+async function loadAdminWithdrawals() {
+  const box = document.getElementById('adminWithdrawalList');
+  if (!box) return;
+  box.textContent = 'Загружаю…';
+  try {
+    const data = await apiRequest('/api/admin/withdrawals');
+    if (!data.requests.length) { box.textContent = 'Ожидающих заявок нет.'; return; }
+    box.innerHTML = data.requests.map(r => `<div class="promo-description" style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <b>#${r.id} · ${r.name || r.item_key || 'Подарок'}</b><br>
+      Telegram ID: ${r.telegram_id}<br>
+      Тип: ${r.withdrawal_type} · ${new Date(r.created_at).toLocaleString('ru-RU')}<br>
+      <button class="btn btn-sell" onclick="resolveWithdrawal(${r.id},'rejected')">Отклонить</button>
+      <button class="btn btn-withdraw" onclick="resolveWithdrawal(${r.id},'sent')">Отметить отправленным</button>
+    </div>`).join('');
+  } catch(error) { box.textContent = error.message; }
+}
+async function resolveWithdrawal(id, action) {
+  const note = action === 'sent' ? 'Отправлено владельцем' : 'Отклонено владельцем';
+  try {
+    await apiRequest('/api/admin/withdrawals/' + id + '/resolve', { method:'POST', body:JSON.stringify({ action, note }) });
+    toast(action === 'sent' ? 'Заявка отмечена отправленной' : 'Заявка отклонена');
+    await loadAdminWithdrawals();
+  } catch(error) { toast(error.message, true); }
 }
 async function grantGift() {
   const telegramId = document.getElementById('adminGiftTelegramId').value.trim();

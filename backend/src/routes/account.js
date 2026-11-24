@@ -19,10 +19,12 @@ router.get('/me', async (req, res) => {
       [id]
     );
     const profile = await client.query('SELECT age_confirmed_at FROM users WHERE telegram_id = $1', [id]);
+    const referrals = await client.query('SELECT COUNT(*)::int AS count FROM referrals WHERE referrer_telegram_id = $1', [id]);
     res.json({
       ok: true,
       user: { id, firstName: req.telegramUser.first_name || '', username: req.telegramUser.username || null },
       ageConfirmed: !!profile.rows[0]?.age_confirmed_at,
+      referralsCount: Number(referrals.rows[0].count) || 0,
       balance: Number(wallet.rows[0].balance),
       inventory: items.rows
     });

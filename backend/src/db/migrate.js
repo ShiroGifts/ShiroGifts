@@ -42,8 +42,6 @@ async function migrate() {
     );
 
     ALTER TABLE wallet_ledger DROP CONSTRAINT IF EXISTS wallet_ledger_entry_type_check;
-    ALTER TABLE wallet_ledger ADD CONSTRAINT wallet_ledger_entry_type_check
-      CHECK (entry_type IN ('topup','case_spend','case_reward','refund','admin_adjustment','gift_purchase','sale'));
 
     CREATE TABLE IF NOT EXISTS case_openings (
       id BIGSERIAL PRIMARY KEY,

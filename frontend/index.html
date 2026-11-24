@@ -1211,6 +1211,42 @@ body{
   #page-upgrade #upgradePickerBackdrop .picker-item{min-height:150px!important;padding:14px 10px!important}
 }
 
+
+/* Modal is portaled to body: isolate it above every page and let the grid use the full viewport. */
+#upgradePickerBackdrop{
+  position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;
+  z-index:2147483000!important;display:none;align-items:stretch!important;justify-content:stretch!important;
+  padding:0!important;margin:0!important;overflow:hidden!important;
+  background:rgba(3,7,18,.96)!important;
+}
+#upgradePickerBackdrop.show{display:flex!important}
+#upgradePickerBackdrop .upgrade-picker-sheet{
+  position:relative!important;width:100%!important;height:100%!important;height:100dvh!important;
+  max-height:100%!important;min-height:0!important;margin:0!important;
+  padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 14px)!important;
+  display:flex!important;flex-direction:column!important;overflow:hidden!important;
+  box-sizing:border-box!important;background:var(--bg)!important;
+}
+#upgradePickerBackdrop .upgrade-picker-head{flex:0 0 auto!important}
+#upgradePickerBackdrop .picker-list{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  flex:1 1 0!important;min-height:0!important;max-height:none!important;width:100%!important;
+  overflow-x:hidden!important;overflow-y:auto!important;align-content:start!important;
+  gap:14px!important;padding:0 2px 30px!important;box-sizing:border-box!important;
+}
+#upgradePickerBackdrop .picker-list[style*="display: none"]{display:none!important}
+#upgradePickerBackdrop .picker-item{
+  width:auto!important;min-width:0!important;max-width:none!important;min-height:156px!important;height:auto!important;
+  margin:0!important;padding:16px 12px!important;box-sizing:border-box!important;
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  justify-content:flex-start!important;overflow:visible!important;
+}
+#upgradePickerBackdrop .picker-item .gift-img{height:64px!important;min-height:64px!important;flex:0 0 64px!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:48px!important;margin:0 0 8px!important}
+#upgradePickerBackdrop .picker-item .gift-img img,#upgradePickerBackdrop .picker-item .gift-img svg{width:58px!important;height:58px!important;max-width:100%!important;max-height:58px!important;object-fit:contain!important}
+#upgradePickerBackdrop .picker-item .name{font-size:14px!important;line-height:1.25!important;white-space:normal!important;overflow-wrap:anywhere!important}
+#upgradePickerBackdrop .picker-item .rarity{font-size:11px!important;line-height:1.25!important;white-space:normal!important;margin:3px 0 8px!important}
+#upgradePickerBackdrop .picker-item .value{font-size:13px!important;line-height:1.25!important;margin:0 0 2px!important}
+
 </style>
 </head>
 <body>
@@ -2074,6 +2110,8 @@ function renderUpgrade() {
 function openUpgradePicker(which) {
   if(upgradeBusy) return;
   const back=document.getElementById('upgradePickerBackdrop');
+  // Keep the modal outside page/section stacking contexts so it truly covers the app.
+  if(back && back.parentElement!==document.body) document.body.appendChild(back);
   document.getElementById('fromPicker').style.display=which==='from'?'grid':'none';
   document.getElementById('toPicker').style.display=which==='to'?'grid':'none';
   document.getElementById('upgradePickerTitle').textContent=which==='from'?'Выберите предмет из инвентаря':'Выберите желаемый подарок';

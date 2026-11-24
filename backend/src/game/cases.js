@@ -1,4 +1,19 @@
 const CASES = [
+  { id: 'farm', name: 'Фарм', price: 1, drops: [
+    { type: 'gift', key: 'random_nft', weight: 1 },
+    { type: 'nothing', weight: 999 }
+  ]},
+  { id: 'starter', name: 'Стартовый', price: 10, drops: [
+    { type: 'gift', key: 'bear', weight: 38 }, { type: 'gift', key: 'heart', weight: 28 },
+    { type: 'gift', key: 'rose', weight: 18 }, { type: 'stars', amount: 5, weight: 12 },
+    { type: 'stars', amount: 10, weight: 4 }
+  ]},
+  { id: 'mini', name: 'Мини', price: 25, drops: [
+    { type: 'gift', key: 'bear', weight: 20 }, { type: 'gift', key: 'heart', weight: 18 },
+    { type: 'gift', key: 'rose', weight: 18 }, { type: 'gift', key: 'cake', weight: 10 },
+    { type: 'stars', amount: 10, weight: 20 }, { type: 'stars', amount: 25, weight: 10 },
+    { type: 'gift', key: 'bouquet', weight: 4 }
+  ]},
   { id: 'bronze', name: 'Бронзовый', price: 50, drops: [
     { type: 'gift', key: 'bear', weight: 28 }, { type: 'gift', key: 'heart', weight: 22 },
     { type: 'gift', key: 'rose', weight: 18 }, { type: 'gift', key: 'cake', weight: 10 },

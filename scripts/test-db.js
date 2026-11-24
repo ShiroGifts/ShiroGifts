@@ -12,16 +12,15 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 async function run() {
   const schema = fs.readFileSync(path.join(__dirname, '../backend/db/schema.sql'), 'utf8');
   await pool.query(schema);
-  await pool.query(schema); // Migrations must be safe to re-run.
+  await pool.query(schema);
 
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     const telegramId = '987654321012345678';
     await client.query(
-      \`INSERT INTO users (telegram_id, first_name)
-       VALUES ($1, 'CI test') ON CONFLICT (telegram_id) DO NOTHING\`,
-      [telegramId]
+      "INSERT INTO users (telegram_id, first_name) VALUES ($1, $2) ON CONFLICT (telegram_id) DO NOTHING",
+      [telegramId, 'CI test']
     );
 
     const wallet = await client.query(
@@ -29,26 +28,23 @@ async function run() {
       [telegramId]
     );
     const inventory = await client.query(
-      \`SELECT id FROM inventory_items WHERE telegram_id = $1 AND status = 'owned'\`,
+      "SELECT id FROM inventory_items WHERE telegram_id = $1 AND status = 'owned'",
       [telegramId]
     );
     assert.equal(Number(wallet.rows[0].balance), 0, 'a new account starts with zero Stars');
     assert.equal(inventory.rowCount, 0, 'a new account starts with an empty inventory');
 
     await client.query(
-      \`INSERT INTO pending_stars_invoices (payload, telegram_id, amount_stars)
-       VALUES ('ci-test-invoice', $1, 5)\`,
-      [telegramId]
+      "INSERT INTO pending_stars_invoices (payload, telegram_id, amount_stars) VALUES ($1, $2, 5)",
+      ['ci-test-invoice', telegramId]
     );
     await client.query(
-      \`INSERT INTO star_payments (telegram_payment_charge_id, telegram_id, amount_stars, currency, status)
-       VALUES ('ci-test-charge', $1, 5, 'XTR', 'succeeded')\`,
-      [telegramId]
+      "INSERT INTO star_payments (telegram_payment_charge_id, telegram_id, amount_stars, currency, status) VALUES ($1, $2, 5, 'XTR', 'succeeded')",
+      ['ci-test-charge', telegramId]
     );
     await client.query(
-      \`INSERT INTO wallet_ledger (telegram_id, amount_stars, entry_type, reference_id)
-       VALUES ($1, 5, 'topup', 'ci-test-charge')\`,
-      [telegramId]
+      "INSERT INTO wallet_ledger (telegram_id, amount_stars, entry_type, reference_id) VALUES ($1, 5, 'topup', $2)",
+      [telegramId, 'ci-test-charge']
     );
     const credited = await client.query(
       'SELECT COALESCE(SUM(amount_stars), 0)::bigint AS balance FROM wallet_ledger WHERE telegram_id = $1',
@@ -58,9 +54,8 @@ async function run() {
 
     await assert.rejects(
       client.query(
-        \`INSERT INTO star_payments (telegram_payment_charge_id, telegram_id, amount_stars, currency, status)
-         VALUES ('ci-test-charge', $1, 5, 'XTR', 'succeeded')\`,
-        [telegramId]
+        "INSERT INTO star_payments (telegram_payment_charge_id, telegram_id, amount_stars, currency, status) VALUES ($1, $2, 5, 'XTR', 'succeeded')",
+        ['ci-test-charge', telegramId]
       ),
       error => error.code === '23505'
     );

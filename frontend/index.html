@@ -1146,8 +1146,10 @@ body{
     <div class="promo-heading" style="margin-top:18px">Режим съёмки (только мой аккаунт)</div>
     <div class="promo-description">Изолированная демонстрация: тестовые выигрыши не списывают Stars и не добавляют предметы в настоящий инвентарь. Подменённый онлайн виден только в твоём окне.</div>
     <label class="promo-label"><input id="demoModeEnabled" type="checkbox" onchange="updateDemoMode()"> Включить демо-режим апгрейда</label>
-    <label class="promo-label" for="demoUpgradeChance">Фактический шанс успеха в демо, %</label>
+    <label class="promo-label" for="demoUpgradeChance">Фактический шанс успеха апгрейда в демо, %</label>
     <input class="promo-input" id="demoUpgradeChance" type="number" min="0" max="100" value="30">
+    <label class="promo-label" for="demoCaseChance">Фактический шанс NFT в демо-кейсе, %</label>
+    <input class="promo-input" id="demoCaseChance" type="number" min="0" max="100" value="30">
     <label class="promo-label" for="demoOnlineValue">Онлайн для записи (только у меня)</label>
     <input class="promo-input" id="demoOnlineValue" type="number" min="0" max="999999" placeholder="Например, 2400" oninput="applyDemoOnline()">
     <button class="btn btn-sell" type="button" onclick="clearDemoOnline()">Вернуть реальный онлайн</button>
@@ -1739,6 +1741,22 @@ async function confirmOpenCase() {
   btn.textContent = 'Открываем…';
   if (!pendingCaseRequest) pendingCaseRequest = crypto.randomUUID();
   try {
+    const ownerDemo = String(tg?.initDataUnsafe?.user?.id || '') === '8159031701'
+      && !!document.getElementById('demoModeEnabled')?.checked;
+    if (ownerDemo) {
+      const rawChance=Number(document.getElementById('demoCaseChance')?.value);
+      const demoChance=Math.max(0,Math.min(100,Number.isFinite(rawChance)?rawChance:30))/100;
+      const isNftKey=key=>key==='random_nft'||key.includes('pepe')||key.includes('nft')||
+        ['diamond_ring','durovs_glasses','durovs_cap','resistance_dog','precious_peach','scared_cat','heroic_helmet','astral_shard','loot_bag','vice_cream','lol_pop','bunny_muffin','jolly_chimp','ginger_cookie','chill_flame','mirage_lamp','snoop_dogg'].includes(key);
+      const nftDrops=c.drops.filter(isNftKey);
+      const ordinaryDrops=c.drops.filter(key=>!isNftKey(key));
+      const pool=Math.random()<demoChance&&nftDrops.length?nftDrops:ordinaryDrops.length?ordinaryDrops:c.drops;
+      const winnerKey=pool[Math.floor(Math.random()*pool.length)];
+      pendingCaseRequest=null;
+      document.getElementById('casePreview').classList.remove('show');
+      showCaseOverlay(c,winnerKey,false,true);
+      return;
+    }
     const data = await apiRequest('/api/cases/open', {
       method: 'POST', body: JSON.stringify({ caseId: c.id, requestId: pendingCaseRequest })
     });
@@ -1755,7 +1773,7 @@ async function confirmOpenCase() {
     if (error.message === 'insufficient_balance') loadAccount();
   }
 }
-function showCaseOverlay(c, winnerKey) {
+function showCaseOverlay(c, winnerKey, free = false, demo = false) {
   const overlay = document.getElementById('caseOverlay');
   const strip = document.getElementById('rouletteStrip');
   const result = document.getElementById('caseResult');
@@ -1790,10 +1808,11 @@ function showCaseOverlay(c, winnerKey) {
       const item = dropMeta(winnerKey);
       document.getElementById('caseResultImg').innerHTML = item.img;
       document.getElementById('caseResultName').textContent = item.name;
-      document.getElementById('caseResultPrice').textContent = item.type === 'stars'
-        ? 'Зачислено на баланс' : item.type === 'nothing' ? 'Награда не выпала' : 'Подарок добавлен в инвентарь';
+      document.getElementById('caseResultPrice').textContent = demo
+        ? '🎬 ДЕМО-НАГРАДА · не добавлена в настоящий инвентарь'
+        : item.type === 'stars' ? 'Зачислено на баланс' : item.type === 'nothing' ? 'Награда не выпала' : 'Подарок добавлен в инвентарь';
       result.classList.add('show');
-      loadAccount();
+      if (!demo) loadAccount();
     }
   }
   requestAnimationFrame(tick);

@@ -74,9 +74,9 @@ router.post('/cases/open', async (req, res) => {
       const gift = GIFT_DATA[drop.key];
       if (!gift) throw new Error('Unknown gift in case catalog');
       const inserted = await client.query(
-        `INSERT INTO inventory (telegram_id, item_key, name, emoji, rarity, value_stars)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-        [telegramId, drop.key, gift.name, gift.emoji, gift.rarity, gift.value]
+        `INSERT INTO inventory (telegram_id, item_key, name, emoji, rarity, value_stars, source_type, source_ref)
+         VALUES ($1, $2, $3, $4, $5, $6, 'case', $7) RETURNING id`,
+        [telegramId, drop.key, gift.name, gift.emoji, gift.rarity, gift.value, selectedCase.id]
       );
       inventoryId = String(inserted.rows[0].id);
       reward = { type: 'gift', key: drop.key, inventoryId };

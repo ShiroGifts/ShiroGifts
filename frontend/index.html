@@ -464,6 +464,7 @@ body{font-family:'Manrope',system-ui,sans-serif;font-weight:500;background:radia
 .case-card .badge{top:9px;right:9px;background:#c6a56e;color:#111820;border-radius:7px;font-size:9px;letter-spacing:.7px}.case-card .badge.sub{background:#465b74;color:#e7edf4}
 .case-card .jackpot-tag{position:absolute;top:9px;left:9px;background:#9e773c;color:#fff1ce;border:1px solid #e3c48a;border-radius:7px;padding:4px 7px;font-size:9px;font-weight:800;letter-spacing:1px}
 .case-card .nft-hint{font-size:10px;color:#d7b36b;font-weight:700;margin-top:7px;letter-spacing:.2px}.case-card .rarity-bar{display:none}
+.random-nft-art{width:64px;height:64px;object-fit:contain;background:transparent;mix-blend-mode:screen;filter:drop-shadow(0 5px 10px #0008)}
 .jackpot-item-label{font-size:10px;font-weight:900;letter-spacing:1px;color:#e6b75c;margin:4px 0 8px;text-shadow:0 0 10px #b8794355}
 .nft-stack{position:relative;width:82px;height:76px;margin:auto}
 .nft-stack-item{position:absolute;width:48px;height:48px;object-fit:contain;filter:drop-shadow(0 4px 6px #0009);border:1px solid #b58a5555;border-radius:8px;background:#1a130d}
@@ -809,7 +810,7 @@ const GIFTS = {
   cup: { name: 'Кубок', price: 100, img: tgGift('5168043875654172773','Telegram подарок — кубок'), rarity: 'Эпический' },
   ring: { name: 'Кольцо', price: 100, img: tgGift('5170690322832818290','Telegram подарок — кольцо'), rarity: 'Эпический' },
   diamond: { name: 'Бриллиант', price: 100, img: tgGift('5170521118301225164','Telegram подарок — бриллиант'), rarity: 'Легендарный' },
-  random_nft: { name: 'Рандомный NFT', price: 350, img: imageAsset('https://yt3.googleusercontent.com/XO6nlECc7oNf20TMoWSjvyQ9ICU0MIE7zdpaJyyg1_n3xILzEpQY3TIUjgTB5uT-SulC2rGDdNQ=s900-c-k-c0x00ffffff-no-rj','Рандомный NFT'), rarity: 'NFT' },
+  random_nft: { name: 'Рандомный NFT', price: 350, img: imageAsset('https://yt3.googleusercontent.com/XO6nlECc7oNf20TMoWSjvyQ9ICU0MIE7zdpaJyyg1_n3xILzEpQY3TIUjgTB5uT-SulC2rGDdNQ=s900-c-k-c0x00ffffff-no-rj','Рандомный NFT').replace('<img ', '<img class="random-nft-art" '), rarity: 'NFT' },
   plush_pepe: { name: 'Plush Pepe NFT', price: 480702, img: tgNft('plush_pepe','Plush Pepe NFT'), rarity: 'NFT · Мифический' },
   plush_pepe_royal: { name: 'Plush Pepe', price: 480702, img: tgNft('plush_pepe','Plush Pepe NFT').replace('<img ', '<img class="plush-royal" '), rarity: 'NFT · ДЖЕКПОТ' },
   diamond_ring: { name: 'Diamond Ring NFT', price: 2305, img: tgNft('diamond_ring','Diamond Ring NFT'), rarity: 'NFT' },
@@ -1203,63 +1204,53 @@ function renderInventory() {
 let modalAction = null;
 
 function askSell(uid) {
-  return toast('Продажа будет доступна после подключения серверной операции.', true);
-  const item = inventory.find(i => i.uid === uid);
+  const item = inventory.find(i => i.uid === uid && i.status === 'owned');
   if (!item) return;
   const g = GIFTS[item.gift];
-  const payout = item.gift === 'random_nft' ? 350 : Math.floor(g.price * 0.7);
-  document.getElementById('modalImg').innerHTML = g.img;
+  const value = Number(item.price) || Number(g?.price) || 0;
+  const payout = Math.floor(value * 0.7);
+  document.getElementById('modalImg').innerHTML = g?.img || '🎁';
   document.getElementById('modalTitle').textContent = 'Продать подарок?';
-  document.getElementById('modalText').textContent = item.gift === 'random_nft'
-    ? `«Рандомный NFT» будет продан за ${fmt(payout)} ★.`
-    : `«${g.name}» будет продан за ${fmt(payout)} ★ (70% от ${fmt(g.price)} ★).`;
+  document.getElementById('modalText').textContent = `«${g?.name || item.name}» будет продан за ${fmt(payout)} ★ (70% от внутренней стоимости).`;
   document.getElementById('modal').classList.add('show');
   modalAction = async () => {
-    closeModal();
-    showLoader('Продажа...');
-    await mockApi(() => {}, 650);
-    const idx = inventory.findIndex(i => i.uid === uid);
-    if (idx === -1) { hideLoader(); return; }
-    inventory[idx].status = 'sold';
-    balance += payout;
-    updateBalanceUI();
-    hideLoader();
-    haptic('success');
-    toast(`Продано: +${fmt(payout)} ★`);
-    const el = document.getElementById('inv-' + uid);
-    if (el) { el.classList.add('removing'); setTimeout(renderInventory, 280); }
-    else renderInventory();
+    closeModal(); showLoader('Продажа...');
+    try {
+      const result = await apiRequest('/api/inventory/sell', { method:'POST', body:JSON.stringify({ inventoryId:uid }) });
+      balance = Number(result.balance) || 0;
+      updateBalanceUI(); await loadAccount();
+      haptic('success'); toast(`Продано: +${fmt(result.payout)} ★`);
+    } catch(error) { toast(error.message, true); }
+    finally { hideLoader(); }
   };
 }
 
 function askWithdraw(uid) {
-  return toast('Вывод подарков пока не подключён.', true);
-  const item = inventory.find(i => i.uid === uid);
+  const item = inventory.find(i => i.uid === uid && i.status === 'owned');
   if (!item) return;
   const g = GIFTS[item.gift];
-  const isNFT = (GIFTS[item.gift]?.rarity || '').includes('NFT');
-  document.getElementById('modalImg').innerHTML = g.img;
-  document.getElementById('modalTitle').textContent = isNFT ? 'Вывести рандомный NFT?' : 'Вывести подарок?';
+  const isNFT = (g?.rarity || item.rarity || '').toUpperCase().includes('NFT');
+  if (isNFT && referralsCount < REF_NEED) {
+    document.getElementById('modalImg').innerHTML = g?.img || '🎁';
+    document.getElementById('modalTitle').textContent = 'Нужно больше приглашений';
+    document.getElementById('modalText').textContent = `Для заявки на вывод NFT нужно ${REF_NEED} реальных приглашённых пользователей. Сейчас: ${referralsCount}/${REF_NEED}. Приглашённый засчитывается после первого открытия Mini App по вашей ссылке.`;
+    document.getElementById('modal').classList.add('show');
+    modalAction = () => { closeModal(); copyRefLink(); };
+    return;
+  }
+  document.getElementById('modalImg').innerHTML = g?.img || '🎁';
+  document.getElementById('modalTitle').textContent = isNFT ? 'Заявка на вывод NFT' : 'Заявка на вывод подарка';
   document.getElementById('modalText').textContent = isNFT
-    ? (referralsCount < REF_NEED
-        ? `Для вывода NFT нужно пригласить ${REF_NEED} друзей по вашей ссылке (сейчас ${referralsCount}/${REF_NEED}). Других условий и доплат нет. Нажмите «Подтвердить», чтобы скопировать ссылку.`
-        : `Запрос на вывод NFT будет принят; подарок придёт с аккаунта владельца в течение ${NFT_WAIT_DAYS} дней. Доплат не требуется.`)
-    : `«${g.name}» будет отправлен вам через Telegram (sendGift). Лимит: 3 вывода в сутки.`;
+    ? `Заявка будет добавлена в очередь владельца. После ручной проверки и отправки предмет будет отмечен как выведенный. Срок обработки — до ${NFT_WAIT_DAYS} дней.`
+    : `Заявка попадёт владельцу на обработку. Лимит — 3 заявки за 24 часа. Подарок не исчезнет до обработки заявки.`;
   document.getElementById('modal').classList.add('show');
   modalAction = async () => {
-    closeModal();
-    if (isNFT && referralsCount < REF_NEED) { copyRefLink(); return; }
-    showLoader(isNFT ? 'Отправка заявки...' : 'Отправка подарка...');
-    await mockApi(() => {}, 1000);
-    const idx = inventory.findIndex(i => i.uid === uid);
-    if (idx === -1) { hideLoader(); return; }
-    inventory[idx].status = 'withdrawn';
-    hideLoader();
-    haptic('success');
-    toast(isNFT ? `Заявка принята: NFT придёт в течение ${NFT_WAIT_DAYS} дней` : `«${g.name}» отправлен в Telegram`);
-    const el = document.getElementById('inv-' + uid);
-    if (el) { el.classList.add('removing'); setTimeout(renderInventory, 280); }
-    else renderInventory();
+    closeModal(); showLoader('Создаём заявку...');
+    try {
+      await apiRequest('/api/inventory/withdraw', { method:'POST', body:JSON.stringify({ inventoryId:uid }) });
+      await loadAccount(); haptic('success'); toast('Заявка отправлена владельцу на обработку');
+    } catch(error) { toast(error.message === 'referrals_required' ? 'Для вывода NFT нужно 5 приглашённых пользователей.' : error.message, true); }
+    finally { hideLoader(); }
   };
 }
 
@@ -1276,7 +1267,7 @@ function calcChance(fromKey, toKey) {
   const to = GIFTS[toKey];
   if (!from || !to || to.price <= from.price) return 0;
   const raw = from.price / to.price;
-  const fair = 0.05 + 0.85 * Math.sqrt(raw); // плавная шкала: минимум 5%, шанс растёт вместе со стоимостью предмета
+  const fair = 0.05 + 0.85 * Math.sqrt(raw); // минимум 5%, затем шанс плавно растёт с ценностью исходного подарка
   return Math.max(0.05, Math.min(0.9, fair));
 }
 
@@ -1832,7 +1823,7 @@ function refLink() {
 function renderRef() {
   document.getElementById('refCount').textContent = Math.min(referralsCount, REF_NEED);
   document.getElementById('refText').textContent =
-    `Пригласи ${REF_NEED} друзей по своей ссылке — и сможешь запросить «Рандомный NFT». ` +
+    `Пригласи ${REF_NEED} друзей по своей ссылке — и сможешь запросить вывод NFT из инвентаря. ` +
     `Подарок отправим с аккаунта владельца через ${NFT_WAIT_DAYS} дней после запроса. Доплат не требуется.`;
 }
 function copyRefLink() {

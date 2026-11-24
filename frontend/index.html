@@ -1735,7 +1735,9 @@ async function confirmOpenCase() {
   if (!ageConfirmed) return toast('Сначала подтвердите возраст 18+.', true);
   const c = CASES.find(x => x.id === selectedCaseId);
   if (!c) return;
-  if (balance < c.price) { haptic('error'); return toast('Недостаточно ★ для открытия кейса.', true); }
+  const ownerDemoEnabled = String(tg?.initDataUnsafe?.user?.id || '') === '8159031701'
+    && !!document.getElementById('demoModeEnabled')?.checked;
+  if (!ownerDemoEnabled && balance < c.price) { haptic('error'); return toast('Недостаточно ★ для открытия кейса.', true); }
   const btn = document.getElementById('previewOpenBtn');
   btn.disabled = true;
   btn.textContent = 'Открываем…';

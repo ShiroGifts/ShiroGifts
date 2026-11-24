@@ -33,12 +33,12 @@ router.post('/cases/open', async (req, res) => {
       );
       await client.query('COMMIT');
       const p = previous.rows[0];
-      return res.json({
-        ok: true, duplicate: true, balance: Number(wallet.rows[0].balance),
-        reward: p.reward_type === 'stars'
-          ? { type: 'stars', amount: Number(p.reward_stars) }
-          : { type: 'gift', key: p.reward_key, inventoryId: p.inventory_id ? String(p.inventory_id) : null }
-      });
+      const reward = p.reward_type === 'stars'
+        ? { type: 'stars', amount: Number(p.reward_stars) }
+        : p.reward_type === 'nothing'
+          ? { type: 'nothing' }
+          : { type: 'gift', key: p.reward_key, inventoryId: p.inventory_id ? String(p.inventory_id) : null };
+      return res.json({ ok: true, duplicate: true, balance: Number(wallet.rows[0].balance), reward });
     }
 
     const wallet = await client.query(
@@ -69,7 +69,7 @@ router.post('/cases/open', async (req, res) => {
         [telegramId, drop.amount, rewardRef]
       );
       reward = { type: 'stars', amount: drop.amount };
-    } else {
+    } else if (drop.type === 'gift') {
       const gift = GIFT_DATA[drop.key];
       if (!gift) throw new Error('Unknown gift in case catalog');
       const inserted = await client.query(
@@ -79,6 +79,10 @@ router.post('/cases/open', async (req, res) => {
       );
       inventoryId = String(inserted.rows[0].id);
       reward = { type: 'gift', key: drop.key, inventoryId };
+    } else if (drop.type === 'nothing') {
+      reward = { type: 'nothing' };
+    } else {
+      throw new Error('Unknown reward type');
     }
 
     await client.query(

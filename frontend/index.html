@@ -1260,6 +1260,16 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
  position:relative!important;flex:1 1 auto!important;width:100%!important;
  height:100%!important;min-height:0!important;max-height:100%!important;
 }
+
+/* Picker must fill the WebView itself; Telegram viewportHeight can be half-height on first tap. */
+#upgradePickerBackdrop{
+ position:fixed!important;top:0!important;right:0!important;bottom:0!important;left:0!important;
+ width:auto!important;height:auto!important;min-height:0!important;max-height:none!important;
+ z-index:2147483647!important;box-sizing:border-box!important;
+}
+#upgradePickerBackdrop .upgrade-picker-sheet{
+ flex:1 1 auto!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;
+}
 </style>
 </head>
 <body>
@@ -2123,9 +2133,8 @@ function renderUpgrade() {
 function syncUpgradePickerViewport() {
   const back = document.getElementById('upgradePickerBackdrop');
   if (!back) return;
-  // Telegram WebView may report its final visible height a moment after first paint.
-  const h = Math.round(tg?.viewportHeight || window.visualViewport?.height || window.innerHeight);
-  back.style.setProperty('--picker-viewport-height', h + 'px');
+  // Never size the modal from Telegram's transient half-height viewport.
+  back.style.removeProperty('--picker-viewport-height');
 }
 function openUpgradePicker(which) {
   if (upgradeBusy) return;

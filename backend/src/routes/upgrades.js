@@ -47,7 +47,7 @@ router.post('/upgrade', async (req, res) => {
       await client.query('ROLLBACK');
       return res.status(400).json({ ok: false, error: 'invalid_upgrade_pair' });
     }
-    const chance = Math.min(0.9, 0.9 * Math.sqrt(fromValue / target.value));
+    const chance = Math.min(0.9, (fromValue / target.value) * 0.9);
     if (chance < 0.01) {
       await client.query('ROLLBACK');
       return res.status(400).json({ ok: false, error: 'upgrade_chance_below_minimum', minimumChance: 0.01 });

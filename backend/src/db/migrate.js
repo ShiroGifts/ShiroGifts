@@ -68,6 +68,22 @@ async function migrate() {
       OR (reward_type = 'nothing' AND reward_key IS NULL AND reward_stars IS NULL AND inventory_id IS NULL)
     );
 
+    ALTER TABLE inventory DROP CONSTRAINT IF EXISTS inventory_status_check;
+    ALTER TABLE inventory ADD CONSTRAINT inventory_status_check
+      CHECK (status IN ('owned','sold','withdrawn','upgraded','burned'));
+
+    CREATE TABLE IF NOT EXISTS upgrade_events (
+      request_id UUID PRIMARY KEY,
+      telegram_id BIGINT NOT NULL REFERENCES users(telegram_id),
+      source_inventory_id BIGINT NOT NULL REFERENCES inventory(id),
+      target_key TEXT NOT NULL,
+      chance NUMERIC(8,6) NOT NULL CHECK (chance > 0 AND chance <= 1),
+      success BOOLEAN NOT NULL,
+      created_inventory_id BIGINT REFERENCES inventory(id),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS upgrade_events_user_idx ON upgrade_events(telegram_id, created_at DESC);
+
     CREATE TABLE IF NOT EXISTS promo_codes (
       id BIGSERIAL PRIMARY KEY,
       code TEXT NOT NULL UNIQUE,

@@ -1012,8 +1012,9 @@ async function checkSubscription() {
 document.addEventListener('visibilitychange', () => { if (!document.hidden && awaitingSub) { awaitingSub = false; checkSubscription(); } });
 tg?.onEvent?.('activated', () => { if (awaitingSub) { awaitingSub = false; checkSubscription(); } });
 
-function tryFreeCase() {
-  return toast('Бесплатный кейс пока отключён до подключения серверной проверки подписки.', true);
+async function tryFreeCase() {
+  if (!isSubscribed) return checkSubscription();
+  return toast('Подписка подтверждена. Бесплатный кейс подключу после серверной настройки награды и кулдауна.', true);
   if (!isSubscribed) {
     toast('Подпишитесь на канал ShiroGifts и вернитесь в приложение', true);
     awaitingSub = true;

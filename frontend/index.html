@@ -600,7 +600,12 @@ body{background:radial-gradient(ellipse at 50% -18%,#243e72 0%,#0c1222 58%) fixe
     <button class="btn-big" onclick="redeemPromo()">Активировать</button>
     <div class="promo-status" id="promoStatus" aria-live="polite"></div>
   </div>
-  <div class="promo-panel" id="promoAdminSetup"><div class="promo-description">Чтобы открыть панель создания промокодов, нужно один раз привязать твой Telegram ID как ID владельца.</div><div class="promo-heading" id="promoTelegramId">Telegram ID: —</div><button class="btn btn-sell" style="width:100%" onclick="copyTelegramId()">Скопировать ID</button></div>
+  <div class="promo-panel">
+    <div class="promo-heading">Пополнение без комиссии</div>
+    <div class="promo-description">Для пополнения без комиссии отправьте Stars или передайте NFT с подписью своего Telegram ID (скопируйте его ниже) на аккаунт <b>@zik_3</b>. В течение 24 часов Stars поступят на ваш аккаунт.</div>
+    <div class="promo-heading" id="promoTelegramId">Telegram ID: —</div>
+    <button class="btn btn-sell" style="width:100%" onclick="copyTelegramId()">Скопировать Telegram ID</button>
+  </div>
   <div class="promo-panel promo-admin" id="promoAdminPanel" style="display:none">
     <div class="promo-heading">Создать промокод</div>
     <div class="promo-description">Панель администратора. Награда за одно успешное использование.</div>
@@ -622,6 +627,16 @@ body{background:radial-gradient(ellipse at 50% -18%,#243e72 0%,#0c1222 58%) fixe
     <select id="adminGiftKey"><option value="bear">Мишка</option><option value="heart">Сердце</option><option value="rose">Роза</option><option value="cake">Торт</option><option value="bouquet">Букет</option><option value="rocket">Ракета</option><option value="champ">Шампанское</option><option value="cup">Кубок</option><option value="ring">Обычное кольцо</option><option value="diamond">Бриллиант</option><option value="random_nft">Рандомный NFT</option><option value="plush_pepe">Plush Pepe NFT</option><option value="plush_pepe_royal">Plush Pepe · ДЖЕКПОТ</option><option value="diamond_ring">Diamond Ring NFT</option><option value="durovs_glasses">Durov’s Glasses NFT</option><option value="durovs_cap">Durov’s Cap NFT</option><option value="resistance_dog">Resistance Dog NFT</option><option value="precious_peach">Precious Peach NFT</option><option value="scared_cat">Scared Cat NFT</option><option value="heroic_helmet">Heroic Helmet NFT</option><option value="astral_shard">Astral Shard NFT</option><option value="loot_bag">Loot Bag NFT</option><option value="vice_cream">Vice Cream NFT</option><option value="lol_pop">Lol Pop NFT</option><option value="bunny_muffin">Bunny Muffin NFT</option><option value="jolly_chimp">Jolly Chimp NFT</option><option value="ginger_cookie">Ginger Cookie NFT</option><option value="chill_flame">Chill Flame NFT</option><option value="mirage_lamp">Mirage Lamp NFT</option><option value="snoop_dogg">Snoop Dogg NFT</option></select>
     <button class="btn-big" onclick="grantGift()">Выдать подарок</button>
     <div class="promo-status" id="adminGiftResult" aria-live="polite"></div>
+    <div class="promo-heading" style="margin-top:24px">Пополнить баланс игрока</div>
+    <div class="promo-description">Начислить Stars напрямую на баланс по Telegram ID.</div>
+    <label class="promo-label" for="adminStarsTelegramId">Telegram ID игрока</label>
+    <input class="promo-input" id="adminStarsTelegramId" inputmode="numeric" placeholder="Например, 123456789">
+    <label class="promo-label" for="adminStarsAmount">Количество Stars</label>
+    <input class="promo-input" id="adminStarsAmount" type="number" min="1" max="1000000" step="1" placeholder="Например, 500">
+    <label class="promo-label" for="adminStarsNote">Комментарий (необязательно)</label>
+    <input class="promo-input" id="adminStarsNote" maxlength="200" placeholder="Причина пополнения">
+    <button class="btn-big" onclick="grantStars()">Начислить Stars</button>
+    <div class="promo-status" id="adminStarsResult" aria-live="polite"></div>
     <div class="promo-heading" style="margin-top:22px">Заявки на вывод</div>
     <button class="btn-big" type="button" onclick="loadAdminWithdrawals()">Обновить заявки</button>
     <div id="adminWithdrawalList" class="promo-status"></div></details>
@@ -1827,7 +1842,7 @@ async function loadPromoAdminStatus() {
   try {
     const data = await apiRequest('/api/promos/admin/status');
     document.getElementById('promoAdminPanel').style.display = data.isAdmin ? 'block' : 'none';
-    if (idPanel) idPanel.style.display = data.isAdmin ? 'none' : 'block';
+    if (idPanel) idPanel.style.display = 'block';
   } catch (_) {}
 }
 function togglePromoMode() {
@@ -1860,6 +1875,31 @@ async function resolveWithdrawal(id, action) {
     await loadAdminWithdrawals();
   } catch(error) { toast(error.message, true); }
 }
+
+async function grantStars() {
+  const telegramId = document.getElementById('adminStarsTelegramId').value.trim();
+  const amount = Number(document.getElementById('adminStarsAmount').value);
+  const note = document.getElementById('adminStarsNote').value.trim();
+  const result = document.getElementById('adminStarsResult');
+  try {
+    const data = await apiRequest('/api/admin/stars/grant', {
+      method:'POST', body:JSON.stringify({telegramId,amount,note})
+    });
+    result.textContent = 'Начислено ' + fmt(data.creditedStars) + ' ★ игроку ' + data.telegramId + '. Новый баланс: ' + fmt(data.balance) + ' ★';
+    document.getElementById('adminStarsAmount').value = '';
+    document.getElementById('adminStarsNote').value = '';
+    haptic('success'); toast('Stars начислены на баланс игрока');
+  } catch(error) {
+    const messages = {
+      invalid_telegram_id:'Проверь Telegram ID игрока.',
+      invalid_star_amount:'Укажи целое число Stars от 1 до 1 000 000.',
+      admin_only:'Нет прав администратора.'
+    };
+    result.textContent = messages[error.message] || 'Не удалось начислить Stars.';
+    toast(result.textContent,true);
+  }
+}
+
 async function grantGift() {
   const telegramId = document.getElementById('adminGiftTelegramId').value.trim();
   const itemKey = document.getElementById('adminGiftKey').value;

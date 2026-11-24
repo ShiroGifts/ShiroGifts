@@ -1042,7 +1042,8 @@ function switchPage(name) {
     n.classList.toggle('active', n.dataset.page === name);
   });
   haptic();
-  if (name === 'crash') { initCrashCanvas(); startCrashFeed(); }
+  if (name === 'crash') { initCrashCanvas(); startCrashFeed(); startCrashPolling(); }
+  else stopCrashPolling();
   if (name === 'inventory') renderInventory();
   if (name === 'upgrade') renderUpgrade();
   if (name === 'promo') { loadPromoAdminStatus(); togglePromoMode(); }
@@ -1627,23 +1628,34 @@ function renderCrashUI() {
   inp.disabled = !(round.phase === 'betting' && !myBet);
 }
 
-function crashAction() {
-  return toast('Crash пока отключён: серверная игровая логика ещё не подключена.', true);
-  if (round.phase === 'betting' && !myBet) {
-    const bet = parseInt(document.getElementById('crashBet').value) || 0;
-    if (bet < 1) { haptic('error'); return toast('Ставка минимум 1 ★', true); }
-    if (balance < bet) { haptic('error'); return toast('Недостаточно ★', true); }
-    balance -= bet; updateBalanceUI(); myBet = { amount: bet, cashed: null };   // прод: POST /crash/bet
-    feedYouRowId = 'me-' + (++feedRowCounter);
-    addFeedRow({ betId: feedYouRowId, name: 'Вы', bet, isYou: true });
-    haptic('light');
-  } else if (round.phase === 'flying' && myBet && myBet.cashed === null) {
-    // прод: POST /crash/cashout — сервер фиксирует множитель по своему времени
-    const mult = crashMult, win = Math.floor(myBet.amount * mult);
-    myBet.cashed = mult; balance += win; updateBalanceUI(); haptic('success');
-    toast(`Забрано ${fmt(win)} ★ на ${mult.toFixed(2)}x`); setFeedResult(feedYouRowId, mult, win, false);
+async function crashAction() {
+  if (!ageConfirmed) return toast('Сначала подтвердите возраст 18+.', true);
+  try {
+    if (round.phase === 'betting' && !myBet) {
+      const amount = Number.parseInt(document.getElementById('crashBet').value, 10);
+      if (!Number.isSafeInteger(amount) || amount < 1) return toast('Ставка минимум 1 ★', true);
+      await apiRequest('/api/crash/bet', { method:'POST', body:JSON.stringify({ amount }) });
+      haptic('light'); toast('Ставка принята');
+    } else if (round.phase === 'flying' && myBet && myBet.cashed === null) {
+      const result = await apiRequest('/api/crash/cashout', { method:'POST', body:'{}' });
+      haptic('success');
+      toast(`Забрано ${fmt(result.payout)} ★ на ${Number(result.multiplier).toFixed(2)}x`);
+    }
+    await loadAccount();
+    await syncCrashState();
+  } catch (error) {
+    const messages = {
+      invalid_bet_amount:'Ставка должна быть от 1 до 10000 ★.',
+      insufficient_balance:'Недостаточно Stars на балансе.',
+      betting_closed:'Приём ставок на этот раунд уже закрыт.',
+      bet_already_placed:'В этом раунде ставка уже сделана.',
+      round_not_flying:'Раунд ещё не начался или уже завершился.',
+      bet_not_active:'Активная ставка не найдена.',
+      round_already_crashed:'Вывод опоздал — раунд уже достиг точки краша.'
+    };
+    toast(messages[error.message] || 'Ошибка Crash: ' + error.message, true);
+    await syncCrashState().catch(()=>{});
   }
-  renderCrashUI();
 }
 
 function crashFrame() {
@@ -1734,6 +1746,46 @@ function updateFeedYou(mult, win, crashed) {
 
 function feedClear() { Object.keys(feedRows).forEach(k => delete feedRows[k]); document.getElementById('crashFeed').innerHTML = ''; feedYouRowId = null; feedCheckEmpty(); }
 function startCrashFeed() { feedCheckEmpty(); }
+let crashPollTimer = null, crashSyncBusy = false;
+async function syncCrashState() {
+  if (crashSyncBusy || !tg?.initData) return;
+  crashSyncBusy = true;
+  try {
+    const data = await apiRequest('/api/crash/state');
+    serverOffset = Number(data.serverTime) - Date.now();
+    const incoming = data.round;
+    const changed = String(round.id) !== String(incoming.id) || round.phase !== incoming.phase;
+    myBet = data.myBet ? { amount:Number(data.myBet.amount), cashed:data.myBet.cashed === null ? null : Number(data.myBet.cashed), payout:data.myBet.payout } : null;
+    if (changed) onRound(incoming);
+    else {
+      round = incoming;
+      crashState = PHASE_STATE[incoming.phase];
+      if (incoming.phase === 'flying') crashMult = Number(incoming.currentMult) || 1;
+      if (incoming.phase === 'crashed') crashMult = Number(incoming.crashMult) || 1;
+      renderCrashUI();
+    }
+    flightHistory = (data.history || []).slice(0,5).map(Number);
+    renderHistory();
+    (data.bets || []).forEach(b => {
+      const id = String(b.id), isYou = !!myBet && id === String(myBet.id);
+      if (!feedRows[id]) addFeedRow({betId:id,name:isYou?'Вы':b.name,bet:b.bet,isYou});
+      if (b.mult !== null && b.mult !== undefined) setFeedResult(id,Number(b.mult),Number(b.win)||0,false);
+      else if (b.crashed) setFeedResult(id,Number(incoming.crashMult)||1,0,true);
+      if (isYou) feedYouRowId = id;
+    });
+  } catch (error) {
+    if (error.message !== 'crash_not_ready') console.warn('[CRASH SYNC]', error.message);
+  } finally { crashSyncBusy = false; }
+}
+function startCrashPolling() {
+  if (crashPollTimer) return;
+  syncCrashState();
+  crashPollTimer = setInterval(syncCrashState, 700);
+}
+function stopCrashPolling() {
+  if (crashPollTimer) clearInterval(crashPollTimer);
+  crashPollTimer = null;
+}
 
 // ===== Публичный интерфейс для реальных данных (WebSocket/SSE от сервера) =====
 // ws.onmessage → ShiroLive.onBet / onResult / setOnline

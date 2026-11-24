@@ -2134,14 +2134,36 @@ function openUpgradePicker(which) {
   const back = document.getElementById('upgradePickerBackdrop');
   if (!back) return;
   if (back.parentElement !== document.body) document.body.appendChild(back);
+
+  const from = document.getElementById('fromPicker');
+  const to = document.getElementById('toPicker');
+  const sheet = back.querySelector('.upgrade-picker-sheet');
+  const activeList = which === 'from' ? from : to;
+
+  // Set the active list before exposing the overlay.
+  from.style.display = which === 'from' ? 'grid' : 'none';
+  to.style.display = which === 'to' ? 'grid' : 'none';
+  document.getElementById('upgradePickerTitle').textContent =
+    which === 'from' ? 'Выберите предмет из инвентаря' : 'Выберите желаемый подарок';
+
   syncUpgradePickerViewport();
-  document.getElementById('fromPicker').style.display = which === 'from' ? 'grid' : 'none';
-  document.getElementById('toPicker').style.display = which === 'to' ? 'grid' : 'none';
-  document.getElementById('upgradePickerTitle').textContent = which === 'from' ? 'Выберите предмет из инвентаря' : 'Выберите желаемый подарок';
-  // Lock the page behind the picker and commit its final geometry before showing it.
   document.body.classList.add('upgrade-picker-open');
-  void back.offsetHeight;
   back.classList.add('show');
+
+  // IMPORTANT: measuring a display:none overlay returns zero and does not
+  // initialize its flex/grid geometry. The old code forced layout BEFORE
+  // adding .show, so the first picker could open with stale half-height layout.
+  back.getBoundingClientRect();
+  sheet?.getBoundingClientRect();
+  activeList?.getBoundingClientRect();
+
+  // Telegram WebView may settle its viewport on the next frame after first paint.
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (!back.classList.contains('show')) return;
+    back.getBoundingClientRect();
+    sheet?.getBoundingClientRect();
+    activeList?.getBoundingClientRect();
+  }));
 }
 function closeUpgradePicker() {
   document.getElementById('upgradePickerBackdrop')?.classList.remove('show');

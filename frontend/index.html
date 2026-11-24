@@ -984,15 +984,15 @@ body{
 }
 
 
-/* Upgrade layout balance: larger wheel, smaller NFT selector */
+/* Upgrade layout balance v2: the wheel is the hero; selectors stay compact but readable. */
 #page-upgrade .picker-list{
-  height:44px!important;min-height:44px!important;max-height:44px!important;
-  flex:0 0 44px!important;gap:5px!important
+  height:42px!important;min-height:42px!important;max-height:42px!important;
+  flex:0 0 42px!important;gap:5px!important;padding:1px 0 2px!important
 }
 #page-upgrade .picker-item{
-  height:41px!important;min-height:41px!important;max-height:41px!important;
-  flex:0 0 47px!important;width:47px!important;min-width:47px!important;
-  padding:1px!important;border-radius:9px!important
+  height:40px!important;min-height:40px!important;max-height:40px!important;
+  flex:0 0 46px!important;width:46px!important;min-width:46px!important;
+  padding:1px!important;border-radius:8px!important
 }
 #page-upgrade .picker-item .gift-img{
   height:20px!important;min-height:20px!important;font-size:17px!important
@@ -1001,18 +1001,25 @@ body{
 #page-upgrade .picker-item .gift-img svg{
   width:19px!important;height:19px!important;max-width:19px!important;max-height:19px!important
 }
-#page-upgrade .picker-item .label,#page-upgrade .picker-item .price{font-size:6px!important;line-height:1.05!important}
+#page-upgrade .picker-item .label,#page-upgrade .picker-item .price{font-size:7px!important;line-height:1.05!important}
 #page-upgrade .wheel-wrap{
-  width:clamp(112px,34vw,140px)!important;
-  height:clamp(112px,34vw,140px)!important;
-  margin:4px auto!important
+  width:clamp(148px,43vw,178px)!important;
+  height:clamp(148px,43vw,178px)!important;
+  margin:5px auto!important
 }
+#page-upgrade .wheel-center{width:42px!important;height:42px!important}
+#page-upgrade .chance{font-size:21px!important}
 @media(max-height:700px){
-  #page-upgrade .picker-list{height:39px!important;min-height:39px!important;max-height:39px!important;flex-basis:39px!important}
-  #page-upgrade .picker-item{height:37px!important;min-height:37px!important;max-height:37px!important}
-  #page-upgrade .picker-item .gift-img{height:18px!important;min-height:18px!important}
-  #page-upgrade .picker-item .gift-img img,#page-upgrade .picker-item .gift-img svg{width:17px!important;height:17px!important;max-width:17px!important;max-height:17px!important}
-  #page-upgrade .wheel-wrap{width:clamp(100px,30vw,116px)!important;height:clamp(100px,30vw,116px)!important}
+  #page-upgrade .picker-list{height:38px!important;min-height:38px!important;max-height:38px!important;flex-basis:38px!important}
+  #page-upgrade .picker-item{height:36px!important;min-height:36px!important;max-height:36px!important}
+  #page-upgrade .picker-item .gift-img{height:17px!important;min-height:17px!important}
+  #page-upgrade .picker-item .gift-img img,#page-upgrade .picker-item .gift-img svg{width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important}
+  #page-upgrade .picker-item .label,#page-upgrade .picker-item .price{font-size:6.5px!important}
+  #page-upgrade .wheel-wrap{width:clamp(132px,38vw,150px)!important;height:clamp(132px,38vw,150px)!important}
+}
+@media(max-height:620px){
+  #page-upgrade .upgrade-box{height:calc(100dvh - 138px)!important}
+  #page-upgrade .wheel-wrap{width:clamp(118px,34vw,132px)!important;height:clamp(118px,34vw,132px)!important}
 }
 
 </style>

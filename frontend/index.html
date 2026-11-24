@@ -591,14 +591,14 @@ body{background:var(--bg);color:var(--text)}
     <div id="promoExpiryWrap" style="display:none"><label class="promo-label" for="promoAdminExpiry">Действует до</label><input class="promo-input" id="promoAdminExpiry" type="datetime-local"></div>
     <button class="btn-big" onclick="createPromo()">Создать промокод</button>
     <div class="promo-status" id="promoAdminResult" aria-live="polite"></div>
-    <div class="promo-heading" style="margin-top:22px">Выдать подарок игроку</div>
+    <details class="owner-tools" style="margin-top:22px"><summary>Инструменты владельца</summary><div class="promo-heading" style="margin-top:22px">Выдать подарок игроку</div>
     <div class="promo-description">Укажи Telegram ID игрока. Подарок появится в его инвентаре.</div>
     <label class="promo-label" for="adminGiftTelegramId">Telegram ID игрока</label>
     <input class="promo-input" id="adminGiftTelegramId" inputmode="numeric" placeholder="Например, 123456789">
     <label class="promo-label" for="adminGiftKey">Предмет</label>
     <select id="adminGiftKey"><option value="bear">Мишка</option><option value="heart">Сердце</option><option value="rose">Роза</option><option value="cake">Торт</option><option value="bouquet">Букет</option><option value="rocket">Ракета</option><option value="champ">Шампанское</option><option value="cup">Кубок</option><option value="ring">Обычное кольцо</option><option value="diamond">Бриллиант</option><option value="random_nft">Рандомный NFT</option><option value="plush_pepe">Plush Pepe NFT</option><option value="plush_pepe_royal">Plush Pepe · Shiro Edition</option><option value="diamond_ring">Diamond Ring NFT</option><option value="durovs_glasses">Durov’s Glasses NFT</option><option value="durovs_cap">Durov’s Cap NFT</option><option value="resistance_dog">Resistance Dog NFT</option><option value="precious_peach">Precious Peach NFT</option><option value="scared_cat">Scared Cat NFT</option><option value="heroic_helmet">Heroic Helmet NFT</option><option value="astral_shard">Astral Shard NFT</option><option value="loot_bag">Loot Bag NFT</option></select>
     <button class="btn-big" onclick="grantGift()">Выдать подарок</button>
-    <div class="promo-status" id="adminGiftResult" aria-live="polite"></div>
+    <div class="promo-status" id="adminGiftResult" aria-live="polite"></div></details>
   </div>
 </div>
 <div class="page" id="page-upgrade">
@@ -841,7 +841,7 @@ const CASES = [
   { id: 'ruby', name: 'Рубиновый', price: 300, icon: chest('#5b3026','#a65e40'), drops: ['stars_150','diamond','bouquet','stars_750','random_nft','ring','stars_75','cup','stars_300','champ'] },
   { id: 'diamond', name: 'Алмазный', price: 500, icon: chest('#463a2c','#b49b74'), drops: ['stars_250','random_nft','stars_2500','ring','diamond','stars_100','stars_1000','cup','stars_500','stars_250'] },
   { id: 'cosmic', name: 'Космический', price: 1000, icon: chest('#2c241d','#8b6944'), drops: ['stars_500','diamond','stars_5000','random_nft','plush_pepe_royal','stars_200','ring','stars_2000','stars_1000','stars_500','diamond'] },
-  { id: 'nft', name: 'НФТ', price: 750, icon: chest('#21180f','#c49a61'), drops: ['plush_pepe','resistance_dog','durovs_cap','precious_peach','scared_cat','heroic_helmet','durovs_glasses','loot_bag','astral_shard','diamond_ring','nothing'] },
+  { id: 'nft', name: 'НФТ', price: 750, icon: chest('#21180f','#c49a61'), drops: ['plush_pepe','diamond_ring','durovs_glasses','durovs_cap','resistance_dog','precious_peach','scared_cat','heroic_helmet','astral_shard','loot_bag','vice_cream','lol_pop','bunny_muffin','jolly_chimp','ginger_cookie','chill_flame','mirage_lamp','snoop_dogg','nothing'] },
 ];
 
 let balance = 0;
@@ -1841,6 +1841,7 @@ function copyRefLink() {
 
 /* ===== INIT ===== */
 document.querySelectorAll('[data-ic]').forEach(e => e.innerHTML = IC[e.dataset.ic]);
+if (String(tg?.initDataUnsafe?.user?.id || '') !== '8159031701') document.querySelector('.owner-tools')?.remove();
 renderHistory(); renderCrashUI(); requestAnimationFrame(crashFrame);
 checkFreeCaseStatus();
 renderCases();

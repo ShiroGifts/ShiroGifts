@@ -1,6 +1,6 @@
 const express = require('express');
 const { pool } = require('../db/pool');
-const { requireTelegramUser } = require('../telegram/auth');
+const { requireTelegramUser, requireAgeConfirmed } = require('../telegram/auth');
 const router = express.Router();
 
 router.use(requireTelegramUser);
@@ -18,9 +18,11 @@ router.get('/me', async (req, res) => {
        FROM inventory WHERE telegram_id = $1 AND status = 'owned' ORDER BY created_at DESC`,
       [id]
     );
+    const profile = await client.query('SELECT age_confirmed_at FROM users WHERE telegram_id = $1', [id]);
     res.json({
       ok: true,
       user: { id, firstName: req.telegramUser.first_name || '', username: req.telegramUser.username || null },
+      ageConfirmed: !!profile.rows[0]?.age_confirmed_at,
       balance: Number(wallet.rows[0].balance),
       inventory: items.rows
     });
@@ -30,7 +32,23 @@ router.get('/me', async (req, res) => {
   } finally { client.release(); }
 });
 
-router.post('/payments/invoice', async (req, res) => {
+router.post('/age/confirm', async (req, res) => {
+  if (!req.body || req.body.confirmed !== true) {
+    return res.status(400).json({ ok: false, error: 'age_confirmation_required' });
+  }
+  try {
+    await pool.query(
+      'UPDATE users SET age_confirmed_at = COALESCE(age_confirmed_at, NOW()) WHERE telegram_id = $1',
+      [String(req.telegramUser.id)]
+    );
+    res.json({ ok: true, ageConfirmed: true });
+  } catch (error) {
+    console.error('[AGE CONFIRM ERROR]', error.code || error.message);
+    res.status(500).json({ ok: false, error: 'age_confirmation_failed' });
+  }
+});
+
+router.post('/payments/invoice', requireAgeConfirmed, async (req, res) => {
   const amount = Number(req.body && req.body.amount);
   if (!Number.isSafeInteger(amount) || amount < 5 || amount > 10000) {
     return res.status(400).json({ ok: false, error: 'amount_must_be_5_to_10000' });

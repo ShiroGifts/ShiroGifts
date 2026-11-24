@@ -18,13 +18,14 @@ const port = Number(process.env.PORT || 3000);
 app.disable('x-powered-by');
 app.use(express.json({ limit: '32kb' }));
 app.use('/api', healthRoutes);
+// Telegram webhooks must be mounted before routers with global Mini App auth middleware.
+app.use('/api', telegramWebhookRoutes);
 app.use('/api', accountRoutes);
 app.use('/api', caseRoutes);
 app.use('/api', promoRoutes);
 app.use('/api', adminRoutes);
 app.use('/api', upgradeRoutes);
 app.use('/api', inventoryRoutes);
-app.use('/api', telegramWebhookRoutes);
 app.use('/api', subscriptionRoutes);
 app.use('/api', crashRoutes);
 

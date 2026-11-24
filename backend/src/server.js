@@ -68,6 +68,6 @@ async function start() {
 }
 
 start().catch(error => {
-  console.error('[STARTUP ERROR]', error.code || error.message);
+  console.error('[STARTUP ERROR]', JSON.stringify({ code: error.code, message: error.message, constraint: error.constraint, table: error.table, column: error.column, detail: error.detail }));
   process.exit(1);
 });

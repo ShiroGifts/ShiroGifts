@@ -56,9 +56,9 @@ router.post('/upgrade', async (req, res) => {
     if (success) {
       await client.query("UPDATE inventory SET status = 'upgraded' WHERE id = $1", [inventoryId]);
       const created = await client.query(
-        `INSERT INTO inventory (telegram_id, item_key, name, emoji, rarity, value_stars)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-        [telegramId, targetKey, target.name, target.emoji, target.rarity, target.value]
+        `INSERT INTO inventory (telegram_id, item_key, name, emoji, rarity, value_stars, source_type, source_ref)
+         VALUES ($1, $2, $3, $4, $5, $6, 'upgrade', $7) RETURNING id`,
+        [telegramId, targetKey, target.name, target.emoji, target.rarity, target.value, requestId]
       );
       createdInventoryId = String(created.rows[0].id);
     } else {

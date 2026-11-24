@@ -539,6 +539,25 @@ body{background:var(--bg);color:var(--text)}
 .case-card.tier-nft .name{color:#f1dfc3;letter-spacing:.8px;text-transform:uppercase}
 .case-card.tier-nft .gift-img{filter:drop-shadow(0 7px 14px #000)}
 :root{}
+
+/* Visual correction: restore saturated navy/blue surfaces and remove the accidental dim blend on the random NFT */
+:root{--bg:#0c1222;--surface:#17233b;--surface-2:#203354;--surface-3:#2a4168;--text:#f4f7ff;--text-dim:#a9b8d2;--accent:#4d8dff;--accent-2:#2867df;--gold:#ffd34e;--danger:#ff596b;--success:#38df91;--border:#30486e;--ink:#09101d}
+body{background:radial-gradient(ellipse at 50% -18%,#243e72 0%,#0c1222 58%) fixed;color:var(--text)}
+.header{background:linear-gradient(180deg,#0c1222 76%,transparent)}
+.nav{background:rgba(12,18,34,.97);border-top:1px solid #30486e}
+.case-card,.inv-item,.upgrade-box,.crash-box,.ref-box,.picker-item,.upgrade-slot,.promo-panel{background:linear-gradient(155deg,#1d3153,#14223a)!important;border-color:#36527d!important;box-shadow:0 7px 20px rgba(0,0,0,.28)!important}
+.case-card.tier-nft{background:radial-gradient(circle at 50% 4%,#214d87 0,#172b4a 52%,#101c31 100%)!important;border-color:#5a9dff!important;box-shadow:0 8px 24px #071326!important}
+.tier-ruby{background:linear-gradient(145deg,#873d67,#321d43)!important;border-color:#bd5d91!important}
+.tier-diamond{background:linear-gradient(145deg,#267a9e,#183d67)!important;border-color:#65d8ff!important}
+.tier-cosmic{background:linear-gradient(145deg,#5944a5,#25234f)!important;border-color:#a38bff!important}
+.case-card .name,.case-preview-title,.case-preview-drops-title{color:#f4f7ff!important}
+.case-card .price,.chance,.logo span,.nav-item.active{color:#ffd34e!important}
+.case-card .gift-img{filter:drop-shadow(0 7px 14px rgba(0,0,0,.55))}
+.random-nft-art{mix-blend-mode:normal!important;opacity:1!important;filter:drop-shadow(0 5px 12px rgba(0,0,0,.42))!important;background:transparent!important}
+.case-card .gift-img img,.inv-item .gift-img img,.preview-drop .drop-img img{opacity:1!important}
+.online-badge,.balance{background:#172640!important;border-color:#36527d!important;color:#e9f1ff!important}
+.section-title,.picker-title{color:#a9b8d2!important}
+
 </style>
 </head>
 <body>
@@ -974,9 +993,21 @@ function checkFreeCaseStatus() {
 const CHANNEL_USERNAME = 'ShiroGifts';   // TODO: username канала
 let awaitingSub = false;
 async function checkSubscription() {
-  isSubscribed = false;
-  renderCases();
-  toast('Проверка подписки ещё не подключена.', true);
+  try {
+    const result = await apiRequest('/api/subscription/status');
+    isSubscribed = !!result.isMember;
+    renderCases();
+    if (isSubscribed) { awaitingSub = false; haptic('success'); toast('Подписка подтверждена!'); }
+    else {
+      toast('Подпишитесь на @' + CHANNEL_USERNAME + ' и нажмите проверку ещё раз.', true);
+      awaitingSub = true;
+      const url = 'https://t.me/' + CHANNEL_USERNAME;
+      if (tg?.openTelegramLink) tg.openTelegramLink(url); else window.open(url, '_blank');
+    }
+  } catch (error) {
+    isSubscribed = false; renderCases();
+    toast('Не удалось проверить подписку. Попробуйте ещё раз.', true);
+  }
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden && awaitingSub) { awaitingSub = false; checkSubscription(); } });
 tg?.onEvent?.('activated', () => { if (awaitingSub) { awaitingSub = false; checkSubscription(); } });

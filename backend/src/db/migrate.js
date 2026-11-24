@@ -43,9 +43,6 @@ async function migrate() {
 
     ALTER TABLE wallet_ledger DROP CONSTRAINT IF EXISTS wallet_ledger_entry_type_check;
 
-    ALTER TABLE case_openings DROP CONSTRAINT IF EXISTS case_openings_case_price_check;
-    ALTER TABLE case_openings ADD CONSTRAINT case_openings_case_price_check CHECK (case_price >= 0);
-
     CREATE TABLE IF NOT EXISTS daily_name_rewards (
       telegram_id BIGINT PRIMARY KEY REFERENCES users(telegram_id),
       last_claimed_at TIMESTAMPTZ NOT NULL
@@ -82,6 +79,9 @@ async function migrate() {
       OR (reward_type = 'stars' AND reward_key IS NULL AND reward_stars IS NOT NULL AND inventory_id IS NULL)
       OR (reward_type = 'nothing' AND reward_key IS NULL AND reward_stars IS NULL AND inventory_id IS NULL)
     );
+
+    ALTER TABLE case_openings DROP CONSTRAINT IF EXISTS case_openings_case_price_check;
+    ALTER TABLE case_openings ADD CONSTRAINT case_openings_case_price_check CHECK (case_price >= 0);
 
     ALTER TABLE inventory DROP CONSTRAINT IF EXISTS inventory_status_check;
     ALTER TABLE inventory ADD CONSTRAINT inventory_status_check

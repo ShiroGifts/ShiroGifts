@@ -4,6 +4,7 @@ const express = require('express');
 const healthRoutes = require('./routes/health');
 const accountRoutes = require('./routes/account');
 const caseRoutes = require('./routes/cases');
+const promoRoutes = require('./routes/promos');
 const telegramWebhookRoutes = require('./routes/telegramWebhook');
 const { migrate } = require('./db/migrate');
 
@@ -14,6 +15,7 @@ app.use(express.json({ limit: '32kb' }));
 app.use('/api', healthRoutes);
 app.use('/api', accountRoutes);
 app.use('/api', caseRoutes);
+app.use('/api', promoRoutes);
 app.use('/api', telegramWebhookRoutes);
 
 app.use(express.static(path.join(__dirname, '../../frontend')));

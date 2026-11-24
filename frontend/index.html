@@ -1274,6 +1274,15 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
     <button class="btn-big" id="dailyNameRewardBtn" onclick="claimDailyNameReward()">Проверить и забрать 25 ★</button>
     <div class="promo-status" id="dailyNameRewardStatus" aria-live="polite"></div>
   </div>
+
+
+  <div class="section-title profile-inventory-title">Инвентарь</div>
+  <div class="inv-grid" id="invGrid"></div>
+  <div class="ref-box">
+    <div class="ref-title">🤝 Рефералы: <span id="refCount">0</span>/5</div>
+    <div class="ref-text" id="refText"></div>
+    <button class="btn btn-withdraw" style="width:100%" onclick="copyRefLink()">Копировать ссылку</button>
+  </div>
       <details class="owner-tools" style="margin-top:22px"><summary>Инструменты владельца</summary>
     <div class="promo-heading" style="margin-top:18px">Режим записи (только мой аккаунт)</div>
     <div class="promo-description">Изолированная демонстрация: тестовые выигрыши не списывают Stars и не добавляют предметы в настоящий инвентарь. Подменённый онлайн виден только в твоём окне.</div>
@@ -1306,13 +1315,6 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
     <div class="promo-heading" style="margin-top:22px">Заявки на вывод</div>
     <button class="btn-big" type="button" onclick="loadAdminWithdrawals()">Обновить заявки</button>
     <div id="adminWithdrawalList" class="promo-status"></div></details>
-  <div class="ref-box">
-    <div class="ref-title">🤝 Рефералы: <span id="refCount">0</span>/5</div>
-    <div class="ref-text" id="refText"></div>
-    <button class="btn btn-withdraw" style="width:100%" onclick="copyRefLink()">Копировать ссылку</button>
-  </div>
-  <div class="section-title profile-inventory-title">Инвентарь</div>
-  <div class="inv-grid" id="invGrid"></div>
 </div>
 
 <div class="page" id="page-promo">

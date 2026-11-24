@@ -1,18 +1,16 @@
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const { Pool } = require('pg');
+const { pool, checkDatabase } = require('../backend/src/db/pool');
+const { migrate } = require('../backend/src/db/migrate');
 
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL is required for the database integration test');
 }
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
 async function run() {
-  const schema = fs.readFileSync(path.join(__dirname, '../backend/db/schema.sql'), 'utf8');
-  await pool.query(schema);
-  await pool.query(schema);
+  await migrate();
+  await migrate();
+  const health = await checkDatabase();
+  assert.deepEqual(health, { configured: true, connected: true });
 
   const client = await pool.connect();
   try {

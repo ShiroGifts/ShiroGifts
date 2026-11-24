@@ -505,6 +505,12 @@ body{font-family:'Manrope',system-ui,sans-serif;font-weight:500;background:radia
 .age-check{display:flex;align-items:center;justify-content:center;gap:10px;font-size:13px;font-weight:700;margin-bottom:18px}
 .age-check input{width:18px;height:18px;accent-color:#b99a67}
 .age-error{min-height:18px;color:#f18b82;font-size:11px;margin-top:10px}
+
+/* Original Telegram gift artwork is transparent: do not add photo-like backplates */
+.gift-img,.drop-img,.preview-drop,.inv-item .gift-img,.case-preview-art{background:transparent!important}
+.gift-img img,.drop-img img,.big-img img,.case-preview-art img,.inv-item .gift-img img,.picker-item .gift-img img{background:transparent!important;border-radius:0!important;object-fit:contain;filter:drop-shadow(0 5px 9px rgba(0,0,0,.28))}
+.case-card .gift-img{filter:none}
+.case-card .gift-img .ic,.case-preview-art .ic{width:100%;height:100%;max-width:100%;max-height:100%;filter:drop-shadow(0 6px 9px rgba(0,0,0,.35))}
 </style>
 </head>
 <body>
@@ -729,9 +735,9 @@ function playUiSound(kind) {
 
 
 const S=b=>`<svg class="ic" viewBox="0 0 64 64" fill="none" stroke="#0a0c12" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">${b}</svg>`;
-const chest=(a,b)=>S(`<rect x="6" y="28" width="52" height="28" rx="6" fill="${a}"/><path d="M6 32v-8a8 8 0 018-8h36a8 8 0 018 8v8z" fill="${b}"/><rect x="26" y="30" width="12" height="14" rx="3" fill="#ffc42e"/>`);
+const chest=(a,b)=>S(`<ellipse cx="32" cy="57" rx="25" ry="4" fill="#000" opacity=".28" stroke="none"/><path d="M7 28h50v25a5 5 0 01-5 5H12a5 5 0 01-5-5z" fill="${a}" stroke="#17202a"/><path d="M7 28h50v-6a8 8 0 00-8-8H15a8 8 0 00-8 8z" fill="${b}" stroke="#17202a"/><path d="M7 29h50M13 34v17m38-17v17" stroke="#f0d49b" stroke-width="2" opacity=".75"/><path d="M25 29h14v29H25z" fill="#d8b77a" stroke="#735b38"/><rect x="26" y="34" width="12" height="13" rx="3" fill="#1b2633" stroke="#e5c68c"/><path d="M28 34v-4a4 4 0 018 0v4" stroke="#f0d49b" stroke-width="2.5" fill="none"/><circle cx="32" cy="40" r="1.6" fill="#f0d49b" stroke="none"/>`);
 function imageAsset(url, alt) { return '<img src="' + url + '" alt="' + alt + '" loading="lazy" decoding="async">'; }
-const casePhoto = imageAsset('https://images.unsplash.com/photo-1513201099705-a9746e1e201f?auto=format&fit=crop&w=480&q=85','Подарочная коробка');
+const casePhoto = chest('#76502f','#b87943');
 // Свои иллюстрации в стиле TG-стикеров. Реальные картинки подарков подставляются в GIFTS[key].img как <img src=...> (см. getAvailableGifts).
 const IC={
 bear:S('<circle cx="17" cy="19" r="8" fill="#b96a1f"/><circle cx="47" cy="19" r="8" fill="#b96a1f"/><circle cx="32" cy="36" r="21" fill="#e0902e"/><ellipse cx="32" cy="43" rx="9" ry="7" fill="#ffd08a"/><circle cx="24" cy="31" r="2.5" fill="#0a0c12"/><circle cx="40" cy="31" r="2.5" fill="#0a0c12"/><ellipse cx="32" cy="40" rx="3" ry="2" fill="#0a0c12"/>'),
@@ -753,31 +759,32 @@ star:S('<path d="M32 6l7 17 18 2-14 12 5 18-16-10-16 10 5-18L7 25l18-2z" fill="#
 brand:S('<path d="M17 14h21a11 11 0 010 22H26a10 10 0 000 20h21" fill="none" stroke="#d8b77a" stroke-width="7" stroke-linecap="round"/>')
 };
 
+const tgGift = (id, alt) => imageAsset('https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/gift_' + id + '.webp', alt);
 const GIFTS = {
-  bear: { name: 'Медведь', price: 15, img: imageAsset('https://images.pexels.com/photos/36036190/pexels-photo-36036190.jpeg?auto=compress&cs=tinysrgb&w=420','Плюшевый медведь'), rarity: 'Обычный' },
-  heart: { name: 'Сердце', price: 15, img: imageAsset('https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=420&q=85','Подарок в форме сердца'), rarity: 'Обычный' },
-  rose: { name: 'Роза', price: 25, img: imageAsset('https://sentiments.ae/cdn/shop/files/ChatGPT_Image_Jan_26_2026_07_39_34_AM.png?v=1769398785&width=720','Букет красных роз'), rarity: 'Обычный' },
-  cake: { name: 'Торт', price: 50, img: imageAsset('https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=420&q=85','Праздничный торт'), rarity: 'Редкий' },
-  bouquet: { name: 'Букет', price: 50, img: imageAsset('https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=420&q=85','Цветочный букет'), rarity: 'Редкий' },
-  rocket: { name: 'Ракета', price: 50, img: imageAsset('https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&w=420&q=85','Ракета'), rarity: 'Редкий' },
-  champ: { name: 'Шампанское', price: 50, img: imageAsset('https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=420&q=85','Бутылка шампанского'), rarity: 'Редкий' },
-  cup: { name: 'Кубок', price: 100, img: imageAsset('https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=420&q=85','Спортивный кубок'), rarity: 'Эпический' },
-  ring: { name: 'Кольцо', price: 100, img: imageAsset('https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=420&q=85','Золотое кольцо с бриллиантом'), rarity: 'Эпический' },
-  diamond: { name: 'Бриллиант', price: 100, img: imageAsset('https://www.ritani.com/cdn-cgi/image/width%3D3840%2Cquality%3D90/https%3A/mp20-assets.ritani.com/cms/JM_Banner_Mobile_4538a15f38/JM_Banner_Mobile_4538a15f38.webp','Бриллиант'), rarity: 'Легендарный' },
-  random_nft: { name: 'Рандомный NFT', price: 350, img: imageAsset('https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=420&q=85','Цифровой коллекционный арт'), rarity: 'Мифический' },
+  bear: { name: 'Мишка', price: 15, img: tgGift('5170233102089322756','Telegram подарок — плюшевый мишка'), rarity: 'Обычный' },
+  heart: { name: 'Сердце', price: 15, img: tgGift('5170145012310081615','Telegram подарок — сердце'), rarity: 'Обычный' },
+  rose: { name: 'Роза', price: 25, img: tgGift('5168103777563050263','Telegram подарок — роза'), rarity: 'Обычный' },
+  cake: { name: 'Торт', price: 50, img: tgGift('5170144170496491616','Telegram подарок — торт'), rarity: 'Редкий' },
+  bouquet: { name: 'Букет', price: 50, img: tgGift('5170314324215857265','Telegram подарок — букет'), rarity: 'Редкий' },
+  rocket: { name: 'Ракета', price: 50, img: tgGift('5170564780938756245','Telegram подарок — ракета'), rarity: 'Редкий' },
+  champ: { name: 'Шампанское', price: 50, img: tgGift('6028601630662853006','Telegram подарок — шампанское'), rarity: 'Редкий' },
+  cup: { name: 'Кубок', price: 100, img: tgGift('5168043875654172773','Telegram подарок — кубок'), rarity: 'Эпический' },
+  ring: { name: 'Кольцо', price: 100, img: tgGift('5170690322832818290','Telegram подарок — кольцо'), rarity: 'Эпический' },
+  diamond: { name: 'Бриллиант', price: 100, img: tgGift('5170521118301225164','Telegram подарок — бриллиант'), rarity: 'Легендарный' },
+  random_nft: { name: 'Plush Pepe NFT', price: 350, img: imageAsset('https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/plush_pepe.webp','Telegram collectible gift — Plush Pepe'), rarity: 'Мифический' },
 };
 
 const CASES = [
-  { id: 'farm', name: 'Фарм', price: 1, icon: casePhoto, drops: ['random_nft','nothing'] },
-  { id: 'starter', name: 'Стартовый', price: 10, icon: casePhoto, drops: ['bear','heart','rose','stars_5','stars_10'] },
-  { id: 'mini', name: 'Мини', price: 25, icon: casePhoto, drops: ['bear','heart','rose','cake','stars_10','stars_25','bouquet'] },
-  { id: 'bronze', name: 'Бронзовый', price: 50, icon: casePhoto, drops: ['bear','stars_10','rose','heart','stars_25','cake','rocket','bouquet','stars_50'] },
-  { id: 'silver', name: 'Серебряный', price: 75, icon: casePhoto, drops: ['cup','rose','stars_15','cake','ring','bouquet','stars_75','champ','rocket','stars_35'] },
-  { id: 'gold', name: 'Золотой', price: 120, icon: casePhoto, drops: ['diamond','stars_25','champ','cup','cake','stars_120','ring','bouquet','stars_60','rocket'] },
-  { id: 'legend', name: 'Легендарный', price: 200, icon: casePhoto, drops: ['random_nft','stars_100','ring','cup','stars_500','rocket','diamond','stars_50','champ','stars_200'] },
-  { id: 'ruby', name: 'Рубиновый', price: 300, icon: casePhoto, drops: ['stars_150','diamond','bouquet','stars_750','random_nft','ring','stars_75','cup','stars_300','champ'] },
-  { id: 'diamond', name: 'Алмазный', price: 500, icon: casePhoto, drops: ['stars_250','random_nft','stars_2500','ring','diamond','stars_100','stars_1000','cup','stars_500','stars_250'] },
-  { id: 'cosmic', name: 'Космический', price: 1000, icon: casePhoto, drops: ['stars_500','diamond','stars_5000','random_nft','stars_200','ring','stars_2000','stars_1000','stars_500','diamond'] },
+  { id: 'farm', name: 'Фарм', price: 1, icon: chest('#394a5e','#8096aa'), drops: ['random_nft','nothing'] },
+  { id: 'starter', name: 'Стартовый', price: 10, icon: chest('#5e5143','#9c8565'), drops: ['bear','heart','rose','stars_5','stars_10'] },
+  { id: 'mini', name: 'Мини', price: 25, icon: chest('#70533c','#b58a59'), drops: ['bear','heart','rose','cake','stars_10','stars_25','bouquet'] },
+  { id: 'bronze', name: 'Бронзовый', price: 50, icon: chest('#76502f','#b87943'), drops: ['bear','stars_10','rose','heart','stars_25','cake','rocket','bouquet','stars_50'] },
+  { id: 'silver', name: 'Серебряный', price: 75, icon: chest('#596675','#b7c3ce'), drops: ['cup','rose','stars_15','cake','ring','bouquet','stars_75','champ','rocket','stars_35'] },
+  { id: 'gold', name: 'Золотой', price: 120, icon: chest('#8a682e','#d7b66c'), drops: ['diamond','stars_25','champ','cup','cake','stars_120','ring','bouquet','stars_60','rocket'] },
+  { id: 'legend', name: 'Легендарный', price: 200, icon: chest('#554b72','#a28cc7'), drops: ['random_nft','stars_100','ring','cup','stars_500','rocket','diamond','stars_50','champ','stars_200'] },
+  { id: 'ruby', name: 'Рубиновый', price: 300, icon: chest('#733b45','#be6670'), drops: ['stars_150','diamond','bouquet','stars_750','random_nft','ring','stars_75','cup','stars_300','champ'] },
+  { id: 'diamond', name: 'Алмазный', price: 500, icon: chest('#426276','#88bdd0'), drops: ['stars_250','random_nft','stars_2500','ring','diamond','stars_100','stars_1000','cup','stars_500','stars_250'] },
+  { id: 'cosmic', name: 'Космический', price: 1000, icon: chest('#493d72','#8f75bd'), drops: ['stars_500','diamond','stars_5000','random_nft','stars_200','ring','stars_2000','stars_1000','stars_500','diamond'] },
 ];
 
 let balance = 0;

@@ -830,7 +830,7 @@ function checkFreeCaseStatus() {
 
 const CHANNEL_USERNAME = 'ShiroGifts';   // TODO: username канала
 let awaitingSub = false;
-async async function checkSubscription() {
+async function checkSubscription() {
   isSubscribed = false;
   renderCases();
   toast('Проверка подписки ещё не подключена к Telegram.', true);
@@ -1128,7 +1128,7 @@ function updateUpgradeButton() {
   btn.textContent = ready ? 'Крутить колесо' : 'Выберите предметы';
 }
 
-async async function doUpgrade() {
+async function doUpgrade() {
   toast('Апгрейд временно отключён до переноса механики на сервер.', true);
 }
 

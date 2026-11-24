@@ -41,6 +41,7 @@ router.post('/invoice', async (req, res) => {
       title: 'Пополнение ShiroGifts',
       description: `Пополнение баланса на ${amount} Telegram Stars`,
       payload,
+      provider_token: '',
       currency: 'XTR',
       prices: [{ label: 'Пополнение баланса', amount }]
       });

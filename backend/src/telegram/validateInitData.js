@@ -7,7 +7,8 @@ function validateInitData(initData, botToken, maxAgeSeconds = 3600) {
   const receivedHash = params.get('hash');
   const authDate = Number(params.get('auth_date'));
   if (!receivedHash || !Number.isFinite(authDate)) return null;
-  if (Math.abs(Math.floor(Date.now() / 1000) - authDate) > maxAgeSeconds) return null;
+  const now = Math.floor(Date.now() / 1000);
+  if (authDate > now + 30 || now - authDate > maxAgeSeconds) return null;
 
   params.delete('hash');
   const dataCheckString = [...params.entries()]

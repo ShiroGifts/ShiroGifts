@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node backend/src/server.js",
     "dev": "node --watch backend/src/server.js",
-    "check": "node --check backend/src/server.js && node --check backend/src/db/pool.js && node --check backend/src/db/migrate.js && node --check backend/src/routes/health.js && node --check backend/src/routes/account.js && node --check backend/src/routes/subscription.js && node --check backend/src/routes/payments.js && node --check backend/src/routes/telegramWebhook.js && node --check backend/src/telegram/auth.js && node --check backend/src/telegram/validateInitData.js && node scripts/check-frontend.js"
+    "check": "node --check backend/src/server.js && node --check backend/src/db/pool.js && node --check backend/src/db/migrate.js && node --check backend/src/routes/health.js && node --check backend/src/routes/account.js && node --check backend/src/routes/subscription.js && node --check backend/src/routes/payments.js && node --check backend/src/routes/telegramWebhook.js && node --check backend/src/telegram/auth.js && node --check backend/src/telegram/validateInitData.js && node scripts/check-frontend.js && node scripts/test-auth.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7",

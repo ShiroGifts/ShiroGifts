@@ -74,15 +74,15 @@ const CASES = [
     { type: 'gift', key: 'heroic_helmet', weight: 100 },
     { type: 'gift', key: 'astral_shard', weight: 100 },
     { type: 'gift', key: 'loot_bag', weight: 100 },
-    { type: 'gift', key: 'vice_cream', weight: 45000 },
-    { type: 'gift', key: 'lol_pop', weight: 45000 },
-    { type: 'gift', key: 'bunny_muffin', weight: 45000 },
-    { type: 'gift', key: 'jolly_chimp', weight: 45000 },
-    { type: 'gift', key: 'ginger_cookie', weight: 45000 },
-    { type: 'gift', key: 'chill_flame', weight: 45000 },
-    { type: 'gift', key: 'mirage_lamp', weight: 45000 },
-    { type: 'gift', key: 'snoop_dogg', weight: 45000 },
-    { type: 'nothing', weight: 639000 }
+    { type: 'gift', key: 'vice_cream', weight: 68000 },
+    { type: 'gift', key: 'lol_pop', weight: 68000 },
+    { type: 'gift', key: 'bunny_muffin', weight: 68000 },
+    { type: 'gift', key: 'jolly_chimp', weight: 68000 },
+    { type: 'gift', key: 'ginger_cookie', weight: 68000 },
+    { type: 'gift', key: 'chill_flame', weight: 68000 },
+    { type: 'gift', key: 'mirage_lamp', weight: 68000 },
+    { type: 'gift', key: 'snoop_dogg', weight: 68000 },
+    { type: 'nothing', weight: 455000 }
   ]}
 ];
 
@@ -109,14 +109,14 @@ const GIFT_DATA = {
   heroic_helmet: { name: 'Heroic Helmet NFT', emoji: '🪖', rarity: 'NFT', value: 14629 },
   astral_shard: { name: 'Astral Shard NFT', emoji: '💠', rarity: 'NFT', value: 9819 },
   loot_bag: { name: 'Loot Bag NFT', emoji: '🎒', rarity: 'NFT', value: 10688 },
-  vice_cream: { name: 'Vice Cream NFT', emoji: '🍦', rarity: 'NFT', value: 90 },
-  lol_pop: { name: 'Lol Pop NFT', emoji: '🍭', rarity: 'NFT', value: 95 },
-  bunny_muffin: { name: 'Bunny Muffin NFT', emoji: '🐰', rarity: 'NFT', value: 110 },
-  jolly_chimp: { name: 'Jolly Chimp NFT', emoji: '🐵', rarity: 'NFT', value: 120 },
-  ginger_cookie: { name: 'Ginger Cookie NFT', emoji: '🍪', rarity: 'NFT', value: 130 },
-  chill_flame: { name: 'Chill Flame NFT', emoji: '🔥', rarity: 'NFT', value: 145 },
-  mirage_lamp: { name: 'Mirage Lamp NFT', emoji: '🪔', rarity: 'NFT', value: 170 },
-  snoop_dogg: { name: 'Snoop Dogg NFT', emoji: '🐶', rarity: 'NFT', value: 210 }
+  vice_cream: { name: 'Vice Cream NFT', emoji: '🍦', rarity: 'NFT', value: 650 },
+  lol_pop: { name: 'Lol Pop NFT', emoji: '🍭', rarity: 'NFT', value: 700 },
+  bunny_muffin: { name: 'Bunny Muffin NFT', emoji: '🐰', rarity: 'NFT', value: 750 },
+  jolly_chimp: { name: 'Jolly Chimp NFT', emoji: '🐵', rarity: 'NFT', value: 800 },
+  ginger_cookie: { name: 'Ginger Cookie NFT', emoji: '🍪', rarity: 'NFT', value: 850 },
+  chill_flame: { name: 'Chill Flame NFT', emoji: '🔥', rarity: 'NFT', value: 900 },
+  mirage_lamp: { name: 'Mirage Lamp NFT', emoji: '🪔', rarity: 'NFT', value: 950 },
+  snoop_dogg: { name: 'Snoop Dogg NFT', emoji: '🐶', rarity: 'NFT', value: 1000 }
 };
 
 function getCase(id) { return CASES.find(item => item.id === id); }

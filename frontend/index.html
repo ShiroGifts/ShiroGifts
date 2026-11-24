@@ -831,9 +831,25 @@ function checkFreeCaseStatus() {
 const CHANNEL_USERNAME = 'ShiroGifts';   // TODO: username канала
 let awaitingSub = false;
 async function checkSubscription() {
-  isSubscribed = false;
-  renderCases();
-  toast('Проверка подписки ещё не подключена к Telegram.', true);
+  if (!tg?.initData) {
+    toast('Откройте Mini App через Telegram, чтобы проверить подписку.', true);
+    return;
+  }
+  try {
+    const response = await fetch('/api/subscription', {
+      method: 'POST',
+      headers: { 'x-telegram-init-data': tg.initData }
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || 'subscription_check_unavailable');
+    isSubscribed = data.subscribed === true;
+    renderCases();
+    toast(isSubscribed ? 'Подписка подтверждена.' : 'Подписка на канал пока не найдена.', !isSubscribed);
+  } catch (error) {
+    isSubscribed = false;
+    renderCases();
+    toast('Не удалось проверить подписку. Попробуйте позже.', true);
+  }
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden && awaitingSub) { awaitingSub = false; checkSubscription(); } });
 tg?.onEvent?.('activated', () => { if (awaitingSub) { awaitingSub = false; checkSubscription(); } });

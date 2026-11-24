@@ -55,6 +55,7 @@ async function migrate() {
 
     ALTER TABLE case_openings DROP CONSTRAINT IF EXISTS case_openings_reward_type_check;
     ALTER TABLE case_openings DROP CONSTRAINT IF EXISTS case_openings_check;
+    ALTER TABLE case_openings DROP CONSTRAINT IF EXISTS case_openings_reward_shape_check;
     ALTER TABLE case_openings ADD CONSTRAINT case_openings_reward_type_check
       CHECK (reward_type IN ('gift','stars','nothing'));
     ALTER TABLE case_openings ADD CONSTRAINT case_openings_reward_shape_check CHECK (

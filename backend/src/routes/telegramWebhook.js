@@ -96,10 +96,20 @@ async function runBroadcast(adminId, messageText) {
 }
 
 router.post('/telegram/webhook', async (req, res) => {
-  const expected = process.env.TELEGRAM_WEBHOOK_SECRET;
-  const supplied = req.header('x-telegram-bot-api-secret-token');
-  if (!expected || !supplied || supplied.length !== expected.length ||
-      !require('node:crypto').timingSafeEqual(Buffer.from(supplied), Buffer.from(expected))) {
+  const expected = process.env.TELEGRAM_WEBHOOK_SECRET || '';
+  const supplied = req.header('x-telegram-bot-api-secret-token') || '';
+  const expectedBytes = Buffer.from(expected, 'utf8');
+  const suppliedBytes = Buffer.from(supplied, 'utf8');
+  const validSecret = expectedBytes.length > 0 &&
+    expectedBytes.length === suppliedBytes.length &&
+    require('node:crypto').timingSafeEqual(suppliedBytes, expectedBytes);
+  if (!validSecret) {
+    console.warn('[TELEGRAM WEBHOOK AUTH FAILED]', {
+      expectedConfigured: Boolean(expected),
+      headerPresent: Boolean(supplied),
+      expectedBytes: expectedBytes.length,
+      receivedBytes: suppliedBytes.length
+    });
     return res.sendStatus(401);
   }
   const update = req.body || {};

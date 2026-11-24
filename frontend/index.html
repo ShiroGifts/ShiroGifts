@@ -1248,18 +1248,9 @@ body{
 #upgradePickerBackdrop .picker-item .value{font-size:13px!important;line-height:1.25!important;margin:0 0 2px!important}
 
 
-/* Final mobile WebView fix: use Telegram's reported viewport, not a transient 100dvh. */
+/* Full-screen picker: independent of page animations and Telegram viewport callbacks. */
 html,body{min-height:100%;}
 body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
-#upgradePickerBackdrop{
- position:fixed!important;top:0!important;right:0!important;bottom:auto!important;left:0!important;
- width:100%!important;height:var(--picker-viewport-height,100vh)!important;max-height:none!important;
- min-height:0!important;inset-inline:0!important;z-index:2147483647!important;
-}
-#upgradePickerBackdrop .upgrade-picker-sheet{
- position:relative!important;flex:1 1 auto!important;width:100%!important;
- height:100%!important;min-height:0!important;max-height:100%!important;
-}
 
 /* Picker must fill the WebView itself; Telegram viewportHeight can be half-height on first tap. */
 #upgradePickerBackdrop{
@@ -1393,13 +1384,7 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
       <button class="btn-big upgrade-select-btn" type="button" onclick="openUpgradePicker('from')">🎒 Инвентарь <span id="fromSelectedShort">Выбрать предмет</span></button>
       <button class="btn-big upgrade-select-btn secondary" type="button" onclick="openUpgradePicker('to')">🎯 Желаемое <span id="toSelectedShort">Выбрать цель</span></button>
     </div>
-    <div class="upgrade-picker-backdrop" id="upgradePickerBackdrop" onclick="closeUpgradePicker()">
-      <div class="upgrade-picker-sheet" onclick="event.stopPropagation()">
-        <div class="upgrade-picker-head"><b id="upgradePickerTitle">Выберите предмет</b><button type="button" onclick="closeUpgradePicker()">✕</button></div>
-        <div class="picker-list" id="fromPicker"></div>
-        <div class="picker-list" id="toPicker" style="display:none"></div>
-      </div>
-    </div>
+
     <div class="wheel-wrap">
       <div class="wheel-pointer" id="wheelPointer"></div>
       <div class="wheel" id="wheel">
@@ -1436,6 +1421,14 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
   <div class="nav-item" data-page="inventory" onclick="switchPage('inventory')"><span class="icon" data-ic="bag"></span>Инвентарь</div>
   <div class="nav-item" data-page="promo" onclick="switchPage('promo')"><span class="icon" data-ic="star"></span>Промокод</div>
   <div class="nav-item" data-page="upgrade" onclick="switchPage('upgrade')"><span class="icon" data-ic="up"></span>Апгрейд</div>
+</div>
+
+<div class="upgrade-picker-backdrop" id="upgradePickerBackdrop" onclick="closeUpgradePicker()">
+  <div class="upgrade-picker-sheet" onclick="event.stopPropagation()">
+    <div class="upgrade-picker-head"><b id="upgradePickerTitle">Выберите предмет</b><button type="button" onclick="closeUpgradePicker()">✕</button></div>
+    <div class="picker-list" id="fromPicker"></div>
+    <div class="picker-list" id="toPicker" style="display:none"></div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -2879,10 +2872,7 @@ function copyRefLink() {
 }
 
 /* ===== INIT ===== */
-// Mount the upgrade selector at document root during startup, not on its first open.
-// This avoids the one-frame split/overlap with the inventory page on mobile.
-const upgradePickerRoot = document.getElementById('upgradePickerBackdrop');
-if (upgradePickerRoot && upgradePickerRoot.parentElement !== document.body) document.body.appendChild(upgradePickerRoot);
+// The upgrade picker is authored directly under <body>, outside animated .page containers.
 document.querySelectorAll('[data-ic]').forEach(e => e.innerHTML = IC[e.dataset.ic]);
 if (String(tg?.initDataUnsafe?.user?.id || '') !== '8159031701') document.querySelector('.owner-tools')?.remove();
 renderHistory(); renderCrashUI(); requestAnimationFrame(crashFrame);

@@ -1054,6 +1054,23 @@ body{
  #page-upgrade .chance{font-size:19px!important}
  #page-upgrade #upgradeBtn{min-height:32px!important;padding:5px!important}
 }
+
+/* Upgrade selectors: compact two-step bottom sheet */
+.upgrade-select-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:0 0 12px}
+.upgrade-select-btn{padding:11px 8px!important;font-size:13px!important;min-height:52px;display:flex;flex-direction:column;gap:3px;align-items:center;justify-content:center}
+.upgrade-select-btn span{font-size:10px;font-weight:700;opacity:.78}
+.upgrade-select-btn.secondary{background:var(--surface-2)!important;color:var(--text)!important;box-shadow:0 4px 0 var(--ink)!important}
+.upgrade-picker-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:85;display:none;align-items:flex-end;padding:12px}
+.upgrade-picker-backdrop.show{display:flex}
+.upgrade-picker-sheet{width:100%;max-height:58vh;overflow:auto;background:var(--surface);border:2px solid var(--ink);border-radius:20px 20px 14px 14px;padding:14px;box-shadow:0 8px 30px #0009}
+.upgrade-picker-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.upgrade-picker-head button{border:0;border-radius:10px;background:var(--surface-2);color:var(--text);padding:8px 12px;font-size:16px}
+.upgrade-picker-sheet .picker-list{flex-wrap:wrap;max-height:42vh;overflow-y:auto;padding-bottom:4px}
+.upgrade-picker-sheet .picker-item{width:calc(25% - 8px);min-width:66px;padding:9px 4px}
+.upgrade-picker-sheet .picker-item .gift-img{font-size:27px}
+.upgrade-picker-sheet .picker-item .label{font-size:9px}
+@media(max-width:380px){.upgrade-select-btn{font-size:11px!important}.upgrade-picker-sheet .picker-item{width:calc(33.333% - 7px)}}
+
 </style>
 </head>
 <body>
@@ -1125,7 +1142,16 @@ body{
     <div id="promoExpiryWrap" style="display:none"><label class="promo-label" for="promoAdminExpiry">Действует до</label><input class="promo-input" id="promoAdminExpiry" type="datetime-local"></div>
     <button class="btn-big" onclick="createPromo()">Создать промокод</button>
     <div class="promo-status" id="promoAdminResult" aria-live="polite"></div>
-    <details class="owner-tools" style="margin-top:22px"><summary>Инструменты владельца</summary><div class="promo-heading" style="margin-top:22px">Выдать подарок игроку</div>
+    <details class="owner-tools" style="margin-top:22px"><summary>Инструменты владельца</summary>
+    <div class="promo-heading" style="margin-top:18px">Режим съёмки (только мой аккаунт)</div>
+    <div class="promo-description">Изолированная демонстрация: тестовые выигрыши не списывают Stars и не добавляют предметы в настоящий инвентарь. Подменённый онлайн виден только в твоём окне.</div>
+    <label class="promo-label"><input id="demoModeEnabled" type="checkbox" onchange="updateDemoMode()"> Включить демо-режим апгрейда</label>
+    <label class="promo-label" for="demoUpgradeChance">Фактический шанс успеха в демо, %</label>
+    <input class="promo-input" id="demoUpgradeChance" type="number" min="0" max="100" value="30">
+    <label class="promo-label" for="demoOnlineValue">Онлайн для записи (только у меня)</label>
+    <input class="promo-input" id="demoOnlineValue" type="number" min="0" max="999999" placeholder="Например, 2400" oninput="applyDemoOnline()">
+    <button class="btn btn-sell" type="button" onclick="clearDemoOnline()">Вернуть реальный онлайн</button>
+    <div class="promo-heading" style="margin-top:22px">Выдать подарок игроку</div>
     <div class="promo-description">Укажи Telegram ID игрока. Подарок появится в его инвентаре.</div>
     <label class="promo-label" for="adminGiftTelegramId">Telegram ID игрока</label>
     <input class="promo-input" id="adminGiftTelegramId" inputmode="numeric" placeholder="Например, 123456789">
@@ -1162,10 +1188,17 @@ body{
         <span class="label">Выберите цель</span>
       </div>
     </div>
-    <div class="picker-title">Ваш инвентарь</div>
-    <div class="picker-list" id="fromPicker"></div>
-    <div class="picker-title">Целевой подарок</div>
-    <div class="picker-list" id="toPicker"></div>
+    <div class="upgrade-select-actions">
+      <button class="btn-big upgrade-select-btn" type="button" onclick="openUpgradePicker('from')">🎒 Инвентарь <span id="fromSelectedShort">Выбрать предмет</span></button>
+      <button class="btn-big upgrade-select-btn secondary" type="button" onclick="openUpgradePicker('to')">🎯 Желаемое <span id="toSelectedShort">Выбрать цель</span></button>
+    </div>
+    <div class="upgrade-picker-backdrop" id="upgradePickerBackdrop" onclick="closeUpgradePicker()">
+      <div class="upgrade-picker-sheet" onclick="event.stopPropagation()">
+        <div class="upgrade-picker-head"><b id="upgradePickerTitle">Выберите предмет</b><button type="button" onclick="closeUpgradePicker()">✕</button></div>
+        <div class="picker-list" id="fromPicker"></div>
+        <div class="picker-list" id="toPicker" style="display:none"></div>
+      </div>
+    </div>
     <div class="wheel-wrap">
       <div class="wheel-pointer" id="wheelPointer"></div>
       <div class="wheel" id="wheel">
@@ -1499,9 +1532,28 @@ function mockApi(fn, delay = 450) {
 
 /* ===== ОНЛАЙН-СЧЁТЧИК (только реальные данные) ===== */
 // Число приходит с сервера (уникальные активные пользователи за последние ~2 мин).
+let demoOnlineOverride = null;
 function setOnline(n) {
   const el = document.getElementById('onlineCount');
-  if (el) el.textContent = Number.isFinite(n) ? fmt(n) : '—';
+  const shown = demoOnlineOverride === null ? n : demoOnlineOverride;
+  if (el) el.textContent = Number.isFinite(shown) ? fmt(shown) : '—';
+}
+function applyDemoOnline() {
+  if (String(tg?.initDataUnsafe?.user?.id || '') !== '8159031701') return;
+  const raw = document.getElementById('demoOnlineValue')?.value ?? '';
+  demoOnlineOverride = raw === '' ? null : Math.max(0, Math.min(999999, Math.floor(Number(raw)||0)));
+  refreshOnlineCount();
+}
+function clearDemoOnline() {
+  demoOnlineOverride = null;
+  const input=document.getElementById('demoOnlineValue'); if(input) input.value='';
+  refreshOnlineCount();
+}
+function updateDemoMode() {
+  if (String(tg?.initDataUnsafe?.user?.id || '') !== '8159031701') return;
+  const enabled=!!document.getElementById('demoModeEnabled')?.checked;
+  document.body.classList.toggle('owner-demo-mode',enabled);
+  toast(enabled ? 'Демо-режим включён: реальные ставки и инвентарь не затрагиваются.' : 'Демо-режим выключен.');
 }
 
 async function refreshOnlineCount() {
@@ -1849,9 +1901,25 @@ function renderUpgrade() {
   renderFromPicker();
   renderToPicker();
   updateUpgradeSlots();
+  const fromShort=document.getElementById('fromSelectedShort');
+  const toShort=document.getElementById('toSelectedShort');
+  const fromItem=upgradeFromUid ? inventory.find(i=>i.uid===upgradeFromUid) : null;
+  const fromGift=fromItem ? GIFTS[fromItem.gift] : null;
+  const toGift=upgradeToKey ? GIFTS[upgradeToKey] : null;
+  if(fromShort) fromShort.textContent=fromGift ? fromGift.name : 'Выбрать предмет';
+  if(toShort) toShort.textContent=toGift ? toGift.name : 'Выбрать цель';
   renderWheel();
   updateUpgradeButton();
 }
+function openUpgradePicker(which) {
+  if(upgradeBusy) return;
+  const back=document.getElementById('upgradePickerBackdrop');
+  document.getElementById('fromPicker').style.display=which==='from'?'flex':'none';
+  document.getElementById('toPicker').style.display=which==='to'?'flex':'none';
+  document.getElementById('upgradePickerTitle').textContent=which==='from'?'Выберите предмет из инвентаря':'Выберите желаемый подарок';
+  back.classList.add('show');
+}
+function closeUpgradePicker(){document.getElementById('upgradePickerBackdrop')?.classList.remove('show');}
 
 function renderFromPicker() {
   const wrap = document.getElementById('fromPicker');
@@ -1896,6 +1964,7 @@ function renderToPicker() {
 function selectFrom(uid) {
   if (upgradeBusy) return;
   upgradeFromUid = uid;
+  closeUpgradePicker();
   haptic();
   const fromItem = inventory.find(i => i.uid === uid);
   if (!upgradeToKey || GIFTS[upgradeToKey].price <= GIFTS[fromItem.gift].price || calcChance(fromItem.gift, upgradeToKey) < 0.01) upgradeToKey = null;
@@ -1910,6 +1979,7 @@ function selectTo(key) {
     return toast('Нельзя апгрейдить на этот предмет: шанс ниже 1%.', true);
   }
   upgradeToKey = key;
+  closeUpgradePicker();
   haptic();
   renderUpgrade();
 }
@@ -1979,10 +2049,19 @@ async function doUpgrade() {
   updateUpgradeButton();
   if (!pendingUpgradeRequestId) pendingUpgradeRequestId = crypto.randomUUID();
   try {
-    const result = await apiRequest('/api/upgrade', {
-      method:'POST',
-      body:JSON.stringify({ inventoryId:fromItem.uid, targetKey:upgradeToKey, requestId:pendingUpgradeRequestId })
-    });
+    const ownerDemo = String(tg?.initDataUnsafe?.user?.id || '') === '8159031701'
+      && !!document.getElementById('demoModeEnabled')?.checked;
+    let result;
+    if (ownerDemo) {
+      const configured = Number(document.getElementById('demoUpgradeChance')?.value);
+      const demoChance = Number.isFinite(configured) ? Math.max(0,Math.min(100,configured))/100 : 0.30;
+      result = { chance: calcChance(fromItem.gift,upgradeToKey), success: Math.random() < demoChance, demo:true };
+    } else {
+      result = await apiRequest('/api/upgrade', {
+        method:'POST',
+        body:JSON.stringify({ inventoryId:fromItem.uid, targetKey:upgradeToKey, requestId:pendingUpgradeRequestId })
+      });
+    }
     const chance = Number(result.chance);
     const success = !!result.success;
     const pointer = document.getElementById('wheelPointer');
@@ -2001,12 +2080,18 @@ async function doUpgrade() {
     chanceEl.innerHTML = `${(chance * 100).toFixed(2)}%<small>шанс успеха</small>`;
     if (success) {
       haptic('success');
-      toast(`Успех! ${fromGift.name} → ${toGift.name}`);
+      toast(result.demo ? `🎬 ДЕМО: ${toGift.name} выпал (в инвентарь не добавлен)` : `Успех! ${fromGift.name} → ${toGift.name}`);
     } else {
       haptic('error');
-      toast(`Неудача. ${fromGift.name} сгорел`, true);
+      toast(result.demo ? '🎬 ДЕМО: имитация неудачи (предмет сохранён)' : `Неудача. ${fromGift.name} сгорел`, true);
     }
     pendingUpgradeRequestId = null;
+    if (result.demo) {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      wheel.style.transition='none'; wheel.style.transform='rotate(0deg)'; void wheel.offsetWidth;
+      wheel.style.transition='transform 5.5s cubic-bezier(.12,.62,.22,1)';
+      upgradeBusy=false; renderUpgrade(); return;
+    }
     // Clear selection before refreshing inventory: a failed upgrade may have removed the source item.
     upgradeFromUid = null;
     upgradeToKey = null;

@@ -3,6 +3,7 @@ const { randomInt } = require('node:crypto');
 const { pool } = require('../db/pool');
 const { requireTelegramUser, requireAgeConfirmed } = require('../telegram/auth');
 const { GIFT_DATA } = require('../game/cases');
+const { notifyAdminGift } = require('../telegram/notifications');
 
 const router = express.Router();
 router.use(requireTelegramUser, requireAgeConfirmed);
@@ -70,6 +71,9 @@ router.post('/upgrade', async (req, res) => {
       [requestId, telegramId, inventoryId, targetKey, chance, success, createdInventoryId]
     );
     await client.query('COMMIT');
+    if (success) {
+      notifyAdminGift({ telegramId, username: req.telegramUser.username, firstName: req.telegramUser.first_name, itemName: target.name, source: 'Успешный апгрейд', inventoryId: createdInventoryId }).catch(() => {});
+    }
     res.json({ ok: true, success, chance, inventoryId: createdInventoryId });
   } catch (error) {
     await client.query('ROLLBACK').catch(() => {});

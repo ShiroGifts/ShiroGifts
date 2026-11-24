@@ -78,3 +78,13 @@ CREATE TABLE IF NOT EXISTS inventory_items (
 );
 CREATE INDEX IF NOT EXISTS inventory_items_user_status_idx
   ON inventory_items (telegram_id, status);
+
+
+CREATE TABLE IF NOT EXISTS pending_stars_invoices (
+  payload TEXT PRIMARY KEY,
+  telegram_id BIGINT NOT NULL REFERENCES users(telegram_id),
+  amount_stars BIGINT NOT NULL CHECK (amount_stars >= 5),
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','paid','expired')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  expires_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '30 minutes')
+);

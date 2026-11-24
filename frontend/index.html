@@ -511,6 +511,21 @@ body{font-family:'Manrope',system-ui,sans-serif;font-weight:500;background:radia
 .gift-img img,.drop-img img,.big-img img,.case-preview-art img,.inv-item .gift-img img,.picker-item .gift-img img{background:transparent!important;border-radius:0!important;object-fit:contain;filter:drop-shadow(0 5px 9px rgba(0,0,0,.28))}
 .case-card .gift-img{filter:none}
 .case-card .gift-img .ic,.case-preview-art .ic{width:100%;height:100%;max-width:100%;max-height:100%;filter:drop-shadow(0 6px 9px rgba(0,0,0,.35))}
+
+:root{--bg:#100d0a;--surface:#1b1611;--surface-2:#292118;--surface-3:#382b1e;--text:#eee5d7;--text-dim:#a99b88;--accent:#b58a55;--accent-2:#8d683d;--gold:#d9b77a;--danger:#b65b4b;--success:#8c9b70;--border:#493827;--ink:#080706;--shadow:0 8px 28px rgba(0,0,0,.48)}
+body{background:var(--bg);color:var(--text)}
+.logo span,.nav-item.active,.case-card .price,.chance{color:var(--gold)}
+.logo .logo-icon{background:linear-gradient(135deg,#6d5032,#b58a55);box-shadow:0 2px 10px #8b653b55}
+.btn-withdraw,.btn-big,.btn-cashout{background:linear-gradient(135deg,#a77c4b,#74502e)!important;color:#f5ead8!important}
+.case-back{display:flex;align-items:center;justify-content:center;line-height:1;padding:0;font-family:Arial,sans-serif;font-size:25px;color:#e9d8bf}
+.case-back:active{transform:scale(.96)}
+.plush-royal{filter:sepia(.62) saturate(.82) hue-rotate(345deg) brightness(.86) drop-shadow(0 6px 10px rgba(0,0,0,.42))}
+.nft-chance{font-size:10px;color:var(--gold);font-weight:800}
+.promo-admin .promo-input,.promo-admin select{background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px;width:100%;margin:5px 0 12px}
+.case-card.tier-nft{background:radial-gradient(circle at 50% 5%,#5a4028 0,#21180f 48%,#17110d 100%);border-color:#9a7448;box-shadow:0 6px 0 #080706,inset 0 0 28px #c29a5630}
+.case-card.tier-nft .name{color:#f1dfc3;letter-spacing:.8px;text-transform:uppercase}
+.case-card.tier-nft .gift-img{filter:drop-shadow(0 7px 14px #000)}
+:root{}
 </style>
 </head>
 <body>
@@ -561,12 +576,20 @@ body{font-family:'Manrope',system-ui,sans-serif;font-weight:500;background:radia
     <input class="promo-input" id="promoAdminCode" maxlength="32" placeholder="SHIRO100">
     <label class="promo-label" for="promoAdminStars">Награда, Stars</label>
     <input class="promo-input" id="promoAdminStars" type="number" min="1" max="100000" value="100">
-    <label class="promo-label" for="promoAdminLimit">Лимит активаций (пусто — без лимита)</label>
-    <input class="promo-input" id="promoAdminLimit" type="number" min="1" max="1000000" placeholder="100">
-    <label class="promo-label" for="promoAdminExpiry">Срок действия (необязательно)</label>
-    <input class="promo-input" id="promoAdminExpiry" type="datetime-local">
+    <label class="promo-label" for="promoAdminMode">Условие завершения промокода</label>
+    <select id="promoAdminMode" onchange="togglePromoMode()"><option value="activations">По количеству активаций</option><option value="duration">По сроку действия</option></select>
+    <div id="promoLimitWrap"><label class="promo-label" for="promoAdminLimit">Максимум активаций</label><input class="promo-input" id="promoAdminLimit" type="number" min="1" max="1000000" placeholder="100"></div>
+    <div id="promoExpiryWrap" style="display:none"><label class="promo-label" for="promoAdminExpiry">Действует до</label><input class="promo-input" id="promoAdminExpiry" type="datetime-local"></div>
     <button class="btn-big" onclick="createPromo()">Создать промокод</button>
     <div class="promo-status" id="promoAdminResult" aria-live="polite"></div>
+    <div class="promo-heading" style="margin-top:22px">Выдать подарок игроку</div>
+    <div class="promo-description">Укажи Telegram ID игрока. Подарок появится в его инвентаре.</div>
+    <label class="promo-label" for="adminGiftTelegramId">Telegram ID игрока</label>
+    <input class="promo-input" id="adminGiftTelegramId" inputmode="numeric" placeholder="Например, 123456789">
+    <label class="promo-label" for="adminGiftKey">Предмет</label>
+    <select id="adminGiftKey"><option value="bear">Мишка</option><option value="heart">Сердце</option><option value="rose">Роза</option><option value="cake">Торт</option><option value="bouquet">Букет</option><option value="rocket">Ракета</option><option value="champ">Шампанское</option><option value="cup">Кубок</option><option value="ring">Обычное кольцо</option><option value="diamond">Бриллиант</option><option value="random_nft">Рандомный NFT</option><option value="plush_pepe">Plush Pepe NFT</option><option value="plush_pepe_royal">Plush Pepe · Shiro Edition</option><option value="diamond_ring">Diamond Ring NFT</option><option value="durovs_glasses">Durov’s Glasses NFT</option><option value="durovs_cap">Durov’s Cap NFT</option><option value="resistance_dog">Resistance Dog NFT</option><option value="precious_peach">Precious Peach NFT</option><option value="scared_cat">Scared Cat NFT</option><option value="heroic_helmet">Heroic Helmet NFT</option><option value="astral_shard">Astral Shard NFT</option><option value="loot_bag">Loot Bag NFT</option></select>
+    <button class="btn-big" onclick="grantGift()">Выдать подарок</button>
+    <div class="promo-status" id="adminGiftResult" aria-live="polite"></div>
   </div>
 </div>
 <div class="page" id="page-upgrade">
@@ -760,6 +783,7 @@ brand:S('<path d="M17 14h21a11 11 0 010 22H26a10 10 0 000 20h21" fill="none" str
 };
 
 const tgGift = (id, alt) => imageAsset('https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/gift_' + id + '.webp', alt);
+const tgNft = (name, alt) => imageAsset('https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/' + name + '.webp', alt);
 const GIFTS = {
   bear: { name: 'Мишка', price: 15, img: tgGift('5170233102089322756','Telegram подарок — плюшевый мишка'), rarity: 'Обычный' },
   heart: { name: 'Сердце', price: 15, img: tgGift('5170145012310081615','Telegram подарок — сердце'), rarity: 'Обычный' },
@@ -771,7 +795,18 @@ const GIFTS = {
   cup: { name: 'Кубок', price: 100, img: tgGift('5168043875654172773','Telegram подарок — кубок'), rarity: 'Эпический' },
   ring: { name: 'Кольцо', price: 100, img: tgGift('5170690322832818290','Telegram подарок — кольцо'), rarity: 'Эпический' },
   diamond: { name: 'Бриллиант', price: 100, img: tgGift('5170521118301225164','Telegram подарок — бриллиант'), rarity: 'Легендарный' },
-  random_nft: { name: 'Plush Pepe NFT', price: 350, img: imageAsset('https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/plush_pepe.webp','Telegram collectible gift — Plush Pepe'), rarity: 'Мифический' },
+  random_nft: { name: 'Рандомный NFT', price: 350, img: tgNft('plush_pepe','Telegram NFT — случайный подарок'), rarity: 'NFT' },
+  plush_pepe: { name: 'Plush Pepe NFT', price: 480702, img: tgNft('plush_pepe','Plush Pepe NFT'), rarity: 'NFT · Мифический' },
+  plush_pepe_royal: { name: 'Plush Pepe · Shiro Edition', price: 480702, img: tgNft('plush_pepe','Plush Pepe — Shiro Edition').replace('<img ', '<img class="plush-royal" '), rarity: 'NFT · Джекпот' },
+  diamond_ring: { name: 'Diamond Ring NFT', price: 2305, img: tgNft('diamond_ring','Diamond Ring NFT'), rarity: 'NFT' },
+  durovs_glasses: { name: 'Durov’s Glasses NFT', price: 11022, img: tgNft('durovs_glasses','Durov’s Glasses NFT'), rarity: 'NFT' },
+  durovs_cap: { name: 'Durov’s Cap NFT', price: 28590, img: tgNft('durovs_cap','Durov’s Cap NFT'), rarity: 'NFT' },
+  resistance_dog: { name: 'Resistance Dog NFT', price: 35000, img: tgNft('resistance_dog','Resistance Dog NFT'), rarity: 'NFT' },
+  precious_peach: { name: 'Precious Peach NFT', price: 19572, img: tgNft('precious_peach','Precious Peach NFT'), rarity: 'NFT' },
+  scared_cat: { name: 'Scared Cat NFT', price: 19099, img: tgNft('scared_cat','Scared Cat NFT'), rarity: 'NFT' },
+  heroic_helmet: { name: 'Heroic Helmet NFT', price: 14629, img: tgNft('heroic_helmet','Heroic Helmet NFT'), rarity: 'NFT' },
+  astral_shard: { name: 'Astral Shard NFT', price: 9819, img: tgNft('astral_shard','Astral Shard NFT'), rarity: 'NFT' },
+  loot_bag: { name: 'Loot Bag NFT', price: 10688, img: tgNft('loot_bag','Loot Bag NFT'), rarity: 'NFT' },
 };
 
 const CASES = [
@@ -784,7 +819,8 @@ const CASES = [
   { id: 'legend', name: 'Легендарный', price: 200, icon: chest('#554b72','#a28cc7'), drops: ['random_nft','stars_100','ring','cup','stars_500','rocket','diamond','stars_50','champ','stars_200'] },
   { id: 'ruby', name: 'Рубиновый', price: 300, icon: chest('#733b45','#be6670'), drops: ['stars_150','diamond','bouquet','stars_750','random_nft','ring','stars_75','cup','stars_300','champ'] },
   { id: 'diamond', name: 'Алмазный', price: 500, icon: chest('#426276','#88bdd0'), drops: ['stars_250','random_nft','stars_2500','ring','diamond','stars_100','stars_1000','cup','stars_500','stars_250'] },
-  { id: 'cosmic', name: 'Космический', price: 1000, icon: chest('#493d72','#8f75bd'), drops: ['stars_500','diamond','stars_5000','random_nft','stars_200','ring','stars_2000','stars_1000','stars_500','diamond'] },
+  { id: 'cosmic', name: 'Космический', price: 1000, icon: chest('#493d72','#8f75bd'), drops: ['stars_500','diamond','stars_5000','random_nft','plush_pepe_royal','stars_200','ring','stars_2000','stars_1000','stars_500','diamond'] },
+  { id: 'nft', name: 'НФТ', price: 750, icon: chest('#21180f','#c49a61'), drops: ['plush_pepe','resistance_dog','durovs_cap','precious_peach','scared_cat','heroic_helmet','durovs_glasses','astral_shard','loot_bag','diamond_ring','nothing'] },
 ];
 
 let balance = 0;
@@ -948,7 +984,7 @@ function switchPage(name) {
   if (name === 'crash') { initCrashCanvas(); startCrashFeed(); }
   if (name === 'inventory') renderInventory();
   if (name === 'upgrade') renderUpgrade();
-  if (name === 'promo') loadPromoAdminStatus();
+  if (name === 'promo') { loadPromoAdminStatus(); togglePromoMode(); }
 }
 
 function renderCases() {
@@ -972,10 +1008,10 @@ function renderCases() {
       </div>`;
   }
   html += CASES.map(c => {
-    const hasNft = c.drops.includes('random_nft');
+    const hasNft = c.drops.some(key => key === 'random_nft' || key.includes('pepe') || key.includes('nft') || ['diamond_ring','durovs_glasses','durovs_cap','resistance_dog','precious_peach','scared_cat','heroic_helmet','astral_shard','loot_bag'].includes(key));
     const jackpot = ['ruby','diamond','cosmic'].includes(c.id);
     const tag = jackpot ? '<div class="jackpot-tag">ДЖЕКПОТ</div>' : '';
-    const nftHint = hasNft && !jackpot ? '<div class="nft-hint">Можно получить NFT</div>' : '';
+    const nftHint = (hasNft || jackpot) ? '<div class="nft-hint">Можно получить NFT</div>' : '';
     return `
       <div class="case-card tier-${c.id}" onclick="openCase('${c.id}')">
         ${tag}
@@ -1027,11 +1063,12 @@ function openCase(caseId) {
   const btn = document.getElementById('previewOpenBtn');
   btn.textContent = 'Открыть за ★ ' + fmt(c.price);
   btn.disabled = false;
-  const drops = shuffled(c.drops);
+  const drops = c.id === 'nft' ? c.drops : shuffled(c.drops);
+  const nftChances = { plush_pepe:'0,01%', diamond_ring:'0,006%', durovs_glasses:'0,03%', durovs_cap:'0,06%', resistance_dog:'0,09%', precious_peach:'0,15%', scared_cat:'0,21%', heroic_helmet:'0,3%', astral_shard:'0,6%', loot_bag:'1,2%', nothing:'97,334%' };
   document.getElementById('previewDrops').innerHTML = drops.map(key => {
     const item = dropMeta(key);
-    const jackpot = ['ruby','diamond','cosmic'].includes(c.id) && key === 'random_nft';
-    return `<div class="preview-drop ${jackpot ? 'jackpot' : ''}">${jackpot ? '<div class="jackpot-title">ДЖЕКПОТ</div>' : ''}<div class="drop-img">${item.img}</div><div class="drop-name">${item.name}</div></div>`;
+    const chance = c.id === 'nft' ? (nftChances[key] || '') : '';
+    return `<div class="preview-drop"><div class="drop-img">${item.img}</div><div class="drop-name">${item.name}</div>${chance ? `<div class="nft-chance">${chance}</div>` : ''}</div>`;
   }).join('');
   document.getElementById('casePreview').classList.add('show');
   haptic('light'); playUiSound('preview');
@@ -1402,16 +1439,16 @@ function initCrashCanvas() {
 function crashHeading(t) { return Math.atan2(-15 * Math.sqrt(Math.max(t, 0.01)), 30 + 2.4 * t); }
 
 function drawRocket(ctx, u, flame) {
-  ctx.lineWidth = 2.2; ctx.strokeStyle = '#1d2155'; ctx.lineJoin = 'round';
+  ctx.lineWidth = 2.2; ctx.strokeStyle = '#2a1c12'; ctx.lineJoin = 'round';
   const fs = (pts, col) => { ctx.fillStyle = col; ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0]*u, p[1]*u) : ctx.moveTo(p[0]*u, p[1]*u)); ctx.closePath(); ctx.fill(); ctx.stroke(); };
-  if (flame) { const f = 1.1 + Math.random() * 0.7; fs([[-.38,1],[0,1+f*1.3],[.38,1]], '#ffc42e'); fs([[-.2,1],[0,1+f*.7],[.2,1]], '#ff6a2b'); }
-  fs([[-.5,.2],[-1.05,1.15],[-.45,.95]], '#ff4d5e'); fs([[.5,.2],[1.05,1.15],[.45,.95]], '#ff4d5e');
-  ctx.fillStyle = '#f4f7ff'; ctx.beginPath(); ctx.moveTo(0, -1.7*u);
+  if (flame) { const f = 1.1 + Math.random() * 0.7; fs([[-.38,1],[0,1+f*1.3],[.38,1]], '#d9b77a'); fs([[-.2,1],[0,1+f*.7],[.2,1]], '#8b542d'); }
+  fs([[-.5,.2],[-1.05,1.15],[-.45,.95]], '#6f4a2a'); fs([[.5,.2],[1.05,1.15],[.45,.95]], '#6f4a2a');
+  ctx.fillStyle = '#d8c5a6'; ctx.beginPath(); ctx.moveTo(0, -1.7*u);
   ctx.bezierCurveTo(.95*u, -.8*u, .75*u, .6*u, .5*u, 1.05*u); ctx.lineTo(-.5*u, 1.05*u);
   ctx.bezierCurveTo(-.75*u, .6*u, -.95*u, -.8*u, 0, -1.7*u); ctx.closePath(); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = '#ff4d5e'; ctx.beginPath(); ctx.moveTo(0, -1.7*u); ctx.bezierCurveTo(.4*u, -1.3*u, .5*u, -1.0*u, .52*u, -.8*u);
+  ctx.fillStyle = '#8d633c'; ctx.beginPath(); ctx.moveTo(0, -1.7*u); ctx.bezierCurveTo(.4*u, -1.3*u, .5*u, -1.0*u, .52*u, -.8*u);
   ctx.lineTo(-.52*u, -.8*u); ctx.bezierCurveTo(-.5*u, -1.0*u, -.4*u, -1.3*u, 0, -1.7*u); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = '#3d7bff'; ctx.beginPath(); ctx.arc(0, -.1*u, .34*u, 0, 7); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#6e5435'; ctx.beginPath(); ctx.arc(0, -.1*u, .34*u, 0, 7); ctx.fill(); ctx.stroke();
 }
 
 function drawCrash() {
@@ -1425,7 +1462,7 @@ function drawCrash() {
   const P = s => ({ x: (30 * s + 1.2 * s * s) * k, y: -10 * Math.pow(s, 1.5) * k });   // траектория в «мире»
   const cur = P(t);
   ctx.clearRect(0, 0, W, H);
-  const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#3a35d8'); bg.addColorStop(1, '#2fb7ff');
+  const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#2b2017'); bg.addColorStop(1, '#100d0a');
   ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
   // сетка и звёзды движутся навстречу камере (параллакс)
   const grid = (sp, f, a, r) => { ctx.fillStyle = `rgba(255,255,255,${a})`;
@@ -1452,7 +1489,7 @@ function drawCrash() {
 }
 
 function spawnParticles(x, y, crashed) {
-  const colors = crashed ? ['#e85d5d','#ff8a8a','#f5c542'] : ['#4ade80','#d4ff7a','#ffffff'];
+  const colors = crashed ? ['#9d5142','#c77b5c','#d9b77a'] : ['#b58a55','#e0c18a','#fff0d2'];
   for (let i = 0; i < 20; i++) {
     crashParticles.push({
       x, y,
@@ -1666,6 +1703,26 @@ async function loadPromoAdminStatus() {
     if (idPanel) idPanel.style.display = data.isAdmin ? 'none' : 'block';
   } catch (_) {}
 }
+function togglePromoMode() {
+  const mode = document.getElementById('promoAdminMode')?.value || 'activations';
+  const limit = document.getElementById('promoLimitWrap'), expiry = document.getElementById('promoExpiryWrap');
+  if (limit) limit.style.display = mode === 'activations' ? 'block' : 'none';
+  if (expiry) expiry.style.display = mode === 'duration' ? 'block' : 'none';
+}
+async function grantGift() {
+  const telegramId = document.getElementById('adminGiftTelegramId').value.trim();
+  const itemKey = document.getElementById('adminGiftKey').value;
+  const result = document.getElementById('adminGiftResult');
+  try {
+    const data = await apiRequest('/api/admin/gifts/grant', { method:'POST', body:JSON.stringify({ telegramId, itemKey }) });
+    result.textContent = 'Выдано: ' + data.gift + ' игроку ' + data.telegramId;
+    haptic('success'); toast('Подарок добавлен в инвентарь игрока');
+  } catch (error) {
+    const messages = { invalid_telegram_id:'Проверь Telegram ID игрока.', unknown_gift:'Неизвестный предмет.', admin_only:'Нет прав администратора.' };
+    result.textContent = messages[error.message] || 'Не удалось выдать подарок.';
+    toast(result.textContent, true);
+  }
+}
 function copyTelegramId() {
   const id = tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : '';
   if (!id) return toast('Открой приложение через Telegram.', true);
@@ -1699,8 +1756,9 @@ async function redeemPromo() {
 async function createPromo() {
   const code = document.getElementById('promoAdminCode').value.trim().toUpperCase();
   const rewardStars = Number(document.getElementById('promoAdminStars').value);
-  const usageLimit = document.getElementById('promoAdminLimit').value.trim();
-  const expiresRaw = document.getElementById('promoAdminExpiry').value;
+  const mode = document.getElementById('promoAdminMode')?.value || 'activations';
+  const usageLimit = mode === 'activations' ? document.getElementById('promoAdminLimit').value.trim() : '';
+  const expiresRaw = mode === 'duration' ? document.getElementById('promoAdminExpiry').value : '';
   const expiresAt = expiresRaw ? new Date(expiresRaw).toISOString() : null;
   try {
     const data = await apiRequest('/api/promos/admin/create', {

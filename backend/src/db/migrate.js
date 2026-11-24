@@ -4,9 +4,13 @@ const { pool } = require('./pool');
 
 async function migrate() {
   if (!pool) throw new Error('DATABASE_URL is required');
-  const schema = await fs.readFile(path.join(__dirname, '../../db/schema.sql'), 'utf8');
-  await pool.query(schema);
-  await pool.query(`
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query("SELECT pg_advisory_xact_lock(hashtext('shirogifts_migrations'))");
+    const schema = await fs.readFile(path.join(__dirname, '../../db/schema.sql'), 'utf8');
+    await client.query(schema);
+    await client.query(`
     CREATE TABLE IF NOT EXISTS inventory (
       id BIGSERIAL PRIMARY KEY,
       telegram_id BIGINT NOT NULL REFERENCES users(telegram_id),
@@ -85,7 +89,14 @@ async function migrate() {
     );
     CREATE INDEX IF NOT EXISTS promo_codes_active_idx ON promo_codes(active, expires_at);
     CREATE INDEX IF NOT EXISTS promo_redemptions_user_idx ON promo_redemptions(telegram_id, redeemed_at DESC);
-  `);
+    `);
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 module.exports = { migrate };

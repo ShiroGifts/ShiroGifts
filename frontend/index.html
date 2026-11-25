@@ -173,6 +173,9 @@
   .picker-item .label { font-size:10px; color:var(--text-dim); margin-top:6px; font-weight:600; }
   .picker-item .price { font-size:11px; color:var(--gold); font-weight:800; margin-top:2px; }
 
+  .upgrade-spin-modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:2px 0 16px}
+  .upgrade-spin-modes button{min-width:0;padding:10px 5px;border:1px solid var(--border);border-radius:11px;background:var(--surface-2);color:var(--text-dim);font-size:11px;font-weight:800;line-height:1.2;cursor:pointer}
+  .upgrade-spin-modes button.active{border-color:var(--accent);background:var(--surface-3);color:var(--text)}
   .wheel-wrap {
     position:relative; width:240px; height:240px; margin:0 auto 10px;
   }
@@ -1514,6 +1517,11 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
       <button class="btn-big upgrade-select-btn secondary" type="button" onclick="openUpgradePicker('to')">🎯 Желаемое <span id="toSelectedShort">Выбрать цель</span></button>
     </div>
 
+    <div class="upgrade-spin-modes" role="group" aria-label="Режим прокрутки">
+      <button type="button" data-spin-mode="fast" onclick="setUpgradeSpinMode('fast')">Быстрая</button>
+      <button type="button" data-spin-mode="classic" onclick="setUpgradeSpinMode('classic')">Классическая</button>
+      <button type="button" data-spin-mode="gamble" onclick="setUpgradeSpinMode('gamble')">Азартная</button>
+    </div>
     <div class="wheel-wrap">
       <div class="wheel-pointer" id="wheelPointer"></div>
       <div class="wheel" id="wheel">
@@ -1763,9 +1771,9 @@ const GIFTS = {
   loot_bag: { name: 'Loot Bag NFT', price: 10688, img: tgNft('loot_bag','Loot Bag NFT'), rarity: 'NFT' },
   vice_cream: { name: 'Vice Cream NFT', price: 650, img: tgNft('vice_cream','Vice Cream NFT'), rarity: 'NFT' },
   lol_pop: { name: 'Lol Pop NFT', price: 700, img: tgNft('lol_pop','Lol Pop NFT'), rarity: 'NFT' },
-  bunny_muffin: { name: 'Bunny Muffin NFT', price: 750, img: tgNft('bunny_muffin','Bunny Muffin NFT'), rarity: 'NFT' },
-  jolly_chimp: { name: 'Jolly Chimp NFT', price: 800, img: tgNft('jolly_chimp','Jolly Chimp NFT'), rarity: 'NFT' },
-  ginger_cookie: { name: 'Ginger Cookie NFT', price: 850, img: tgNft('ginger_cookie','Ginger Cookie NFT'), rarity: 'NFT' },
+  bunny_muffin: { name: 'Bunny Muffin NFT', price: 999, img: tgNft('bunny_muffin','Bunny Muffin NFT'), rarity: 'NFT' },
+  jolly_chimp: { name: 'Jolly Chimp NFT', price: 922, img: tgNft('jolly_chimp','Jolly Chimp NFT'), rarity: 'NFT' },
+  ginger_cookie: { name: 'Ginger Cookie NFT', price: 571, img: tgNft('ginger_cookie','Ginger Cookie NFT'), rarity: 'NFT' },
   chill_flame: { name: 'Chill Flame NFT', price: 900, img: tgNft('chill_flame','Chill Flame NFT'), rarity: 'NFT' },
   mirage_lamp: { name: 'Mirage Lamp NFT', price: 950, img: tgNft('vice_cream','Mirage Lamp NFT'), rarity: 'NFT' },
   snoop_dogg: { name: 'Snoop Dogg NFT', price: 1000, img: tgNft('snoop_dogg','Snoop Dogg NFT'), rarity: 'NFT' },
@@ -1810,7 +1818,8 @@ const CASES = [
   { id: 'ruby', name: 'Рубиновый', price: 300, icon: chest('#76264f','#f078ad'), drops: ['stars_150','diamond','bouquet','stars_750','random_nft','ring','stars_75','cup','stars_300','champ'] },
   { id: 'diamond', name: 'Алмазный', price: 500, icon: chest('#155c7b','#67d9f4'), drops: ['stars_250','random_nft','stars_2500','ring','diamond','stars_100','stars_1000','cup','stars_500','stars_250'] },
   { id: 'cosmic', name: 'Космический', price: 1000, icon: chest('#30245f','#8c7bff'), drops: ['stars_500','diamond','stars_5000','random_nft','plush_pepe_royal','stars_200','ring','stars_2000','stars_1000','stars_500','diamond'] },
-  { id: 'nft', name: 'НФТ', price: 750, icon: chest('#5d4426','#e6bd75'), drops: ['plush_pepe','diamond_ring','durovs_glasses','durovs_cap','resistance_dog','precious_peach','scared_cat','heroic_helmet','astral_shard','loot_bag','vice_cream','lol_pop','bunny_muffin','jolly_chimp','ginger_cookie','chill_flame','mirage_lamp','snoop_dogg','bday_candle','desk_calendar','jelly_bunny','jack_in_the_box','jester_hat','joyful_bundle','love_candle','party_sparkler','pet_snake','bunny_muffin','jolly_chimp','ginger_cookie','snow_globe','moon_pendant','input_key','faith_amulet','top_hat','easter_egg','mousse_cake','money_pot','holiday_drink','winter_wreath','love_potion','snoop_cigar','crystal_ball','sky_stilettos','ufc_strike','ionic_dryer','nothing'] },
+  { id: 'nft', name: 'НФТ', price: 750, icon: chest('#5d4426','#e6bd75'), drops: ['plush_pepe', 'diamond_ring', 'durovs_glasses', 'durovs_cap', 'resistance_dog', 'precious_peach', 'scared_cat', 'heroic_helmet', 'astral_shard', 'loot_bag', 'vice_cream', 'lol_pop', 'chill_flame', 'mirage_lamp', 'snoop_dogg', 'love_candle', 'love_potion', 'snoop_cigar', 'crystal_ball', 'sky_stilettos', 'ufc_strike', 'ionic_dryer', 'nothing'] },
+  { id: 'nft2', name: 'НФТ 2', price: 600, icon: chest('#274b67','#62c8df'), drops: ['bday_candle', 'desk_calendar', 'jelly_bunny', 'jack_in_the_box', 'jester_hat', 'joyful_bundle', 'party_sparkler', 'pet_snake', 'bunny_muffin', 'jolly_chimp', 'ginger_cookie', 'snow_globe', 'moon_pendant', 'input_key', 'faith_amulet', 'top_hat', 'easter_egg', 'mousse_cake', 'money_pot', 'holiday_drink', 'winter_wreath'] },
 ];
 
 let balance = 0;
@@ -1822,6 +1831,7 @@ let upgradeFromUid = null;
 let upgradeToKey = null;
 let upgradeBusy = false;
 let upgradeDesiredChance = 30;
+let upgradeSpinMode = (() => { try { const v=localStorage.getItem('shiro_upgrade_spin'); return ['fast','classic','gamble'].includes(v)?v:'classic'; } catch (_) { return 'classic'; } })();
 
 let freeCaseAvailable = false;
 let freeCaseCooldownEnd = 0;
@@ -2667,7 +2677,14 @@ function calcChance(fromKey, toKey) {
   return Math.min(0.9, (from.price / to.price) * 0.9);
 }
 
+function setUpgradeSpinMode(mode) {
+  if (!['fast','classic','gamble'].includes(mode)) return;
+  upgradeSpinMode = mode;
+  try { localStorage.setItem('shiro_upgrade_spin', mode); } catch (_) {}
+  document.querySelectorAll('.upgrade-spin-modes [data-spin-mode]').forEach(button => button.classList.toggle('active', button.dataset.spinMode === mode));
+}
 function renderUpgrade() {
+  setUpgradeSpinMode(upgradeSpinMode);
   updateUpgradeSlots();
   const fromShort=document.getElementById('fromSelectedShort');
   const toShort=document.getElementById('toSelectedShort');
@@ -2698,7 +2715,7 @@ function openUpgradePicker(which) {
   if (chanceControl) chanceControl.style.display = which === 'to' ? 'block' : 'none';
   if (which === 'to') {
     const fromItem = upgradeFromUid ? inventory.find(i => i.uid === upgradeFromUid) : null;
-    if (fromItem && upgradeToKey && calcChance(fromItem.gift, upgradeToKey) >= 0.01) {
+    if (fromItem && upgradeToKey && calcChance(fromItem.gift, upgradeToKey) >= 0.000001) {
       upgradeDesiredChance = calcChance(fromItem.gift, upgradeToKey) * 100;
     }
     const slider = document.getElementById('upgradeDesiredChance');
@@ -2758,7 +2775,7 @@ function eligibleUpgradeTargetKeys(fromItem) {
   return Object.keys(GIFTS).filter(key =>
     key !== 'random_nft' &&
     GIFTS[key].price > GIFTS[fromItem.gift].price &&
-    calcChance(fromItem.gift, key) >= 0.01
+    calcChance(fromItem.gift, key) >= 0.000001
   );
 }
 function nearestUpgradeTarget(fromItem, desiredPercent) {
@@ -2829,14 +2846,14 @@ function selectFrom(uid) {
   closeUpgradePicker();
   haptic();
   const fromItem = inventory.find(i => i.uid === uid);
-  if (!upgradeToKey || GIFTS[upgradeToKey].price <= GIFTS[fromItem.gift].price || (!isOwnerDemoBoostActive() && calcChance(fromItem.gift, upgradeToKey) < 0.01)) upgradeToKey = null;
+  if (!upgradeToKey || GIFTS[upgradeToKey].price <= GIFTS[fromItem.gift].price || (!isOwnerDemoBoostActive() && calcChance(fromItem.gift, upgradeToKey) < 0.000001)) upgradeToKey = null;
   renderUpgrade();
 }
 
 function selectTo(key) {
   if (upgradeBusy) return;
   const fromItem = upgradeFromUid ? inventory.find(i => i.uid === upgradeFromUid) : null;
-  if (fromItem && !isOwnerDemoBoostActive() && calcChance(fromItem.gift, key) < 0.01) {
+  if (fromItem && !isOwnerDemoBoostActive() && calcChance(fromItem.gift, key) < 0.000001) {
     haptic('error');
     return toast('Нельзя апгрейдить на этот предмет: шанс ниже 1%.', true);
   }
@@ -2893,7 +2910,7 @@ function renderWheel() {
 function updateUpgradeButton() {
   const btn = document.getElementById('upgradeBtn');
   const fromItem = upgradeFromUid ? inventory.find(i => i.uid === upgradeFromUid) : null;
-  const ready = !!(fromItem && GIFTS[fromItem.gift] && upgradeToKey && GIFTS[upgradeToKey] && (calcChance(fromItem.gift, upgradeToKey) >= 0.01 || isOwnerDemoBoostActive()));
+  const ready = !!(fromItem && GIFTS[fromItem.gift] && upgradeToKey && GIFTS[upgradeToKey] && (calcChance(fromItem.gift, upgradeToKey) >= 0.000001 || isOwnerDemoBoostActive()));
   btn.disabled = !ready || upgradeBusy;
   btn.textContent = ready ? 'Крутить колесо' : 'Выберите предметы';
 }
@@ -2906,7 +2923,7 @@ async function doUpgrade() {
   const fromGift = GIFTS[fromItem.gift];
   const toGift = GIFTS[upgradeToKey];
   if (!fromGift || !toGift || toGift.price <= fromGift.price) return toast('Некорректная пара', true);
-  if (!isOwnerDemoBoostActive() && calcChance(fromItem.gift, upgradeToKey) < 0.01) return toast('Нельзя апгрейдить на этот предмет: шанс ниже 1%.', true);
+  if (!isOwnerDemoBoostActive() && calcChance(fromItem.gift, upgradeToKey) < 0.000001) return toast('Нельзя апгрейдить на этот предмет: шанс ниже 1%.', true);
 
   upgradeBusy = true;
   updateUpgradeButton();
@@ -2934,13 +2951,14 @@ async function doUpgrade() {
     const pointer = document.getElementById('wheelPointer');
     const wheel = document.getElementById('wheel');
     const chanceEl = document.getElementById('chanceVal');
+    const spin = ({fast:{ms:2500,turns:5,ease:'cubic-bezier(.2,.7,.25,1)'},classic:{ms:5500,turns:7,ease:'cubic-bezier(.12,.62,.22,1)'},gamble:{ms:8500,turns:12,ease:'cubic-bezier(.08,.72,.12,1)'}})[upgradeSpinMode];
     const sectorSize = success ? chance * 360 : (1 - chance) * 360;
     const sectorCenter = success ? chance * 180 : chance * 360 + (1 - chance) * 180;
     const jitter = (Math.random() - 0.5) * sectorSize * 0.7;
-    const finalRotation = 360 * 7 - (sectorCenter + jitter);
-    wheel.style.transition = 'transform 5.5s cubic-bezier(.12,.62,.22,1)';
+    const finalRotation = 360 * spin.turns - (sectorCenter + jitter);
+    wheel.style.transition = `transform ${spin.ms}ms ${spin.ease}`;
     wheel.style.transform = `rotate(${finalRotation}deg)`;
-    await new Promise(resolve => setTimeout(resolve, 5600));
+    await new Promise(resolve => setTimeout(resolve, spin.ms + 100));
 
     pointer.classList.toggle('fail', !success);
     chanceEl.classList.toggle('fail', !success);

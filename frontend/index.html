@@ -3254,26 +3254,8 @@ function crashHeading(t) { return Math.atan2(-22.5 * Math.sqrt(Math.max(t, 0.01)
 
 const crashRocketImage = new Image();
 crashRocketImage.crossOrigin = 'anonymous';
-crashRocketImage.src = 'https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/gift_5170564780938756245.webp';
-crashRocketImage.onload = () => { if (document.getElementById('page-crash')?.classList.contains('active')) drawCrash(); };
-const crashRocketImage = new Image();
-crashRocketImage.crossOrigin = 'anonymous';
-crashRocketImage.src = 'https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/gift_5170564780938756245.webp';
-const crashRocketImage = new Image();
 crashRocketImage.decoding = 'async';
 crashRocketImage.src = 'https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/gift_5170564780938756245.webp';
-crashRocketImage.onload = () => { if (document.getElementById('crashCanvas')) drawCrash(); };
-const crashRocketImage = new Image();
-crashRocketImage.crossOrigin = 'anonymous';
-crashRocketImage.src = 'https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/gift_5170564780938756245.webp';
-crashRocketImage.onload = () => { if (document.getElementById('crashCanvas')) drawCrash(); };
-const crashRocketImage = new Image();
-crashRocketImage.decoding = 'async';
-crashRocketImage.src = 'https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/gift_5170564780938756245.webp';
-crashRocketImage.onload = () => { if (document.getElementById('page-crash')?.classList.contains('active')) drawCrash(); };
-const crashRocketImage = new Image();
-crashRocketImage.decoding = 'async';
-crashRocketImage.src = (String(GIFTS.rocket.img).match(/src=["']([^"']+)/)||[])[1] || '';
 crashRocketImage.onload = () => { if (document.getElementById('page-crash')?.classList.contains('active')) drawCrash(); };
 function drawRocket(ctx,u,flame){
   if(crashRocketImage.complete && crashRocketImage.naturalWidth){const ratio=crashRocketImage.naturalWidth/crashRocketImage.naturalHeight;const h=2.35*u,w=h*ratio;ctx.drawImage(crashRocketImage,-w/2,-h/2,w,h);}

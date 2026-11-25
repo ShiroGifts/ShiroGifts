@@ -1506,6 +1506,15 @@ body:has(#page-crash.active){overflow-y:auto!important;overflow-x:hidden!importa
 #page-crash .feed-row{flex:0 0 auto!important}
 @media(max-height:740px){#page-crash .crash-feed{max-height:none!important;min-height:0!important}}
 
+#page-crash .crash-gift-flight{position:absolute!important;left:9px!important;bottom:9px!important;top:auto!important;right:auto!important;z-index:4!important;display:none;align-items:center;gap:7px;max-width:min(220px,70%)!important;min-width:0;padding:5px 8px!important;border:1px solid rgba(145,177,255,.25);border-radius:11px;background:rgba(5,12,29,.82);backdrop-filter:blur(8px);box-shadow:0 4px 14px rgba(0,0,0,.24);font-size:10px!important;line-height:1.15!important;overflow:hidden}
+#page-crash .crash-flight-thumb{width:26px!important;height:26px!important;flex:0 0 26px!important;display:flex!important;align-items:center;justify-content:center;overflow:hidden;font-size:16px!important}
+#page-crash .crash-flight-thumb img{display:block!important;width:auto!important;height:auto!important;max-width:26px!important;max-height:26px!important;object-fit:contain!important}
+#page-crash .crash-flight-copy{display:flex;flex-direction:column;min-width:0;gap:2px}
+#page-crash .crash-flight-copy b{font-size:10px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#page-crash .crash-flight-copy small{font-size:9px!important;opacity:.72}
+#page-crash .crash-feed{flex:0 0 76px!important;height:76px!important;min-height:76px!important;max-height:76px!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;scrollbar-width:thin}
+#page-crash .crash-feed .feed-row{flex:0 0 auto!important}
+@media(max-height:740px){#page-crash .crash-feed{flex-basis:64px!important;height:64px!important;min-height:64px!important;max-height:64px!important}}
 </style>
 </head>
 <body>
@@ -3217,7 +3226,8 @@ function updateCrashGiftProgress() {
   const candidates = Object.entries(GIFTS).filter(([key,g]) => key !== "random_nft" && Number(g.price) > base && Number(g.price) <= ceiling).sort((a,b)=>Number(b[1].price)-Number(a[1].price));
   const next = candidates[0]; const gift = next ? next[1] : (GIFTS[crashGiftFlightItem.gift] || {});
   const art = gift.img || crashGiftFlightItem.emoji || "🎁";
-  el.innerHTML = `<span class="crash-flight-nft-art">${typeof art === "string" && (art.startsWith("http") || art.startsWith("data:")) ? '<img src="'+art+'" alt="">' : art}</span><span class="crash-flight-nft-copy"><b>${next ? "Апгрейд: " + (gift.name || "Подарок") : "NFT: " + (gift.name || crashGiftFlightItem.name || "Подарок")}</b><small>${crashMult.toFixed(2)}x</small></span>`;
+  const art = gift.img || crashGiftFlightItem.emoji || "🎁";
+  el.innerHTML = `<span class="crash-flight-thumb">${art}</span><span class="crash-flight-copy"><b>${next ? "Апгрейд" : "Ставка"}: ${gift.name || crashGiftFlightItem.name || "Подарок"}</b><small>${crashMult.toFixed(2)}x</small></span>`;
   el.style.display = "flex";
 }
 
@@ -3251,21 +3261,15 @@ const crashRocketImage = new Image();
 crashRocketImage.crossOrigin = 'anonymous';
 crashRocketImage.src = 'https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/gift_5170564780938756245.webp';
 crashRocketImage.onload = () => { if (document.getElementById('crashCanvas')) drawCrash(); };
+const crashRocketImage = new Image();
+crashRocketImage.decoding = 'async';
+crashRocketImage.src = 'https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/gift_5170564780938756245.webp';
+crashRocketImage.onload = () => { if (document.getElementById('page-crash')?.classList.contains('active')) drawCrash(); };
 function drawRocket(ctx,u,flame){
   ctx.save();
-  if(flame){
-    const fire=ctx.createRadialGradient(0,.82*u,0,0,.9*u,.58*u);
-    fire.addColorStop(0,'rgba(255,255,238,.95)');fire.addColorStop(.22,'rgba(255,211,102,.9)');fire.addColorStop(.58,'rgba(255,105,51,.55)');fire.addColorStop(1,'rgba(65,139,255,0)');
-    ctx.fillStyle=fire;ctx.beginPath();ctx.ellipse(0,.9*u,.28*u,.72*u,0,0,Math.PI*2);ctx.fill();
-  }
-  if(crashRocketImage.complete && crashRocketImage.naturalWidth){
-    const ratio=crashRocketImage.naturalWidth/crashRocketImage.naturalHeight;
-    const h=1.85*u,w=h*ratio;
-    ctx.drawImage(crashRocketImage,-w/2,-h/2,w,h);
-  }else{
-    ctx.fillStyle='#d9f2ff';ctx.strokeStyle='#315a9a';ctx.lineWidth=.1*u;
-    ctx.beginPath();ctx.moveTo(0,-.95*u);ctx.quadraticCurveTo(.62*u,-.35*u,.34*u,.58*u);ctx.lineTo(-.34*u,.58*u);ctx.quadraticCurveTo(-.62*u,-.35*u,0,-.95*u);ctx.fill();ctx.stroke();
-  }
+  if(flame){const fire=ctx.createRadialGradient(0,.82*u,0,0,.92*u,.58*u);fire.addColorStop(0,'rgba(255,255,238,.95)');fire.addColorStop(.22,'rgba(255,211,102,.9)');fire.addColorStop(.58,'rgba(255,105,51,.55)');fire.addColorStop(1,'rgba(65,139,255,0)');ctx.fillStyle=fire;ctx.beginPath();ctx.ellipse(0,.9*u,.28*u,.72*u,0,0,Math.PI*2);ctx.fill();}
+  if(crashRocketImage.complete&&crashRocketImage.naturalWidth){const ratio=crashRocketImage.naturalWidth/crashRocketImage.naturalHeight;const h=1.85*u,w=h*ratio;ctx.drawImage(crashRocketImage,-w/2,-h/2,w,h);}
+  else{ctx.fillStyle='#d9f2ff';ctx.strokeStyle='#315a9a';ctx.lineWidth=.1*u;ctx.beginPath();ctx.moveTo(0,-.95*u);ctx.quadraticCurveTo(.62*u,-.35*u,.34*u,.58*u);ctx.lineTo(-.34*u,.58*u);ctx.quadraticCurveTo(-.62*u,-.35*u,0,-.95*u);ctx.fill();ctx.stroke();}
   ctx.restore();
 }
 function drawCrash() {

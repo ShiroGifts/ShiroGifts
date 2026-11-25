@@ -40,6 +40,56 @@ router.post('/inventory/sell', async (req, res) => {
   } finally { client.release(); }
 });
 
+
+router.post('/inventory/sell-all', async (req, res) => {
+  const telegramId = String(req.telegramUser.id);
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const items = await client.query(
+      "SELECT id, value_stars FROM inventory WHERE telegram_id = $1 AND status = 'owned' ORDER BY id FOR UPDATE",
+      [telegramId]
+    );
+    if (!items.rowCount) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ ok:false, error:'inventory_empty' });
+    }
+    const ids = [];
+    let payout = 0;
+    for (const item of items.rows) {
+      const value = Number(item.value_stars);
+      const itemPayout = Math.floor(value * 0.7);
+      if (!Number.isSafeInteger(value) || value < 1 || !Number.isSafeInteger(itemPayout) || itemPayout < 1) {
+        throw new Error('invalid_inventory_value');
+      }
+      payout += itemPayout;
+      ids.push(String(item.id));
+    }
+    if (!Number.isSafeInteger(payout) || payout < 1) throw new Error('invalid_bulk_sale_total');
+    const updated = await client.query(
+      "UPDATE inventory SET status = 'sold' WHERE telegram_id = $1 AND status = 'owned' AND id = ANY($2::bigint[])",
+      [telegramId, ids]
+    );
+    if (updated.rowCount !== ids.length) throw new Error('inventory_changed_during_bulk_sale');
+    await client.query(
+      "INSERT INTO wallet_ledger (telegram_id, amount_stars, entry_type, reference_id) VALUES ($1, $2, 'sale', $3)",
+      [telegramId, payout, 'sale-all:' + randomUUID()]
+    );
+    const wallet = await client.query(
+      'SELECT COALESCE(SUM(amount_stars),0)::bigint AS balance FROM wallet_ledger WHERE telegram_id = $1',
+      [telegramId]
+    );
+    await client.query('COMMIT');
+    return res.json({ ok:true, payout, itemsSold:ids.length, balance:Number(wallet.rows[0].balance) });
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => {});
+    console.error('[INVENTORY SELL ALL ERROR]', error.code || error.message);
+    return res.status(500).json({ ok:false, error:'inventory_sell_all_failed' });
+  } finally {
+    client.release();
+  }
+});
+
 const TELEGRAM_GIFT_IDS = {
   bear:'5170233102089322756',
   heart:'5170145012310081615',

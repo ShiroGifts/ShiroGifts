@@ -231,6 +231,7 @@
     border-radius:14px; overflow:hidden; margin-bottom:14px;
   }
   #crashCanvas { width:100%; height:100%; display:block; }
+  .crash-gift-flight{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:4;padding:8px 13px;border:1px solid rgba(115,174,255,.38);border-radius:14px;background:rgba(8,18,38,.82);box-shadow:0 5px 24px rgba(31,115,255,.22);color:#eaf3ff;font-size:12px;font-weight:800;white-space:nowrap;pointer-events:none;backdrop-filter:blur(8px)}
   .crash-mult {
     position:absolute; top:14px; left:50%; transform:translateX(-50%);
     font-size:46px; font-weight:800; color:var(--success);
@@ -1603,6 +1604,7 @@ body.upgrade-spinning #page-upgrade #upgradeBtn{
     <div class="crash-canvas-wrap">
       <canvas id="crashCanvas"></canvas>
       <div class="crash-mult" id="crashMult">1.00x</div>
+      <div id="crashGiftFlight" class="crash-gift-flight" style="display:none"></div>
     </div>
     <div class="crash-feed-title">Последние полёты</div>
     <div class="crash-history" id="crashHistory"></div>
@@ -3130,6 +3132,16 @@ let crashPoints = [];
 let crashBetAmount = 0;
 let crashParticles = [];
 let crashCashoutMult = null;
+let crashGiftFlightItem = null;
+function updateCrashGiftProgress() {
+  const el = document.getElementById("crashGiftFlight"); if (!el) return;
+  if (!crashGiftFlightItem || !myBet || myBet.cashed !== null || round.phase !== "flying") { el.style.display = "none"; return; }
+  const base = Number(crashGiftFlightItem.price) || 0, ceiling = base * crashMult;
+  const candidates = Object.entries(GIFTS).filter(([key,g]) => key !== "random_nft" && Number(g.price) > base && Number(g.price) <= ceiling).sort((a,b)=>Number(b[1].price)-Number(a[1].price));
+  const next = candidates[0]; const gift = next ? next[1] : (GIFTS[crashGiftFlightItem.gift] || {});
+  el.innerHTML = `<span style="font-size:18px;vertical-align:middle">${gift.img || crashGiftFlightItem.emoji || "🎁"}</span> ${next ? "Апгрейд: " + (gift.name || "Подарок") : "Старт: " + (gift.name || crashGiftFlightItem.name || "Подарок")} <span style="opacity:.75">· ${crashMult.toFixed(2)}x</span>`;
+  el.style.display = "block";
+}
 
 
 function initCrashCanvas() {
@@ -3340,6 +3352,7 @@ async function crashAction() {
       if (document.getElementById('crashWagerMode').value === 'gift') {
         const inventoryId = document.getElementById('crashGiftSelect').value;
         if (!inventoryId) return toast('Сначала выберите подарок из инвентаря.', true);
+        crashGiftFlightItem = inventory.find(i => i.uid === inventoryId) || null;
         await apiRequest('/api/crash/bet', { method:'POST', body:JSON.stringify({ inventoryId }) });
         haptic('light'); toast('Подарок отправлен в полёт!');
       } else {
@@ -3379,6 +3392,7 @@ function crashFrame() {
   if (round.phase === 'flying') {
     crashMult = Math.max(1, multAt((serverNow() - round.startedAt) / 1000));
     multEl.classList.remove('wait'); multEl.textContent = crashMult.toFixed(2) + 'x';
+    updateCrashGiftProgress();
     const cw = document.getElementById('crashCanvas').parentElement, k = Math.min(cw.clientWidth, cw.clientHeight) / 250;
     const th = crashHeading(timeAt(crashMult)), tx = cw.clientWidth / 2 - Math.cos(th) * 24 * k, ty = cw.clientHeight * 0.52 - Math.sin(th) * 24 * k;
     for (let i = 0; i < 2; i++) crashParticles.push({ x: tx, y: ty, vx: -Math.cos(th) * 2.2 + (Math.random() - .5), vy: -Math.sin(th) * 2.2 + (Math.random() - .5) - 0.1, r: Math.random() * 3 + 2, life: 0.8, color: Math.random() < .5 ? '#ffc42e' : '#ff6a2b' });

@@ -135,7 +135,7 @@ const GIFT_DATA = {
   ginger_cookie: { name: 'Ginger Cookie NFT', emoji: '🍪', rarity: 'NFT', value: 850 },
   chill_flame: { name: 'Chill Flame NFT', emoji: '🔥', rarity: 'NFT', value: 900 },
   mirage_lamp: { name: 'Mirage Lamp NFT', emoji: '🪔', rarity: 'NFT', value: 950 },
-  snoop_dogg: { name: 'Snoop Dogg NFT', emoji: '🐶', rarity: 'NFT', value: 1000 }
+  snoop_dogg: { name: 'Snoop Dogg NFT', emoji: '🐶', rarity: 'NFT', value: 1000 },
   bday_candle: { name: 'B-Day Candle NFT', emoji: '🕯️', rarity: 'NFT · Средний', value: 1150 },
   desk_calendar: { name: 'Desk Calendar NFT', emoji: '🗓️', rarity: 'NFT · Средний', value: 1250 },
   jelly_bunny: { name: 'Jelly Bunny NFT', emoji: '🐰', rarity: 'NFT · Средний', value: 1350 },

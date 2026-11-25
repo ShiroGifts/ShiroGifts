@@ -129,7 +129,7 @@ router.get('/crash/state', async (req, res) => {
 
 router.post('/crash/bet', async (req,res) => {
   const inventoryId = String(req.body && req.body.inventoryId || '');
-  const itemMode = /^\\d+$/.test(inventoryId);
+  const itemMode = /^\d+$/.test(inventoryId);
   const amount=Number(req.body&&req.body.amount);
   if(!itemMode && (!Number.isSafeInteger(amount)||amount<1||amount>10000)) return res.status(400).json({ok:false,error:'invalid_bet_amount'});
   const telegramId=String(req.telegramUser.id), client=await pool.connect();

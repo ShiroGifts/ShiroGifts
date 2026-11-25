@@ -9,6 +9,7 @@ const adminRoutes = require('./routes/admin');
 const upgradeRoutes = require('./routes/upgrades');
 const inventoryRoutes = require('./routes/inventory');
 const telegramWebhookRoutes = require('./routes/telegramWebhook');
+const tonPaymentRoutes = require('./routes/tonPayments');
 const subscriptionRoutes = require('./routes/subscription');
 const { router: crashRoutes, startCrashEngine } = require('./routes/crash');
 const { migrate } = require('./db/migrate');
@@ -20,6 +21,7 @@ app.use(express.json({ limit: '32kb' }));
 app.use('/api', healthRoutes);
 // Telegram webhooks must be mounted before routers with global Mini App auth middleware.
 app.use('/api', telegramWebhookRoutes);
+app.use('/api', tonPaymentRoutes);
 app.use('/api', accountRoutes);
 app.use('/api', caseRoutes);
 app.use('/api', promoRoutes);

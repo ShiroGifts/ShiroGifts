@@ -45,7 +45,7 @@ async function activateCrashPreorders(roundId) {
       if (!orderResult.rowCount) { await client.query('ROLLBACK'); continue; }
       const order = orderResult.rows[0];
       const targetRound = await client.query("SELECT id,status,starts_at FROM crash_rounds WHERE id=$1 FOR UPDATE", [roundId]);
-      if (!targetRound.rowCount || targetRound.rows[0].status !== 'scheduled' || new Date(targetRound.rows[0].starts_at).getTime() <= Date.now()) { await client.query('ROLLBACK'); continue; }
+      if (!targetRound.rowCount || targetRound.rows[0].status !== 'scheduled') { await client.query('ROLLBACK'); continue; }
       const duplicate = await client.query('SELECT id FROM crash_bets WHERE round_id=$1 AND telegram_id=$2', [roundId, order.telegram_id]);
       if (duplicate.rowCount) {
         await client.query("UPDATE crash_preorders SET status='failed',error_code='bet_already_placed' WHERE id=$1", [order.id]);

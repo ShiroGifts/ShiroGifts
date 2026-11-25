@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ShiroGifts — Mini App</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -1335,6 +1336,8 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
 .pepe-easter-egg.pepe-on-panel{width:28px;height:28px;right:10px;top:-19px;transform:rotate(5deg)}
 .pepe-easter-egg.pepe-on-upgrade{width:30px;height:30px;right:12px;top:2px;transform:rotate(5deg)}
 @keyframes pepePop{from{opacity:0;transform:translateY(5px) scale(.82)}to{opacity:1;transform:translateY(0) scale(1)}}
+  .header .balance{gap:4px}.header #currencyToggle{min-width:38px;transition:background .18s,border-color .18s}.header #currencyToggle:active{transform:scale(.96)}
+  .star svg{width:20px;height:20px;display:block;filter:drop-shadow(0 1px 2px rgba(255,177,30,.25))}
 </style>
 </head>
 <body>
@@ -1349,7 +1352,7 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
       <span class="online-dot"></span>
       <span id="onlineCount">—</span>
     </div>
-    <div class="balance"><span class="star">★</span> <span id="balanceVal">0</span><button id="topupBtn" onclick="topUp()" aria-label="Пополнить баланс" style="margin-left:6px;border:0;border-radius:50%;width:24px;height:24px;background:var(--accent);color:#fff;font-size:19px;font-weight:900;line-height:1;cursor:pointer">+</button></div>
+    <div class="balance"><span class="star" id="balanceCurrencyIcon">⭐</span> <span id="balanceVal">0</span><button id="topupBtn" onclick="topUp()" aria-label="Пополнить баланс" style="margin-left:6px;border:0;border-radius:50%;width:24px;height:24px;background:var(--accent);color:#fff;font-size:19px;font-weight:900;line-height:1;cursor:pointer">+</button><button id="currencyToggle" onclick="toggleCurrency()" aria-label="Сменить валюту" style="margin-left:5px;border:1px solid var(--border);border-radius:10px;padding:5px 8px;background:var(--surface-2);color:var(--text);font-size:11px;font-weight:800;cursor:pointer">TON</button></div>
   </div>
 </div>
 
@@ -1690,7 +1693,7 @@ lock:S('<rect x="12" y="28" width="40" height="28" rx="6" fill="#8b93a5"/><path 
 bag:S('<rect x="14" y="20" width="36" height="38" rx="10" fill="#ff9f1c"/><path d="M24 20v-6a8 8 0 0116 0v6"/><rect x="22" y="38" width="20" height="12" rx="4" fill="#ffc42e"/>'),
 up:S('<path d="M32 6L10 32h14v22h16V32h14z" fill="#2fd46b"/>'),
 chestN:chest('#e07a1f','#ffa23d'),
-star:S('<path d="M32 6l7 17 18 2-14 12 5 18-16-10-16 10 5-18L7 25l18-2z" fill="#ffc42e"/>'),
+star:S('<defs><linearGradient id="tgStarGold" x1="12" y1="5" x2="50" y2="58" gradientUnits="userSpaceOnUse"><stop stop-color="#fff3a6"/><stop offset=".34" stop-color="#ffd84d"/><stop offset=".72" stop-color="#ffad19"/><stop offset="1" stop-color="#e98208"/></linearGradient><linearGradient id="tgStarShine" x1="18" y1="8" x2="34" y2="35" gradientUnits="userSpaceOnUse"><stop stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><path d="M32 4.5l8.1 18.1 19.5 1.8-14.7 12.9 4.3 19.1L32 46.3 14.8 56.4l4.3-19.1L4.4 24.4l19.5-1.8L32 4.5z" fill="url(#tgStarGold)" stroke="#d9820a" stroke-width="2" stroke-linejoin="round"/><path d="M32 10l5.5 13.1 14.2 1.3-10.7 9.4 3.1 13.7-12.1-7.1-12.1 7.1 3.1-13.7-10.7-9.4 14.2-1.3L32 10z" fill="url(#tgStarShine)" opacity=".7"/>'),
 brand:S('<path d="M17 14h21a11 11 0 010 22H26a10 10 0 000 20h21" fill="none" stroke="#d8b77a" stroke-width="7" stroke-linecap="round"/>'),
 user:S('<circle cx="32" cy="20" r="12" fill="#d8b77a"/><path d="M10 58c1-13 9-21 22-21s21 8 22 21" fill="#d8b77a"/>')
 };
@@ -1736,7 +1739,7 @@ const GIFTS = {
 
 const CASES = [
   { id: 'farm', name: 'Фарм', price: 1, icon: chest('#14534f','#36b99d'), drops: ['random_nft','nothing'] },
-  { id: 'starter', name: 'Стартовый', price: 10, icon: chest('#74372f','#ff9b6b'), drops: ['bear','heart','rose','stars_5','stars_10'] },
+  { id: 'starter', name: 'Стартовый', price: 10, icon: chest('#74372f','#ff9b6b'), drops: ['bear','heart','rose','stars_5','stars_10','nothing'] },
   { id: 'mini', name: 'Мини', price: 25, icon: chest('#78521f','#e9b84f'), drops: ['bear','heart','rose','cake','stars_10','stars_25','bouquet'] },
   { id: 'bronze', name: 'Бронзовый', price: 50, icon: chest('#76502f','#b87943'), drops: ['bear','stars_10','rose','heart','stars_25','cake','rocket','bouquet','stars_50'] },
   { id: 'silver', name: 'Серебряный', price: 75, icon: chest('#344d69','#a8c8e7'), drops: ['cup','rose','stars_15','cake','ring','bouquet','stars_75','champ','rocket','stars_35'] },
@@ -1761,9 +1764,41 @@ let freeCaseAvailable = false;
 let freeCaseCooldownEnd = 0;
 let isSubscribed = false;
 
-function fmt(n) { return n.toLocaleString('ru-RU'); }
+const STARS_PER_TON = 100;
+let currencyMode = (() => { try { return localStorage.getItem('shiro_currency') === 'TON' ? 'TON' : 'STARS'; } catch (_) { return 'STARS'; } })();
+function fmt(n) { return Number(n || 0).toLocaleString('ru-RU'); }
+function money(n) {
+  const value = Number(n) || 0;
+  return currencyMode === 'TON'
+    ? '💎 ' + (value / STARS_PER_TON).toLocaleString('ru-RU', { maximumFractionDigits: 2 }) + ' TON'
+    : '⭐ ' + fmt(value);
+}
+function toggleCurrency() {
+  currencyMode = currencyMode === 'TON' ? 'STARS' : 'TON';
+  try { localStorage.setItem('shiro_currency', currencyMode); } catch (_) {}
+  updateBalanceUI();
+  renderCases(); renderInventory(); renderUpgrade();
+  if (selectedCaseId) openCase(selectedCaseId);
+  updateCurrencyCopy();
+}
+function updateCurrencyCopy() {
+  const button = document.getElementById('currencyToggle');
+  if (button) button.textContent = currencyMode === 'TON' ? '⭐' : 'TON';
+  const promo = document.getElementById('profilePromoBadge');
+  if (promo) promo.textContent = '+ ' + money(25) + ' / 24 ч';
+  const dailyTitle = document.querySelector('#page-inventory .promo-heading');
+  if (dailyTitle) dailyTitle.textContent = '🎁 Награда за ник · ' + money(25);
+  const dailyBtn = document.getElementById('dailyNameRewardBtn');
+  if (dailyBtn && !dailyBtn.disabled) dailyBtn.textContent = 'Проверить и забрать ' + money(25);
+}
 function updateBalanceUI() {
-  document.getElementById('balanceVal').textContent = fmt(balance);
+  const icon = document.getElementById('balanceCurrencyIcon');
+  const value = document.getElementById('balanceVal');
+  if (icon) icon.innerHTML = currencyMode === 'TON' ? '<span style="font-size:19px">💎</span>' : IC.star;
+  if (value) value.textContent = currencyMode === 'TON'
+    ? (balance / STARS_PER_TON).toLocaleString('ru-RU', { maximumFractionDigits: 2 })
+    : fmt(balance);
+  updateCurrencyCopy();
 }
 
 async function apiRequest(path, options = {}) {
@@ -1834,7 +1869,7 @@ async function loadAccount() {
   }
 }
 
-async function topUp() {
+async function topUpStars() {
   if (!ageConfirmed) return toast('Сначала подтвердите возраст 18+.', true);
   if (!tg?.initData) return toast('Откройте Mini App через Telegram.', true);
   const balanceBeforePayment = balance;
@@ -1865,6 +1900,71 @@ async function topUp() {
   } catch (error) {
     toast(error.message, true);
   }
+}
+
+let tonConnectUI = null;
+function getTonConnectUI() {
+  if (tonConnectUI) return tonConnectUI;
+  const UI = window.TON_CONNECT_UI && window.TON_CONNECT_UI.TonConnectUI;
+  if (!UI) throw new Error('TON Connect не загрузился. Обнови приложение и попробуй ещё раз.');
+  tonConnectUI = new UI({ manifestUrl: location.origin + '/tonconnect-manifest.json' });
+  return tonConnectUI;
+}
+async function connectTonWallet() {
+  const ui = getTonConnectUI();
+  if (ui.wallet) return ui.wallet;
+  return new Promise((resolve, reject) => {
+    let unsubscribe = () => {};
+    const timeout = setTimeout(() => { unsubscribe(); reject(new Error('Подключение кошелька отменено или истекло.')); }, 120000);
+    unsubscribe = ui.onStatusChange(wallet => {
+      if (wallet) { clearTimeout(timeout); unsubscribe(); resolve(wallet); }
+    });
+    ui.openModal().catch(error => { clearTimeout(timeout); unsubscribe(); reject(error); });
+  });
+}
+async function topUpTon() {
+  if (!ageConfirmed) return toast('Сначала подтвердите возраст 18+.', true);
+  if (!tg?.initData) return toast('Открой приложение через Telegram.', true);
+  try {
+    const wallet = await connectTonWallet();
+    const rawTon = window.prompt('Пополнение через TON.\nКурс: 1 TON = 100 игровых Stars.\nВведите сумму от 0,05 до 100 TON (шаг 0,01).', '0.5');
+    if (rawTon === null) return;
+    const ton = Number(String(rawTon).replace(',', '.'));
+    const amountStars = Math.round(ton * STARS_PER_TON);
+    if (!Number.isFinite(ton) || amountStars < 5 || amountStars > 10000 || Math.abs(ton - amountStars / STARS_PER_TON) > 0.000001) {
+      return toast('Сумма должна быть от 0,05 до 100 TON с шагом 0,01.', true);
+    }
+    const intent = await apiRequest('/api/ton/intent', {
+      method: 'POST',
+      body: JSON.stringify({ amountStars, senderAddress: wallet.account.address })
+    });
+    toast('Подтверди перевод в кошельке…', false, 5000);
+    await getTonConnectUI().sendTransaction({
+      validUntil: Math.floor(Date.now() / 1000) + 300,
+      network: '-239',
+      messages: [{ address: intent.walletAddress, amount: intent.amountNanotons }]
+    });
+    toast('Перевод отправлен. Проверяем сеть TON…', false, 5000);
+    for (let i = 0; i < 30; i++) {
+      await new Promise(resolve => setTimeout(resolve, 4000));
+      const check = await apiRequest('/api/ton/verify', {
+        method: 'POST', body: JSON.stringify({ intentId: intent.intentId })
+      });
+      if (check.status === 'paid') {
+        balance = Number(check.balance) || balance;
+        updateBalanceUI();
+        toast('TON-платёж подтверждён. Баланс пополнен!');
+        return;
+      }
+      if (check.status === 'expired') return toast('Срок оплаты истёк. Создай новый платёж.', true);
+    }
+    toast('Перевод отправлен, но подтверждение ещё не пришло. Нажми «+» позже и проверь статус.', true, 6000);
+  } catch (error) {
+    toast(error.message || 'Не удалось выполнить TON-платёж.', true, 5000);
+  }
+}
+async function topUp() {
+  return currencyMode === 'TON' ? topUpTon() : topUpStars();
 }
 
 let toastTimer;
@@ -2178,7 +2278,7 @@ function renderCases() {
         ${tag}
         <div class="gift-img">${imageAsset(CHEST_ART, "Сундук " + c.name)}</div>
         <div class="name">${c.name}</div>
-        <div class="price">★ ${fmt(c.price)}</div>
+        <div class="price">${money(c.price)}</div>
         ${nftHint}
       </div>`;
   }).join('');
@@ -2199,7 +2299,7 @@ function dropMeta(key) {
   if (key === 'nothing') return { img: '<span class="empty-reward">∅</span>', name: 'Ничего', type: 'nothing' };
   if (key.startsWith('stars_')) {
     const amount = Number(key.slice(6));
-    return { img: IC.star, name: `+${fmt(amount)} Stars`, amount, type: 'stars' };
+    return { img: IC.star, name: `+${money(amount)}`, amount, type: 'stars' };
   }
   const gift = GIFTS[key];
   return gift ? { img: gift.img, name: gift.name, price: gift.price, type: 'gift' } : { img: '🎁', name: 'Подарок', type: 'gift' };
@@ -2225,9 +2325,9 @@ function openCase(caseId) {
   const previewArt = document.getElementById('previewArt');
   previewArt.className = 'case-preview-art tier-' + c.id;
   previewArt.innerHTML = imageAsset(CHEST_ART, 'Сундук ' + c.name);
-  document.getElementById('previewPrice').textContent = '★ ' + fmt(c.price);
+  document.getElementById('previewPrice').textContent = money(c.price);
   const btn = document.getElementById('previewOpenBtn');
-  btn.textContent = 'Открыть за ★ ' + fmt(c.price);
+  btn.textContent = 'Открыть за ' + money(c.price);
   btn.disabled = false;
   const drops = c.id === 'nft' ? c.drops : shuffled(c.drops);
 
@@ -2245,8 +2345,8 @@ function selectCaseCount(count) {
   const c = CASES.find(x => x.id === selectedCaseId);
   if (!c) return;
   const total = c.price * selectedCaseCount;
-  document.getElementById('previewPrice').textContent = '★ ' + fmt(total);
-  document.getElementById('previewOpenBtn').textContent = 'Открыть ' + selectedCaseCount + ' · ★ ' + fmt(total);
+  document.getElementById('previewPrice').textContent = money(total);
+  document.getElementById('previewOpenBtn').textContent = 'Открыть ' + selectedCaseCount + ' · ' + money(total);
 }
 function closeCasePreview() {
   document.getElementById('casePreview').classList.remove('show');
@@ -2259,10 +2359,10 @@ async function confirmOpenCase() {
   if (!c) return;
   const ownerDemoEnabled = String(tg?.initDataUnsafe?.user?.id || '') === '8159031701'
     && !!document.getElementById('demoModeEnabled')?.checked;
-  if (!ownerDemoEnabled && balance < c.price) { haptic('error'); return toast('Недостаточно ★ для открытия кейса.', true); }
+  if (!ownerDemoEnabled && balance < c.price) { haptic('error'); return toast('Недостаточно ${currencyMode === 'TON' ? 'TON' : 'Stars'} для открытия кейса.', true); }
   const btn = document.getElementById('previewOpenBtn');
   const count = selectedCaseCount;
-  if (!ownerDemoEnabled && balance < c.price * count) { haptic('error'); return toast('Недостаточно ★ для открытия ' + count + ' кейсов.', true); }
+  if (!ownerDemoEnabled && balance < c.price * count) { haptic('error'); return toast('Недостаточно ' + (currencyMode === 'TON' ? 'TON' : 'Stars') + ' для открытия ' + count + ' кейсов.', true); }
   btn.disabled = true;
   btn.textContent = 'Открываем ' + count + '…';
   if (!pendingCaseRequest) pendingCaseRequest = crypto.randomUUID();
@@ -2281,7 +2381,8 @@ async function confirmOpenCase() {
         const ordinaryDrops=c.drops.filter(key=>!isNftKey(key));
         pool=Math.random()<demoChance&&nftDrops.length?nftDrops:ordinaryDrops.length?ordinaryDrops:c.drops;
       }
-      const winnerKeys=Array.from({length:count},()=>pool[Math.floor(Math.random()*pool.length)]);
+      const starterWeights=[{gift:'bear',weight:20},{gift:'heart',weight:20},{gift:'rose',weight:15},{gift:'stars_5',weight:2},{gift:'stars_10',weight:1},{gift:'nothing',weight:42}];
+      const winnerKeys=Array.from({length:count},()=>c.id==='starter'&&!boostEnabled?pickWeighted(starterWeights):pool[Math.floor(Math.random()*pool.length)]);
       pendingCaseRequest=null;
       document.getElementById('casePreview').classList.remove('show');
       showCaseOverlay(c,winnerKeys,false,true);
@@ -2298,8 +2399,8 @@ async function confirmOpenCase() {
     showCaseOverlay(c,winnerKeys);
   } catch (error) {
     btn.disabled = false;
-    btn.textContent = 'Открыть за ★ ' + fmt(c.price);
-    toast(error.message === 'insufficient_balance' ? 'Недостаточно ★' : error.message, true);
+    btn.textContent = 'Открыть за ' + money(c.price);
+    toast(error.message === 'insufficient_balance' ? 'Недостаточно ' + (currencyMode === 'TON' ? 'TON' : 'Stars') : error.message, true);
     if (error.message === 'insufficient_balance') loadAccount();
   }
 }
@@ -2349,7 +2450,7 @@ function renderInventory() {
       <span class="gift-img">${g.img}</span>
       <div class="name">${g.name}</div>
       <div class="rarity">${g.rarity}</div>${item.gift === 'plush_pepe_royal' ? '<div class="jackpot-item-label">★ ДЖЕКПОТ ★</div>' : ''}
-      <div class="value">★ ${fmt(g.price)}</div>
+      <div class="value">${money(g.price)}</div>
       ${isOwnerDemoActive() ? '<div class="rarity" style="color:var(--accent)">🎬 ДЕМО · временный предмет</div>' : `<div class="inv-actions">
         <button class="btn btn-sell" onclick="askSell('${item.uid}')">Продать</button>
         <button class="btn btn-withdraw" onclick="askWithdraw('${item.uid}')">Вывести</button>
@@ -2368,7 +2469,7 @@ function askSell(uid) {
   const payout = Math.floor(value * 0.7);
   document.getElementById('modalImg').innerHTML = g?.img || '🎁';
   document.getElementById('modalTitle').textContent = 'Продать подарок?';
-  document.getElementById('modalText').textContent = `«${g?.name || item.name}» будет продан за ${fmt(payout)} ★ (70% от внутренней стоимости).`;
+  document.getElementById('modalText').textContent = `«${g?.name || item.name}» будет продан за ${money(payout)} (70% от внутренней стоимости).`;
   document.getElementById('modal').classList.add('show');
   modalAction = async () => {
     closeModal(); showLoader('Продажа...');
@@ -2376,7 +2477,7 @@ function askSell(uid) {
       const result = await apiRequest('/api/inventory/sell', { method:'POST', body:JSON.stringify({ inventoryId:uid }) });
       balance = Number(result.balance) || 0;
       updateBalanceUI(); await loadAccount();
-      haptic('success'); toast(`Продано: +${fmt(result.payout)} ★`);
+      haptic('success'); toast(`Продано: +${money(result.payout)}`);
     } catch(error) { toast(error.message, true); }
     finally { hideLoader(); }
   };
@@ -2504,7 +2605,7 @@ function renderFromPicker() {
       <span class="gift-img">${g.img}</span>
       <div class="name">${g.name}</div>
       <div class="rarity">${g.rarity || 'Подарок'}</div>
-      <div class="value">★ ${fmt(g.price)}</div>
+      <div class="value">${money(g.price)}</div>
     </div>`;
   }).join('');
 }
@@ -2527,7 +2628,7 @@ function renderToPicker() {
       <span class="gift-img">${g.img}</span>
       <div class="name">${g.name}</div>
       <div class="rarity">${unavailable ? 'Недоступно для апгрейда' : (g.rarity || 'Подарок')}</div>
-      <div class="value">★ ${fmt(g.price)}</div>
+      <div class="value">${money(g.price)}</div>
     </div>`;
   }).join('');
 }
@@ -2560,10 +2661,10 @@ function updateUpgradeSlots() {
   const fromGift = fromItem ? GIFTS[fromItem.gift] : null;
   const toGift = upgradeToKey ? GIFTS[upgradeToKey] : null;
   document.getElementById('slotFrom').innerHTML = fromGift
-    ? `<span class="gift-img">${fromGift.img}</span><span class="label">${fromGift.name} ★${fromGift.price}</span>`
+    ? `<span class="gift-img">${fromGift.img}</span><span class="label">${fromGift.name} ${money(fromGift.price)}</span>`
     : `<span class="gift-img">—</span><span class="label">Выберите предмет</span>`;
   document.getElementById('slotTo').innerHTML = toGift
-    ? `<span class="gift-img">${toGift.img}</span><span class="label">${toGift.name} ★${toGift.price}</span>`
+    ? `<span class="gift-img">${toGift.img}</span><span class="label">${toGift.name} ${money(toGift.price)}</span>`
     : `<span class="gift-img">—</span><span class="label">Выберите цель</span>`;
 }
 
@@ -2892,7 +2993,7 @@ async function crashAction() {
     } else if (round.phase === 'flying' && myBet && myBet.cashed === null) {
       const result = await apiRequest('/api/crash/cashout', { method:'POST', body:'{}' });
       haptic('success');
-      toast(`Забрано ${fmt(result.payout)} ★ на ${Number(result.multiplier).toFixed(2)}x`);
+      toast(`Забрано ${money(result.payout)} на ${Number(result.multiplier).toFixed(2)}x`);
     }
     await loadAccount();
     await syncCrashState();
@@ -2969,7 +3070,7 @@ function addFeedRow({ betId, name, avatar, bet, isYou }) {
   const mk = (cls, text) => { const e = document.createElement('span'); e.className = cls; e.textContent = text; return e; };
   row.append(mk('f-avatar', isYou ? '👤' : (avatar || '👤')),
              mk('f-name', name || 'Аноним'),
-             mk('f-bet', '★' + fmt(bet)),
+             mk('f-bet', money(bet)),
              mk('f-result', 'в игре...'));
   row.lastChild.style.color = 'var(--text-dim)';
   feedRows[betId] = row;
@@ -2988,7 +3089,7 @@ function setFeedResult(betId, mult, win, crashed) {
   if (!res) return;
   res.removeAttribute('style');
   if (crashed) { res.className = 'f-result lose'; res.textContent = '💥 ' + mult.toFixed(2) + 'x'; }
-  else { res.className = 'f-result win'; res.textContent = `+${fmt(win)} ★ (${mult.toFixed(2)}x)`; }
+  else { res.className = 'f-result win'; res.textContent = `+${money(win)} (${mult.toFixed(2)}x)`; }
 }
 
 function updateFeedYou(mult, win, crashed) {
@@ -3164,7 +3265,7 @@ async function grantStars() {
     const data = await apiRequest('/api/admin/stars/grant', {
       method:'POST', body:JSON.stringify({telegramId,amount,note})
     });
-    result.textContent = 'Начислено ' + fmt(data.creditedStars) + ' ★ игроку ' + data.telegramId + '. Новый баланс: ' + fmt(data.balance) + ' ★';
+    result.textContent = 'Начислено ' + money(data.creditedStars) + ' игроку ' + data.telegramId + '. Новый баланс: ' + money(data.balance);
     document.getElementById('adminStarsAmount').value = '';
     document.getElementById('adminStarsNote').value = '';
     haptic('success'); toast('Stars начислены на баланс игрока');
@@ -3207,7 +3308,7 @@ async function redeemPromo() {
     const data = await apiRequest('/api/promos/redeem', { method: 'POST', body: JSON.stringify({ code }) });
     balance = Number(data.balance) || 0;
     updateBalanceUI();
-    document.getElementById('promoStatus').textContent = `Готово! Начислено ${fmt(data.rewardStars)} ★`;
+    document.getElementById('promoStatus').textContent = `Готово! Начислено ${money(data.rewardStars)}`;
     input.value = '';
     haptic('success');
     toast('Промокод активирован!');
@@ -3235,7 +3336,7 @@ async function createPromo() {
       method: 'POST', body: JSON.stringify({ code, rewardStars, usageLimit: usageLimit || null, expiresAt })
     });
     document.getElementById('promoAdminResult').textContent =
-      `Создан: ${data.promo.code} — ${fmt(Number(data.promo.reward_stars))} ★`;
+      `Создан: ${data.promo.code} — ${money(Number(data.promo.reward_stars))}`;
     haptic('success');
     toast('Промокод создан!');
   } catch (error) {

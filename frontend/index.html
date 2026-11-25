@@ -1366,6 +1366,12 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
 #upgradePickerBackdrop .picker-list{min-height:0;max-height:calc(100dvh - 230px);overflow-x:hidden;overflow-y:auto;grid-template-columns:repeat(2,minmax(0,1fr))}
 #upgradePickerBackdrop .picker-item{min-width:0;max-width:100%;overflow:hidden;overflow-wrap:anywhere}
 @media(max-width:360px){#upgradePickerBackdrop .upgrade-picker-sheet{padding-left:10px;padding-right:10px}.upgrade-chance-control{padding:10px}.sell-all-bar{font-size:11px}}
+
+/* Keep the upgrade action anchored at the bottom of its panel on short and tall screens. */
+#page-upgrade .upgrade-box{display:flex!important;flex-direction:column!important;min-height:calc(100dvh - 190px)!important;box-sizing:border-box!important}
+#page-upgrade #upgradeBtn{flex:0 0 auto!important;width:100%!important;margin-top:auto!important;position:relative!important;z-index:5!important}
+@media(max-height:700px){#page-upgrade .upgrade-box{min-height:calc(100dvh - 155px)!important}#page-upgrade .wheel-wrap{flex-shrink:1!important}}
+@media(max-height:620px){#page-upgrade .upgrade-box{height:calc(100dvh - 145px)!important;min-height:0!important}#page-upgrade #upgradeBtn{margin-top:auto!important}}
 </style>
 </head>
 <body>
@@ -2381,7 +2387,7 @@ function renderCases() {
       </div>`;
   }
   html += CASES.map(c => {
-    const hasNft = c.drops.some(key => key === 'random_nft' || key.includes('pepe') || key.includes('nft') || ['diamond_ring','durovs_glasses','durovs_cap','resistance_dog','precious_peach','scared_cat','heroic_helmet','astral_shard','loot_bag'].includes(key));
+    const hasNft = c.id === 'nft2' || c.drops.some(key => key === 'random_nft' || key.includes('pepe') || key.includes('nft') || String(GIFTS[key]?.rarity || '').toUpperCase().includes('NFT') || ['diamond_ring','durovs_glasses','durovs_cap','resistance_dog','precious_peach','scared_cat','heroic_helmet','astral_shard','loot_bag'].includes(key));
     const jackpot = ['ruby','diamond','cosmic'].includes(c.id);
     const tag = jackpot ? '<div class="jackpot-tag">ДЖЕКПОТ</div>' : '';
     const nftHint = (hasNft || jackpot) ? '<div class="nft-hint">Можно получить NFT</div>' : '';

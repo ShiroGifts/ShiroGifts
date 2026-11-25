@@ -111,7 +111,7 @@ router.get('/crash/state', async (req, res) => {
     const userId = String(req.telegramUser.id);
     const [mine, bets, history] = await Promise.all([
       pool.query('SELECT id,stake_stars,cashout_multiplier,payout_stars FROM crash_bets WHERE round_id=$1 AND telegram_id=$2', [r.id,userId]),
-      pool.query(`SELECT b.id,b.telegram_id,b.stake_stars,b.cashout_multiplier,b.payout_stars,u.first_name
+      pool.query(`SELECT b.id,b.telegram_id,b.stake_stars,b.cashout_multiplier,b.payout_stars,b.source_inventory_id,b.wager_currency,u.first_name
         FROM crash_bets b LEFT JOIN users u ON u.telegram_id=b.telegram_id
         WHERE b.round_id=$1 ORDER BY b.created_at DESC LIMIT 12`, [r.id]),
       pool.query(`SELECT crash_multiplier FROM crash_rounds WHERE status IN ('crashed','settled') ORDER BY id DESC LIMIT 12`)
@@ -122,7 +122,7 @@ router.get('/crash/state', async (req, res) => {
     const currentMult = r.status === 'running' ? multiplierAt(serverTime - new Date(r.started_at).getTime()) : 1;
     res.json({ok:true,serverTime,round:{id:String(r.id),phase,startsAt:r.starts_at?new Date(r.starts_at).getTime():null,startedAt:r.started_at?new Date(r.started_at).getTime():null,crashMult:isCrashed?Number(r.crash_multiplier):null,currentMult},
       myBet:ownBet,history:history.rows.map(x=>Number(x.crash_multiplier)).filter(Number.isFinite),
-      bets:bets.rows.map(x=>({id:String(x.id),name:x.first_name||'Игрок',bet:Number(x.stake_stars),mult:x.cashout_multiplier==null?null:Number(x.cashout_multiplier),win:x.payout_stars==null?0:Number(x.payout_stars),crashed:x.cashout_multiplier==null&&r.status==='crashed'})),
+      bets:bets.rows.map(x=>({id:String(x.id),name:x.first_name||'Игрок',bet:Number(x.stake_stars),wagerType:x.source_inventory_id?'NFT':(x.wager_currency==='TON'?'TON':'STARS'),mult:x.cashout_multiplier==null?null:Number(x.cashout_multiplier),win:x.payout_stars==null?0:Number(x.payout_stars),crashed:x.cashout_multiplier==null&&r.status==='crashed'})),
       fairness:{serverSeedHash:r.server_seed_hash,revealedSeed:isCrashed?r.server_seed_revealed:null,clientSeed:isCrashed?r.client_seed:null,nonce:isCrashed?Number(r.nonce):null}});
   } catch(error) { console.error('[CRASH STATE]',error.code||error.message); res.status(500).json({ok:false,error:'crash_state_failed'}); }
 });
@@ -151,7 +151,8 @@ router.post('/crash/bet', async (req,res) => {
       const ref='crash:'+round.rows[0].id+':bet:'+telegramId;
       await client.query(`INSERT INTO wallet_ledger(telegram_id,amount_stars,entry_type,reference_id) VALUES($1,$2,'crash_bet',$3)`,[telegramId,-amount,ref]);
     }
-    await client.query('INSERT INTO crash_bets(round_id,telegram_id,stake_stars,source_inventory_id) VALUES($1,$2,$3,$4)',[round.rows[0].id,telegramId,stake,sourceInventoryId]);
+    const wagerCurrency = sourceInventoryId ? 'NFT' : (req.body && req.body.currency === 'TON' ? 'TON' : 'STARS');
+    await client.query('INSERT INTO crash_bets(round_id,telegram_id,stake_stars,source_inventory_id,wager_currency) VALUES($1,$2,$3,$4,$5)',[round.rows[0].id,telegramId,stake,sourceInventoryId,wagerCurrency]);
     await client.query('COMMIT');
     res.json({ok:true,amount,roundId:String(round.rows[0].id)});
   } catch(error){await client.query('ROLLBACK').catch(()=>{});console.error('[CRASH BET]',error.code||error.message);res.status(error.code==='23505'?409:500).json({ok:false,error:error.code==='23505'?'bet_already_placed':'crash_bet_failed'});}

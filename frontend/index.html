@@ -3483,7 +3483,7 @@ async function crashAction() {
 function crashFrame() {
   const multEl = document.getElementById('crashMult');
   if (round.phase === 'flying') {
-    crashMult = Math.max(1, multAt((serverNow() - round.startedAt) / 1000));
+    crashMult = Math.max(1, Number(round.currentMult) || 1);
     multEl.classList.remove('wait'); multEl.textContent = crashMult.toFixed(2) + 'x';
     updateCrashGiftProgress();
     const cw = document.getElementById('crashCanvas').parentElement, k = Math.min(cw.clientWidth, cw.clientHeight) / 250;
@@ -3618,11 +3618,17 @@ async function syncCrashState() {
 }
 function startCrashPolling() {
   if (crashPollTimer) return;
-  syncCrashState();
-  crashPollTimer = setInterval(syncCrashState, 700);
+  const poll = async () => {
+    await syncCrashState();
+    if (crashPollTimer === null) return;
+    // During flight, use frequent server snapshots instead of predicting past the authoritative value.
+    crashPollTimer = setTimeout(poll, round.phase === 'flying' ? 200 : 700);
+  };
+  crashPollTimer = -1;
+  poll();
 }
 function stopCrashPolling() {
-  if (crashPollTimer) clearInterval(crashPollTimer);
+  if (crashPollTimer !== null) clearTimeout(crashPollTimer);
   crashPollTimer = null;
 }
 

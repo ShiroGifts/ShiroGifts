@@ -1812,6 +1812,7 @@ let uidCounter = 1;
 let upgradeFromUid = null;
 let upgradeToKey = null;
 let upgradeBusy = false;
+let upgradeDesiredChance = 30;
 
 let freeCaseAvailable = false;
 let freeCaseCooldownEnd = 0;
@@ -2532,6 +2533,8 @@ function renderInventory() {
   renderRef();
   const grid = document.getElementById('invGrid');
   const owned = inventory.filter(i => i.status === 'owned');
+  const sellAllButton = document.getElementById('sellAllInventoryBtn');
+  if (sellAllButton) sellAllButton.style.display = owned.length && !isOwnerDemoActive() ? 'block' : 'none';
   if (owned.length === 0) {
     grid.innerHTML = `<div class="empty-state"><div class="big">🎒</div>Инвентарь пуст.<br>Открой кейс, чтобы получить подарок.</div>`;
     return;
@@ -2572,6 +2575,34 @@ function askSell(uid) {
       haptic('success'); toast(`Продано: +${money(result.payout)}`);
     } catch(error) { toast(error.message, true); }
     finally { hideLoader(); }
+  };
+}
+
+
+function askSellAll() {
+  const owned = inventory.filter(item => item.status === 'owned');
+  if (!owned.length || isOwnerDemoActive()) return;
+  const estimated = owned.reduce((sum,item) => {
+    const gift = GIFTS[item.gift];
+    const value = Number(item.price) || Number(gift?.price) || 0;
+    return sum + Math.floor(value * 0.7);
+  },0);
+  document.getElementById('modalImg').innerHTML = '💰';
+  document.getElementById('modalTitle').textContent = 'Продать весь инвентарь?';
+  document.getElementById('modalText').textContent = `Будут проданы все ${owned.length} предметов. На баланс поступит примерно ${money(estimated)} (70% от внутренней стоимости каждого предмета). Выводимые и уже проданные предметы не затрагиваются.`;
+  document.getElementById('modal').classList.add('show');
+  modalAction = async () => {
+    closeModal(); showLoader('Продаём весь инвентарь...');
+    try {
+      const result = await apiRequest('/api/inventory/sell-all', { method:'POST', body:JSON.stringify({}) });
+      balance = Number(result.balance) || 0;
+      updateBalanceUI(); await loadAccount();
+      haptic('success');
+      toast(`Продано ${result.itemsSold} предметов · +${money(result.payout)}`, false, 3600);
+    } catch(error) {
+      toast(error.message === 'inventory_empty' ? 'В инвентаре нет предметов для продажи.' : error.message, true);
+      await loadAccount();
+    } finally { hideLoader(); }
   };
 }
 
@@ -2654,6 +2685,17 @@ function openUpgradePicker(which) {
   if (back.parentElement !== document.body) document.body.appendChild(back);
   document.getElementById('upgradePickerTitle').textContent =
     which === 'from' ? 'Выберите предмет из инвентаря' : 'Выберите желаемый подарок';
+  const chanceControl = document.getElementById('upgradeChanceControl');
+  if (chanceControl) chanceControl.style.display = which === 'to' ? 'block' : 'none';
+  if (which === 'to') {
+    const fromItem = upgradeFromUid ? inventory.find(i => i.uid === upgradeFromUid) : null;
+    if (fromItem && upgradeToKey && calcChance(fromItem.gift, upgradeToKey) >= 0.01) {
+      upgradeDesiredChance = calcChance(fromItem.gift, upgradeToKey) * 100;
+    }
+    const slider = document.getElementById('upgradeDesiredChance');
+    if (slider) slider.value = String(upgradeDesiredChance);
+    updateUpgradeChanceLabel();
+  }
 
   // There is deliberately ONE list node. It is populated for the requested
   // mode only, so the inventory and target grids can never stack together.
@@ -2702,24 +2744,71 @@ function renderFromPicker() {
   }).join('');
 }
 
+function eligibleUpgradeTargetKeys(fromItem) {
+  if (!fromItem || !GIFTS[fromItem.gift]) return [];
+  return Object.keys(GIFTS).filter(key =>
+    key !== 'random_nft' &&
+    GIFTS[key].price > GIFTS[fromItem.gift].price &&
+    calcChance(fromItem.gift, key) >= 0.01
+  );
+}
+function nearestUpgradeTarget(fromItem, desiredPercent) {
+  const keys = eligibleUpgradeTargetKeys(fromItem);
+  if (!keys.length) return null;
+  return keys.reduce((best,key) => {
+    const delta = Math.abs(calcChance(fromItem.gift,key)*100 - desiredPercent);
+    if (!best || delta < best.delta || (delta === best.delta && GIFTS[key].price < GIFTS[best.key].price)) return {key,delta};
+    return best;
+  },null)?.key || null;
+}
+function updateUpgradeChanceLabel() {
+  const label = document.getElementById('upgradeDesiredChanceLabel');
+  const hint = document.getElementById('upgradeChanceHint');
+  const fromItem = upgradeFromUid ? inventory.find(i => i.uid === upgradeFromUid) : null;
+  if (label) label.textContent = upgradeDesiredChance.toFixed(1).replace(/\.0$/,'') + '%';
+  if (!hint) return;
+  if (!fromItem) {
+    hint.textContent = 'Сначала выбери предмет, затем подберём ближайшую цель.';
+    return;
+  }
+  const key = nearestUpgradeTarget(fromItem,upgradeDesiredChance);
+  hint.textContent = key
+    ? 'Ближайшая цель: ' + GIFTS[key].name + ' · ' + (calcChance(fromItem.gift,key)*100).toFixed(2) + '%'
+    : 'Для этого предмета пока нет подходящих целей с шансом от 1%.';
+}
+function setUpgradeDesiredChance(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return;
+  upgradeDesiredChance = Math.max(1,Math.min(90,parsed));
+  const fromItem = upgradeFromUid ? inventory.find(i => i.uid === upgradeFromUid) : null;
+  if (fromItem) {
+    const key = nearestUpgradeTarget(fromItem,upgradeDesiredChance);
+    upgradeToKey = key;
+    renderToPicker();
+    renderUpgrade();
+  }
+  updateUpgradeChanceLabel();
+}
 function renderToPicker() {
   const wrap = document.getElementById('pickerList');
   const fromItem = upgradeFromUid ? inventory.find(i => i.uid === upgradeFromUid) : null;
-  const minPrice = fromItem ? GIFTS[fromItem.gift].price : 0;
-  const keys = Object.keys(GIFTS).filter(k => GIFTS[k].price > minPrice && k !== 'random_nft');
+  if (!fromItem) {
+    wrap.innerHTML = `<div style="color:var(--text-dim);font-size:12px;padding:8px">Сначала выберите предмет из инвентаря</div>`;
+    return;
+  }
+  const keys = eligibleUpgradeTargetKeys(fromItem);
   if (keys.length === 0) {
-    wrap.innerHTML = `<div style="color:var(--text-dim);font-size:12px;padding:8px">Нет подходящих целей</div>`;
+    wrap.innerHTML = `<div style="color:var(--text-dim);font-size:12px;padding:8px">Нет целей с шансом от 1%</div>`;
     return;
   }
   wrap.innerHTML = keys.map(k => {
     const g = GIFTS[k];
-    const chance = fromItem ? calcChance(fromItem.gift, k) : 0;
-    const unavailable = !!fromItem && chance < 0.01 && !isOwnerDemoBoostActive();
+    const chance = calcChance(fromItem.gift,k);
     const sel = k === upgradeToKey ? 'selected' : '';
-    return `<div class="inv-item picker-item ${sel} ${unavailable ? 'upgrade-unavailable' : ''}" ${unavailable ? 'aria-disabled="true"' : `onclick="selectTo('${k}')"`}>
+    return `<div class="inv-item picker-item ${sel}" onclick="selectTo('${k}')">
       <span class="gift-img">${g.img}</span>
       <div class="name">${g.name}</div>
-      <div class="rarity">${unavailable ? 'Недоступно для апгрейда' : (g.rarity || 'Подарок')}</div>
+      <div class="rarity">${g.rarity || 'Подарок'} · ${(chance*100).toFixed(2)}%</div>
       <div class="value">${money(g.price)}</div>
     </div>`;
   }).join('');
@@ -2743,6 +2832,7 @@ function selectTo(key) {
     return toast('Нельзя апгрейдить на этот предмет: шанс ниже 1%.', true);
   }
   upgradeToKey = key;
+  upgradeDesiredChance = calcChance(fromItem?.gift || '', key) * 100;
   closeUpgradePicker();
   haptic();
   renderUpgrade();

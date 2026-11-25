@@ -231,7 +231,11 @@
     border-radius:14px; overflow:hidden; margin-bottom:14px;
   }
   #crashCanvas { width:100%; height:100%; display:block; }
-   .crash-gift-flight{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:4;padding:6px 10px;border:1px solid rgba(115,174,255,.38);border-radius:14px;background:rgba(8,18,38,.82);box-shadow:0 5px 24px rgba(31,115,255,.22);color:#eaf3ff;font-size:12px;font-weight:800;white-space:nowrap;pointer-events:none;backdrop-filter:blur(8px)}
+   .crash-gift-flight{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:4;display:flex;align-items:center;gap:6px;max-width:calc(100% - 24px);box-sizing:border-box;padding:5px 8px;border:1px solid rgba(115,174,255,.38);border-radius:12px;background:rgba(8,18,38,.88);box-shadow:0 5px 24px rgba(31,115,255,.22);color:#eaf3ff;font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden;pointer-events:none;backdrop-filter:blur(8px)}
+.crash-gift-flight-art{display:inline-flex;align-items:center;justify-content:center;flex:0 0 24px;width:24px;height:24px;max-width:24px;max-height:24px;overflow:hidden;font-size:18px;line-height:1}
+.crash-gift-flight-art img,.crash-gift-flight-art svg{display:block!important;width:auto!important;height:auto!important;max-width:24px!important;max-height:24px!important;object-fit:contain!important}
+.crash-gift-flight-name{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.crash-gift-flight-mult{flex:0 0 auto;opacity:.75}
   .crash-mult {
     position:absolute; top:14px; left:50%; transform:translateX(-50%);
     font-size:46px; font-weight:800; color:var(--success);
@@ -3202,19 +3206,27 @@ const crashRocketImage = new Image();
 crashRocketImage.crossOrigin = 'anonymous';
 crashRocketImage.src = 'https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/gift_5170564780938756245.webp';
 crashRocketImage.onload = () => { if (document.getElementById('page-crash')?.classList.contains('active')) drawCrash(); };
+const crashRocketImage = new Image();
+crashRocketImage.crossOrigin = 'anonymous';
+crashRocketImage.src = 'https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/gift_5170564780938756245.webp';
 function drawRocket(ctx,u,flame){
   ctx.save();
   if(flame){
-    const fire=ctx.createRadialGradient(0,.82*u,0,0,.92*u,.52*u);
-    fire.addColorStop(0,'rgba(255,255,235,.95)');fire.addColorStop(.28,'rgba(255,194,76,.8)');fire.addColorStop(1,'rgba(255,91,45,0)');
-    ctx.fillStyle=fire;ctx.beginPath();ctx.ellipse(0,.92*u,.23*u,.65*u,0,0,Math.PI*2);ctx.fill();
+    const fire=ctx.createRadialGradient(0,.55*u,0,0,1.05*u,.72*u);
+    fire.addColorStop(0,'rgba(255,255,238,.95)');fire.addColorStop(.22,'rgba(255,211,102,.9)');fire.addColorStop(.58,'rgba(255,105,51,.55)');fire.addColorStop(1,'rgba(65,139,255,0)');
+    ctx.fillStyle=fire;ctx.beginPath();ctx.ellipse(0,.9*u,.28*u,.72*u,0,0,Math.PI*2);ctx.fill();
   }
-  if(crashRocketImage.complete && crashRocketImage.naturalWidth){
-    const h=2.15*u,w=h*crashRocketImage.naturalWidth/crashRocketImage.naturalHeight;
+  if(crashRocketImage.complete&&crashRocketImage.naturalWidth){
+    const ratio=crashRocketImage.naturalWidth/crashRocketImage.naturalHeight;
+    const h=1.85*u,w=h*ratio;
     ctx.drawImage(crashRocketImage,-w/2,-h/2,w,h);
+  }else{
+    ctx.fillStyle='#d9f2ff';ctx.strokeStyle='#315a9a';ctx.lineWidth=.1*u;
+    ctx.beginPath();ctx.moveTo(0,-.95*u);ctx.quadraticCurveTo(.62*u,-.35*u,.34*u,.58*u);ctx.lineTo(-.34*u,.58*u);ctx.quadraticCurveTo(-.62*u,-.35*u,0,-.95*u);ctx.fill();ctx.stroke();
   }
   ctx.restore();
 }
+
 function drawCrash() {
   const c = document.getElementById('crashCanvas');
   const ctx = c.getContext('2d');

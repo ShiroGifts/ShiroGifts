@@ -111,8 +111,11 @@ router.get('/crash/state', async (req, res) => {
     const userId = String(req.telegramUser.id);
     const [mine, bets, history] = await Promise.all([
       pool.query('SELECT id,stake_stars,cashout_multiplier,payout_stars FROM crash_bets WHERE round_id=$1 AND telegram_id=$2', [r.id,userId]),
-      pool.query(`SELECT b.id,b.telegram_id,b.stake_stars,b.cashout_multiplier,b.payout_stars,b.source_inventory_id,b.wager_currency,u.first_name
+      pool.query(`SELECT b.id,b.telegram_id,b.stake_stars,b.cashout_multiplier,b.payout_stars,b.source_inventory_id,b.cashout_inventory_id,u.first_name,
+        src.item_key AS gift_key,src.emoji AS gift_emoji,dst.item_key AS cashout_gift_key
         FROM crash_bets b LEFT JOIN users u ON u.telegram_id=b.telegram_id
+        LEFT JOIN inventory src ON src.id=b.source_inventory_id
+        LEFT JOIN inventory dst ON dst.id=b.cashout_inventory_id
         WHERE b.round_id=$1 ORDER BY b.created_at DESC LIMIT 12`, [r.id]),
       pool.query(`SELECT crash_multiplier FROM crash_rounds WHERE status IN ('crashed','settled') ORDER BY id DESC LIMIT 12`)
     ]);
@@ -122,7 +125,7 @@ router.get('/crash/state', async (req, res) => {
     const currentMult = r.status === 'running' ? multiplierAt(serverTime - new Date(r.started_at).getTime()) : 1;
     res.json({ok:true,serverTime,round:{id:String(r.id),phase,startsAt:r.starts_at?new Date(r.starts_at).getTime():null,startedAt:r.started_at?new Date(r.started_at).getTime():null,crashMult:isCrashed?Number(r.crash_multiplier):null,currentMult},
       myBet:ownBet,history:history.rows.map(x=>Number(x.crash_multiplier)).filter(Number.isFinite),
-      bets:bets.rows.map(x=>({id:String(x.id),name:x.first_name||'Игрок',bet:Number(x.stake_stars),wagerType:x.source_inventory_id?'NFT':(x.wager_currency==='TON'?'TON':'STARS'),mult:x.cashout_multiplier==null?null:Number(x.cashout_multiplier),win:x.payout_stars==null?0:Number(x.payout_stars),crashed:x.cashout_multiplier==null&&r.status==='crashed'})),
+      bets:bets.rows.map(x=>({id:String(x.id),name:x.first_name||'Игрок',bet:Number(x.stake_stars),giftKey:x.gift_key||null,giftEmoji:x.gift_emoji||null,cashoutGiftKey:x.cashout_gift_key||null,mult:x.cashout_multiplier==null?null:Number(x.cashout_multiplier),win:x.payout_stars==null?0:Number(x.payout_stars),crashed:x.cashout_multiplier==null&&r.status==='crashed'})),
       fairness:{serverSeedHash:r.server_seed_hash,revealedSeed:isCrashed?r.server_seed_revealed:null,clientSeed:isCrashed?r.client_seed:null,nonce:isCrashed?Number(r.nonce):null}});
   } catch(error) { console.error('[CRASH STATE]',error.code||error.message); res.status(500).json({ok:false,error:'crash_state_failed'}); }
 });

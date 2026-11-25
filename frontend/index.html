@@ -2095,13 +2095,9 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
   <div class="section-title">Апгрейд подарка</div>
   <div class="upgrade-box">
     <div class="upgrade-row">
-      <div class="upgrade-slot" id="slotFrom" role="button" tabindex="0" aria-label="Выбрать предмет из инвентаря" onclick="openUpgradePicker('from')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openUpgradePicker('from')}">
-        <span class="gift-img">—</span><span class="label">Выбрать из инвентаря</span>
-      </div>
+      <button class="upgrade-slot upgrade-select-card" id="slotFrom" type="button" aria-label="Выбрать предмет из инвентаря" onclick="openUpgradePicker('from')"><span class="gift-img">＋</span><span class="label">Выбрать предмет</span></button>
       <div class="upgrade-arrow" aria-hidden="true"><svg viewBox="0 0 48 24" width="38" height="22" xmlns="http://www.w3.org/2000/svg"><path d="M2 12h40M32 3l10 9-10 9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      <div class="upgrade-slot" id="slotTo" role="button" tabindex="0" aria-label="Выбрать желаемый предмет" onclick="openUpgradePicker('to')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openUpgradePicker('to')}">
-        <span class="gift-img">—</span><span class="label">Выбрать желаемый</span>
-      </div>
+      <button class="upgrade-slot upgrade-select-card" id="slotTo" type="button" aria-label="Выбрать желаемый предмет" onclick="openUpgradePicker('to')"><span class="gift-img">＋</span><span class="label">Выбрать желаемый</span></button>
     </div>
 
     <div class="upgrade-spin-modes" role="group" aria-label="Режим прокрутки">
@@ -2113,6 +2109,7 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
       <div class="wheel-pointer" id="wheelPointer"></div>
       <div class="wheel" id="wheel">
         <div class="wheel-segments" id="wheelSegments"></div>
+        <div class="wheel-x2-marker" id="wheelX2Marker" aria-label="Секретный сектор x2" style="display:none">×2</div>
       </div>
       <div class="wheel-center" id="wheelCenter" aria-hidden="true"></div>
     </div>
@@ -2142,7 +2139,7 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
     </div>
     <div class="crash-controls"><button class="btn-cashout" id="crashBtn" onclick="crashAction()">Забрать</button></div>
     <div id="crashPreorderStatus" class="crash-preorder-status" aria-live="polite"></div>
-    <button id="crashPreorderCancel" class="crash-preorder-cancel" type="button" onclick="cancelCrashPreorder()" style="display:none">Отменить предзаказ</button>
+    <button id="crashPreorderCancel" class="crash-preorder-cancel" type="button" onclick="cancelCrashPreorder()" style="display:none">Отменить ставку</button>
     <div class="crash-legacy-controls" aria-hidden="true">
       <select class="crash-input" id="crashWagerMode" onchange="setCrashWagerMode(this.value)"><option value="stars">Ставка Stars</option><option value="gift">NFT / подарок из инвентаря</option></select>
       <div class="crash-bet-wrap"><input class="crash-input" id="crashBet" type="number" value="50" min="1" step="1" aria-label="Размер ставки"><span class="crash-bet-currency" id="crashBetCurrency">Stars</span></div>
@@ -2154,7 +2151,22 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
   </div>
 </div>
 
-<div class="page" id="page-mines"></div>
+<div class="page" id="page-mines">
+  <div class="section-title">Мины</div>
+  <div class="mines-panel">
+    <div class="mines-heading"><div class="mines-heading-icon">✦</div><div><div class="mines-heading-title">Найди безопасные клетки</div><div class="mines-heading-copy">Открывай поле 5×5 и забирай выигрыш, пока не попалась мина</div></div></div>
+    <div class="mines-controls">
+      <div class="mines-field"><label for="minesBetInput">Ставка</label><div class="mines-bet-wrap"><input id="minesBetInput" class="mines-input" type="number" value="50" min="1" step="1" inputmode="decimal"><span id="minesCurrencyLabel">Stars</span></div></div>
+      <div class="mines-field"><label for="minesCountSelect">Количество мин</label><select id="minesCountSelect" class="mines-input"><option value="3">3 мины</option><option value="4">4 мины</option><option value="5" selected>5 мин</option><option value="6">6 мин</option><option value="7">7 мин</option><option value="8">8 мин</option><option value="9">9 мин</option><option value="10">10 мин</option></select></div>
+    </div>
+    <button class="btn-big mines-start" id="minesStartBtn" type="button" onclick="startMinesGame()">Начать игру</button>
+    <div class="mines-stats"><div><small>Мин</small><b id="minesMineCount">—</b></div><div><small>Открыто</small><b id="minesSafeCount">0</b></div><div><small>Множитель</small><b id="minesMultiplier">x1.00</b></div><div><small>К выводу</small><b id="minesPayout">0 Stars</b></div></div>
+    <div class="mines-board" id="minesBoard" aria-label="Игровое поле 5 на 5"></div>
+    <button class="btn-big mines-cashout" id="minesCashoutBtn" type="button" onclick="cashoutMines()" disabled>Забрать выигрыш</button>
+    <div class="mines-status" id="minesStatus" aria-live="polite">Выбери ставку и количество мин, чтобы начать.</div>
+    <div class="mines-fairness" id="minesFairness">Мины генерируются сервером до начала игры и не меняют положение после нажатий.</div>
+  </div>
+</div>
 
 <div class="nav">
   <div class="nav-item active" data-page="cases" onclick="switchPage('cases')"><span class="icon" data-ic="chestN"></span>Кейсы</div>
@@ -2180,7 +2192,7 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
 </div>
 
 <div class="upgrade-picker-backdrop" id="crashGiftPickerBackdrop" onclick="closeCrashGiftPicker()"><div class="upgrade-picker-sheet crash-gift-sheet" onclick="event.stopPropagation()"><div class="upgrade-picker-head"><b>Выберите подарок для ставки</b><button type="button" onclick="closeCrashGiftPicker()">✕</button></div><div class="picker-list" id="crashGiftPickerList"></div><button class="btn-big" id="crashGiftSubmit" type="button" onclick="submitCrashGift()" disabled>Поставить подарком</button></div></div>
-<div class="upgrade-picker-backdrop" id="crashStakePickerBackdrop" onclick="closeCrashStakePicker()"><div class="upgrade-picker-sheet crash-stake-sheet" onclick="event.stopPropagation()"><div class="upgrade-picker-head"><b>Ставка в валюте</b><button type="button" onclick="closeCrashStakePicker()">✕</button></div><div class="crash-stake-currency"><button type="button" data-currency="STARS" onclick="setCrashStakeCurrency('STARS')">⭐ Stars</button><button type="button" data-currency="TON" onclick="setCrashStakeCurrency('TON')">TON</button></div><label class="crash-stake-label" for="crashStakeAmount">Размер ставки</label><div class="crash-stake-input-wrap"><input class="crash-input" id="crashStakeAmount" type="number" value="50" min="1" step="1"><span id="crashStakeCurrencyLabel">Stars</span></div><button class="btn-big" type="button" onclick="submitCrashStake()">Поставить</button></div></div>
+<div class="upgrade-picker-backdrop" id="crashStakePickerBackdrop" onclick="closeCrashStakePicker()"><div class="upgrade-picker-sheet crash-stake-sheet" onclick="event.stopPropagation()"><div class="upgrade-picker-head"><b>Ставка в валюте</b><button type="button" onclick="closeCrashStakePicker()">✕</button></div><label class="crash-stake-label" for="crashStakeAmount">Размер ставки</label><div class="crash-stake-input-wrap"><input class="crash-input" id="crashStakeAmount" type="number" value="50" min="1" step="1"><span id="crashStakeCurrencyLabel">Stars</span></div><button class="btn-big" type="button" onclick="submitCrashStake()">Поставить</button></div></div>
 <div class="toast" id="toast"></div>
 
 <div class="loader" id="loader">
@@ -2503,7 +2515,7 @@ function updateCurrencyCopy() {
   if(currencyIcon) currencyIcon.innerHTML = currencyMode === 'TON' ? '<path d="M24 4l19 11-19 29L5 15 24 4zm0 0v40M5 15h38" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>' : '<path d="M24 4l5.7 12.1L43 18l-9.5 9.2L35.8 41 24 34.6 12.2 41l2.3-13.8L5 18l13.3-1.9L24 4z" fill="currentColor"/>';
   if(stakeInput){stakeInput.step=currencyMode==='TON'?'0.01':'1';stakeInput.min=currencyMode==='TON'?'0.01':'1';}
   const stakeLabel=document.getElementById('crashStakeCurrencyLabel');if(stakeLabel)stakeLabel.textContent=currencyMode==='TON'?'TON':'Stars';
-  document.querySelectorAll('.crash-stake-currency button').forEach(b=>b.classList.toggle('active',b.dataset.currency===currencyMode));
+  renderMinesCurrency();
   const crashStarsOption = document.querySelector('#crashWagerMode option[value="stars"]');
   if (crashBetCurrency) crashBetCurrency.textContent = currencyMode === 'TON' ? 'TON' : 'Stars';
   if (crashStarsOption) crashStarsOption.textContent = 'Ставка ' + (currencyMode === 'TON' ? 'TON' : 'Stars');
@@ -3020,6 +3032,7 @@ function switchPage(name) {
   else stopCrashPolling();
   if (name === 'inventory') { renderProfile(); renderInventory(); }
   if (name === 'upgrade') renderUpgrade();
+  if (name === 'mines') { renderMinesCurrency(); if (ageConfirmed) loadMinesState(); }
   if (name === 'promo') { loadPromoAdminStatus(); togglePromoMode(); }
   refreshPepeEasterEggs(name);
 }
@@ -3594,34 +3607,27 @@ function updateUpgradeSlots() {
     : `<span class="gift-img">＋</span><span class="label">Выбрать желаемый</span>`;
 }
 
-function renderWheel() {
-  const seg = document.getElementById('wheelSegments');
-  const pointer = document.getElementById('wheelPointer');
-  const chanceEl = document.getElementById('chanceVal');
-  pointer.classList.remove('fail');
-  if (!upgradeFromUid || !upgradeToKey) {
-    seg.style.background = 'var(--surface-2)';
-    seg.innerHTML = '';
-    chanceEl.textContent = '—';
-    chanceEl.classList.remove('fail');
-    return;
-  }
-  const fromItem = inventory.find(i => i.uid === upgradeFromUid);
-  if (!fromItem || !GIFTS[fromItem.gift] || !GIFTS[upgradeToKey]) {
-    seg.style.background = 'var(--surface-2)';
-    seg.innerHTML = '';
-    chanceEl.textContent = '—';
-    chanceEl.classList.remove('fail');
-    return;
-  }
-  const chance = calcChance(fromItem.gift, upgradeToKey);
-  const pct = (chance * 100).toFixed(2);
-  seg.style.background = `conic-gradient(
-    var(--accent) 0deg ${chance * 360}deg,
-    #2a2017 ${chance * 360}deg 360deg
-  )`;
-  seg.innerHTML = '';
-  chanceEl.innerHTML = `${pct}%<small>шанс успеха</small>`;
+function renderUpgradeWheelSecret(chance,available){
+  const seg=document.getElementById('wheelSegments'),marker=document.getElementById('wheelX2Marker'),wheel=document.getElementById('wheel');
+  if(!seg||!marker||!wheel)return;
+  const blueWidth=chance*360;
+  if(!available||blueWidth<=0){seg.style.background=`conic-gradient(var(--accent) 0deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;marker.style.display='none';return;}
+  const secretWidth=blueWidth*0.08,secretStart=blueWidth-secretWidth;
+  seg.style.background=`conic-gradient(var(--accent) 0deg ${secretStart}deg,#f6c94b ${secretStart}deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;
+  const angle=(secretStart+blueWidth)/2*Math.PI/180,radius=Math.max(16,wheel.clientWidth/2-19);
+  marker.style.left=`calc(50% + ${Math.sin(angle)*radius}px)`;
+  marker.style.top=`calc(50% - ${Math.cos(angle)*radius}px)`;marker.style.display='grid';
+}
+function renderWheel(){
+  const seg=document.getElementById('wheelSegments'),pointer=document.getElementById('wheelPointer'),chanceEl=document.getElementById('chanceVal');
+  pointer.classList.remove('fail');const marker=document.getElementById('wheelX2Marker');if(marker)marker.style.display='none';
+  if(!upgradeFromUid||!upgradeToKey){seg.style.background='var(--surface-2)';seg.innerHTML='';chanceEl.textContent='—';chanceEl.classList.remove('fail');return;}
+  const fromItem=inventory.find(i=>i.uid===upgradeFromUid);
+  if(!fromItem||!GIFTS[fromItem.gift]||!GIFTS[upgradeToKey]){seg.style.background='var(--surface-2)';seg.innerHTML='';chanceEl.textContent='—';chanceEl.classList.remove('fail');return;}
+  const chance=calcChance(fromItem.gift,upgradeToKey),pct=(chance*100).toFixed(2);
+  renderUpgradeWheelSecret(chance,false);
+  const x2AppearanceChance=Math.min(0.005,0.00005/chance),x2HitChance=chance*x2AppearanceChance*0.08;
+  chanceEl.innerHTML=`${pct}%<small>шанс успеха · x2 ${(x2HitChance*100).toFixed(5)}%</small>`;
   chanceEl.classList.remove('fail');
 }
 
@@ -3662,7 +3668,8 @@ async function doUpgrade() {
       const demoChance = boostEnabled
         ? (Number.isFinite(configured) ? Math.max(0,Math.min(100,configured))/100 : 0.30)
         : actualChance;
-      result = { chance: actualChance, success: Math.random() < demoChance, demo:true };
+      const demoSuccess=Math.random()<demoChance,x2AppearanceChance=Math.min(0.005,0.00005/actualChance),x2Available=Math.random()<x2AppearanceChance,doubleReward=demoSuccess&&x2Available&&Math.random()<0.08;
+      result = { chance:actualChance,success:demoSuccess,doubleReward,x2Available,x2Chance:actualChance*x2AppearanceChance*0.08,demo:true };
     } else {
       result = await apiRequest('/api/upgrade', {
         method:'POST',
@@ -3677,10 +3684,16 @@ async function doUpgrade() {
     const wheel = document.getElementById('wheel');
     const chanceEl = document.getElementById('chanceVal');
     const spin = ({fast:{ms:2500,turns:5,ease:'cubic-bezier(.2,.7,.25,1)'},classic:{ms:5500,turns:7,ease:'cubic-bezier(.12,.62,.22,1)'},gamble:{ms:8500,turns:12,ease:'cubic-bezier(.08,.72,.12,1)'}})[upgradeSpinMode];
-    const sectorSize = success ? chance * 360 : (1 - chance) * 360;
-    const sectorCenter = success ? chance * 180 : chance * 360 + (1 - chance) * 180;
-    const jitter = (Math.random() - 0.5) * sectorSize * 0.7;
-    const finalRotation = 360 * spin.turns - (sectorCenter + jitter);
+    const x2Available=!!result.x2Available,doubleReward=!!result.doubleReward;
+    renderUpgradeWheelSecret(chance,x2Available);
+    const blueWidth=chance*360,secretWidth=blueWidth*0.08;
+    let sectorCenter,sectorSize;
+    if(success&&x2Available&&doubleReward){sectorCenter=blueWidth-secretWidth/2;sectorSize=secretWidth;}
+    else if(success&&x2Available){sectorCenter=(blueWidth-secretWidth)/2;sectorSize=Math.max(0.05,blueWidth-secretWidth);}
+    else if(success){sectorCenter=blueWidth/2;sectorSize=blueWidth;}
+    else{sectorCenter=blueWidth+(360-blueWidth)/2;sectorSize=360-blueWidth;}
+    const jitter=(Math.random()-0.5)*sectorSize*0.45;
+    const finalRotation=360*spin.turns-(sectorCenter+jitter);
     wheel.style.transition = `transform ${spin.ms}ms ${spin.ease}`;
     wheel.style.transform = `rotate(${finalRotation}deg)`;
     await new Promise(resolve => setTimeout(resolve, spin.ms + 100));
@@ -3691,7 +3704,7 @@ async function doUpgrade() {
     chanceEl.innerHTML = `${(chance * 100).toFixed(2)}%<small>шанс успеха</small>`;
     if (success) {
       haptic('success');
-      toast(result.demo ? `🎬 ДЕМО: ${toGift.name} добавлен в демо-инвентарь` : `Успех! ${fromGift.name} → ${toGift.name}`);
+      toast(result.doubleReward ? (result.demo ? `🎬 ДЕМО x2: получено 2 × ${toGift.name}` : `СЕКРЕТ x2! Получено 2 × ${toGift.name}`) : (result.demo ? `🎬 ДЕМО: ${toGift.name} добавлен в демо-инвентарь` : `Успех! ${fromGift.name} → ${toGift.name}`));
     } else {
       haptic('error');
       toast(result.demo ? '🎬 ДЕМО: апгрейд не удался' : `Неудача. ${fromGift.name} сгорел`, true);
@@ -3701,6 +3714,7 @@ async function doUpgrade() {
       if (success) {
         removeDemoInventoryItem(fromItem.uid);
         addDemoInventoryGift(upgradeToKey);
+        if(result.doubleReward)addDemoInventoryGift(upgradeToKey);
       } else {
         removeDemoInventoryItem(fromItem.uid);
         toast('🎬 ДЕМО: предмет сгорел только в записи. Исходный инвентарь восстановится при выключении режима.', true, 5000);
@@ -3925,11 +3939,11 @@ function renderCrashUI() {
   const status = document.getElementById('crashPreorderStatus');
   const cancel = document.getElementById('crashPreorderCancel');
   if (pending) {
-    status.textContent = myPreorder.type === 'gift' ? 'Подарок зарезервирован для следующего раунда.' : 'Предзаказ на следующий раунд ожидает старта.';
+    status.textContent = myPreorder.type === 'gift' ? 'Подарок закреплён за следующей ставкой.' : 'Ставка на следующий раунд ожидает старта.';
     cancel.style.display = 'block';
   } else {
     status.textContent = myPreorder && myPreorder.status === 'failed'
-      ? (myPreorder.error === 'insufficient_balance' ? 'Предзаказ не прошёл: недостаточно Stars на момент старта.' : 'Предзаказ не удалось активировать.')
+      ? (myPreorder.error === 'insufficient_balance' ? 'Ставка не прошла: недостаточно Stars на момент старта.' : 'Не удалось активировать ставку.')
       : '';
     cancel.style.display = 'none';
   }
@@ -3963,25 +3977,17 @@ function selectCrashGift(uid){
 }
 function closeCrashGiftPicker(){document.getElementById('crashGiftPickerBackdrop')?.classList.remove('show');document.body.classList.remove('upgrade-picker-open')}
 function openCrashStakePicker(){
-  if(myPreorder&&myPreorder.status==='pending')return toast('У вас уже есть предзаказ.',true);
+  if(myPreorder&&myPreorder.status==='pending')return toast('У вас уже есть ставка на следующий раунд.',true);
   const input=document.getElementById('crashStakeAmount');
   if(input)input.value=currencyMode==='TON'?'0.50':'50';
-  setCrashStakeCurrency(currencyMode==='TON'?'TON':'STARS');
+  updateCurrencyCopy();
   document.getElementById('crashStakePickerBackdrop')?.classList.add('show');
   document.body.classList.add('upgrade-picker-open');
 }
 function closeCrashStakePicker(){document.getElementById('crashStakePickerBackdrop')?.classList.remove('show');document.body.classList.remove('upgrade-picker-open')}
-function setCrashStakeCurrency(currency){
-  currencyMode=currency==='TON'?'TON':'STARS';
-  updateCurrencyCopy();
-  document.querySelectorAll('.crash-stake-currency button').forEach(b=>b.classList.toggle('active',b.dataset.currency===currencyMode));
-  const input=document.getElementById('crashStakeAmount'),label=document.getElementById('crashStakeCurrencyLabel');
-  if(input){input.step=currencyMode==='TON'?'0.01':'1';input.min=currencyMode==='TON'?'0.01':'1';}
-  if(label)label.textContent=currencyMode==='TON'?'TON':'Stars';
-}
 async function submitCrashWager(type,payload){
   if(!ageConfirmed)return toast('Сначала подтвердите возраст 18+.',true);
-  if(myPreorder&&myPreorder.status==='pending')return toast('У вас уже есть предзаказ.',true);
+  if(myPreorder&&myPreorder.status==='pending')return toast('У вас уже есть ставка на следующий раунд.',true);
   const isPreorder=round.phase!=='betting'||!!myBet;
   try{
     let result;
@@ -3993,7 +3999,7 @@ async function submitCrashWager(type,payload){
     }
     closeCrashStakePicker();closeCrashGiftPicker();
     haptic('light');
-    toast(isPreorder?'Предзаказ на следующий раунд создан':type==='gift'?'Подарок отправлен в полёт!':'Ставка принята');
+    toast(isPreorder?'Ставка на следующий раунд создана':type==='gift'?'Подарок отправлен в полёт!':'Ставка принята');
     await loadAccount();await syncCrashState();
     return result;
   }catch(error){
@@ -4004,7 +4010,7 @@ async function submitCrashWager(type,payload){
         closeCrashStakePicker();closeCrashGiftPicker();toast('Ставка принята');await loadAccount();await syncCrashState();return;
       }catch(retryError){error=retryError;}
     }
-    const messages={invalid_bet_amount:'Ставка должна быть от 1 до 10000 Stars.',crash_item_not_found:'Подарок уже недоступен в инвентаре.',invalid_crash_item:'Этот подарок нельзя отправить в полёт.',insufficient_balance:'Недостаточно средств на балансе.',preorder_already_exists:'У вас уже есть предзаказ.',round_open_for_bet:'Сейчас открыта ставка на текущий раунд.'};
+    const messages={invalid_bet_amount:'Ставка должна быть от 1 до 10000 Stars.',crash_item_not_found:'Подарок уже недоступен в инвентаре.',invalid_crash_item:'Этот подарок нельзя отправить в полёт.',insufficient_balance:'Недостаточно средств на балансе.',preorder_already_exists:'У вас уже есть ставка на следующий раунд.',round_open_for_bet:'Сейчас открыта ставка на текущий раунд.'};
     toast(messages[error.message]||'Ошибка Crash: '+error.message,true);
     await syncCrashState().catch(()=>{});
   }
@@ -4023,8 +4029,8 @@ async function submitCrashGift(){
 async function cancelCrashPreorder(){
   try{
     await apiRequest('/api/crash/preorder/cancel',{method:'POST',body:'{}'});
-    myPreorder=null;await loadAccount();await syncCrashState();haptic('light');toast('Предзаказ отменён');
-  }catch(error){toast(error.message==='preorder_not_found'?'Предзаказ уже не ожидает старта.':'Не удалось отменить предзаказ.',true);await syncCrashState().catch(()=>{});}
+    myPreorder=null;await loadAccount();await syncCrashState();haptic('light');toast('Ставка отменена');
+  }catch(error){toast(error.message==='preorder_not_found'?'Предзаказ уже не ожидает старта.':'Не удалось отменить ставку.',true);await syncCrashState().catch(()=>{});}
 }
 async function crashAction() {
   if (!ageConfirmed) return toast('Сначала подтвердите возраст 18+.', true);

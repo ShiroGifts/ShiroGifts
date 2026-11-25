@@ -14,6 +14,15 @@ const TONCENTER = 'https://toncenter.com/api/v2/getTransactions';
 function validRawAddress(value) {
   return /^-?\d:[0-9a-f]{64}$/i.test(String(value || ''));
 }
+function normalizeTonAddress(value) {
+  const address = String(value || '').trim();
+  if (/^-?\\d:[0-9a-f]{64}$/i.test(address)) return address.toLowerCase();
+  try {
+    const bytes = Buffer.from(address.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
+    if (bytes.length === 36) return bytes.readInt8(1) + ':' + bytes.subarray(2, 34).toString('hex');
+  } catch (_) {}
+  return address.toLowerCase();
+}
 
 router.get('/ton/config', (_req, res) => {
   if (!WALLET_ADDRESS) return res.status(503).json({ ok: false, error: 'ton_payments_not_configured' });

@@ -3705,7 +3705,8 @@ function renderUpgradeWheelSecret(chance,available){
   const blueWidth=chance*360;
   if(!available||blueWidth<=0){seg.style.background=`conic-gradient(var(--accent) 0deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;marker.style.display='none';return;}
   const secretWidth=Math.min(18,blueWidth),secretStart=(blueWidth-secretWidth)/2,secretEnd=secretStart+secretWidth;
-  seg.style.background=`conic-gradient(var(--accent) 0deg ${secretStart}deg,#f6c94b ${secretStart}deg ${secretEnd}deg,var(--accent) ${secretEnd}deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;
+  // Keep the x2 hit area invisible on the wheel; only its floating marker is shown.
+  seg.style.background=`conic-gradient(var(--accent) 0deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;
   const angle=(secretStart+secretEnd)/2*Math.PI/180,radius=Math.max(16,wheel.clientWidth/2-19);
   marker.style.left=`calc(50% + ${Math.sin(angle)*radius}px)`;
   marker.style.top=`calc(50% - ${Math.cos(angle)*radius}px)`;marker.style.display='grid';

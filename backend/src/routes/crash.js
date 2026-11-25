@@ -216,7 +216,7 @@ router.post('/crash/preorder', async (req,res) => {
   const inventoryId = String(req.body && req.body.inventoryId || '');
   const currency = req.body && req.body.currency === 'TON' ? 'TON' : 'STARS';
   if (type === 'stars' && (!Number.isSafeInteger(amount) || amount < 1 || amount > 10000)) return res.status(400).json({ok:false,error:'invalid_bet_amount'});
-  if (type === 'gift' && !/^\\d+$/.test(inventoryId)) return res.status(400).json({ok:false,error:'invalid_crash_item'});
+  if (type === 'gift' && !/^\d+$/.test(inventoryId)) return res.status(400).json({ok:false,error:'invalid_crash_item'});
   const telegramId = String(req.telegramUser.id), client = await pool.connect();
   try {
     await client.query('BEGIN');

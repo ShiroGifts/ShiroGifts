@@ -61,21 +61,34 @@ async function deliverTelegramGift(telegramId, itemKey, caption) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const giftId = TELEGRAM_GIFT_IDS[itemKey];
   if (!token || !giftId) return { ok:false, error:'telegram_gift_unavailable' };
-  const catalogResponse = await fetch('https://api.telegram.org/bot' + token + '/getAvailableGifts');
+  const base = 'https://api.telegram.org/bot' + token + '/';
+  const catalogResponse = await fetch(base + 'getAvailableGifts');
   const catalog = await catalogResponse.json();
-  if (!catalogResponse.ok || !catalog.ok || !catalog.result?.gifts?.some(g => String(g.id) === giftId)) {
-    return { ok:false, error:'telegram_gift_unavailable' };
+  const availableGift = catalog.result?.gifts?.find(g => String(g.id) === giftId);
+  if (!catalogResponse.ok || !catalog.ok || !availableGift) return { ok:false, error:'telegram_gift_unavailable' };
+  const balanceResponse = await fetch(base + 'getMyStarBalance');
+  const balanceResult = await balanceResponse.json();
+  if (!balanceResponse.ok || !balanceResult.ok || !balanceResult.result) {
+    console.error('[TELEGRAM STAR BALANCE]', balanceResult.description || 'getMyStarBalance failed');
+    return { ok:false, error:'telegram_balance_unavailable' };
   }
-  const response = await fetch('https://api.telegram.org/bot' + token + '/sendGift', {
+  const balance = Number(balanceResult.result.amount || 0);
+  const price = Number(availableGift.star_count || 0);
+  if (balance < price) return { ok:false, error:'insufficient_bot_stars', balance, price };
+  const response = await fetch(base + 'sendGift', {
     method:'POST', headers:{'content-type':'application/json'},
     body:JSON.stringify({ user_id:Number(telegramId), gift_id:giftId, text:caption.slice(0,128) })
   });
   const result = await response.json();
   if (!response.ok || !result.ok) {
-    console.error('[TELEGRAM SEND GIFT]', result.description || 'sendGift failed');
+    const description = String(result.description || '');
+    if (/not enough stars|insufficient stars/i.test(description)) {
+      return { ok:false, error:'insufficient_bot_stars', balance, price };
+    }
+    console.error('[TELEGRAM SEND GIFT]', description || 'sendGift failed');
     return { ok:false, error:'telegram_gift_send_failed' };
   }
-  return { ok:true };
+  return { ok:true, price };
 }
 
 router.post('/inventory/withdraw', async (req, res) => {
@@ -107,12 +120,33 @@ router.post('/inventory/withdraw', async (req, res) => {
     );
     if(Number(recent.rows[0].count)>=3){await client.query('ROLLBACK');return res.status(429).json({ok:false,error:'withdrawal_daily_limit'});}
     if (!isNft) {
-      const sourceType = gift.source_type || 'legacy';
-      let caption = 'Выиграно в ShiroGifts';
-      if (sourceType === 'case') caption = 'Выиграно в кейсе «' + (CASE_CAPTIONS[gift.source_ref] || gift.source_ref || 'ShiroGifts') + '»';
-      else if (sourceType === 'upgrade') caption = 'Выиграно в апгрейде ShiroGifts';
-      else if (sourceType === 'roulette') caption = 'Выиграно в рулетке ShiroGifts';
+      const caption = 'Выиграно в @shirogiftsbot';
+      const delivery = await deliverTelegramGift(telegramId,gift.item_key,caption);
+      if (delivery.error === 'insufficient_bot_stars') {
+        const request = await client.query(
+          `INSERT INTO withdrawal_requests(telegram_id,inventory_id,withdrawal_type,status,admin_note)
+           VALUES($1,$2,'ordinary_gift','pending',$3) RETURNING id,status,created_at`,
+          [telegramId,id,'Недостаточно звёзд на балансе бота для автоматической отправки. Требуется: '+delivery.price+', доступно: '+delivery.balance]
+        );
+        await client.query("UPDATE inventory SET status='withdraw_pending' WHERE id=$1",[id]);
+        await client.query('COMMIT');
+        notifyAdminGift({ telegramId, username: req.telegramUser.username, firstName: req.telegramUser.first_name, itemName: gift.name, source: 'Заявка на вывод: недостаточно звёзд у бота', inventoryId: id }).catch(() => {});
+        return res.json({ok:true,delivered:false,requestId:String(request.rows[0].id),status:request.rows[0].status,type:'ordinary_gift',adminRequired:true});
+      }
+      if (!delivery.ok) {
+        await client.query('ROLLBACK');
+        return res.status(delivery.error==='telegram_gift_unavailable'?409:502).json({ok:false,error:delivery.error});
+      }
       const request = await client.query(
+        `INSERT INTO withdrawal_requests(telegram_id,inventory_id,withdrawal_type,status,admin_note)
+         VALUES($1,$2,'ordinary_gift','sent',$3) RETURNING id`,
+        [telegramId,id,'Автоматически отправлено через Telegram. '+caption]
+      );
+      await client.query("UPDATE inventory SET status='withdrawn' WHERE id=$1",[id]);
+      await client.query('COMMIT');
+      return res.json({ok:true,delivered:true,requestId:String(request.rows[0].id),type:'ordinary_gift'});
+    }
+    const request = await client.query(
         `INSERT INTO withdrawal_requests(telegram_id,inventory_id,withdrawal_type,status,admin_note)
          VALUES($1,$2,'ordinary_gift','pending',$3) RETURNING id,status,created_at`,
         [telegramId,id,'Ожидает ручной отправки. '+caption]

@@ -68,4 +68,30 @@ router.post('/admin/stars/grant', async (req, res) => {
   } finally { client.release(); }
 });
 
+router.get('/admin/settings/gift-notifications', async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ ok: false, error: 'admin_only' });
+  try {
+    const result = await pool.query("SELECT value FROM app_settings WHERE key = 'gift_admin_notifications_enabled'");
+    res.json({ ok: true, enabled: !result.rowCount || result.rows[0].value !== 'false' });
+  } catch (error) {
+    console.error('[ADMIN SETTINGS READ ERROR]', error.code || error.message);
+    res.status(500).json({ ok: false, error: 'settings_read_failed' });
+  }
+});
+
+router.post('/admin/settings/gift-notifications', async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ ok: false, error: 'admin_only' });
+  if (!req.body || typeof req.body.enabled !== 'boolean') return res.status(400).json({ ok: false, error: 'invalid_setting' });
+  try {
+    await pool.query(
+      "INSERT INTO app_settings(key, value, updated_at) VALUES ('gift_admin_notifications_enabled', $1, NOW()) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()",
+      [String(req.body.enabled)]
+    );
+    res.json({ ok: true, enabled: req.body.enabled });
+  } catch (error) {
+    console.error('[ADMIN SETTINGS WRITE ERROR]', error.code || error.message);
+    res.status(500).json({ ok: false, error: 'settings_save_failed' });
+  }
+});
+
 module.exports = router;

@@ -21,7 +21,7 @@ function minesMultiplier(mineCount, safeCount) {
   if (safeCount <= 0) return 1;
   let survival = 1;
   for (let i = 0; i < safeCount; i++) survival *= (25 - mineCount - i) / (25 - i);
-  return Math.floor((0.96 / survival) * 1000000) / 1000000;
+  return Math.floor((0.90 / survival) * 1000000) / 1000000;
 }
 
 function publicGame(row, reveal = false) {

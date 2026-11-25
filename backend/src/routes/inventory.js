@@ -147,6 +147,10 @@ router.post('/inventory/withdraw', async (req, res) => {
         );
         await client.query("UPDATE inventory SET status='withdrawn' WHERE id=$1 AND status='withdraw_pending'",[id]);
         await client.query('COMMIT');
+        notifyAdminGift({
+          telegramId, username:req.telegramUser.username, firstName:req.telegramUser.first_name,
+          itemName:gift.name, source:'Подарок отправлен игроку', inventoryId:id
+        }).catch(() => {});
         return res.json({ok:true,delivered:true,requestId:String(request.rows[0].id),type:'ordinary_gift'});
       }
 

@@ -1523,6 +1523,17 @@ body:has(#page-crash.active){overflow-y:auto!important;overflow-x:hidden!importa
 #page-crash .crash-flight-copy b{font-size:10px!important}#page-crash .crash-flight-copy small{font-size:9px!important;opacity:.75}
 #page-crash .crash-feed-title:nth-of-type(2){margin:4px 2px 3px!important;flex:0 0 auto!important}
 #page-crash .crash-feed{align-self:stretch!important;contain:strict!important}
+
+/* Final Crash layout: normal-size gift rocket, compact selected gift, independently scrollable bets. */
+#page-crash .crash-gift-flight{left:8px!important;right:8px!important;bottom:8px!important;top:auto!important;width:auto!important;max-width:calc(100% - 16px)!important;min-width:0!important;box-sizing:border-box!important;display:none;align-items:center!important;gap:7px!important;padding:5px 8px!important;overflow:hidden!important}
+#page-crash .crash-flight-thumb{width:26px!important;height:26px!important;flex:0 0 26px!important;overflow:hidden!important}
+#page-crash .crash-flight-thumb img{width:auto!important;height:auto!important;max-width:26px!important;max-height:26px!important;object-fit:contain!important}
+#page-crash .crash-flight-copy{display:flex!important;flex-direction:column!important;min-width:0!important;overflow:hidden!important}
+#page-crash .crash-flight-copy b{font-size:10px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#page-crash .crash-feed{flex:0 0 76px!important;height:76px!important;min-height:76px!important;max-height:76px!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important}
+#page-crash .crash-feed .feed-row{flex:0 0 auto!important}
+@media(max-height:740px){#page-crash .crash-feed{flex-basis:60px!important;height:60px!important;min-height:60px!important;max-height:60px!important}}
+
 </style>
 </head>
 <body>
@@ -3265,7 +3276,7 @@ function drawRocket(ctx,u,flame){
     ctx.fillStyle=fire;ctx.beginPath();ctx.ellipse(0,.92*u,.23*u,.65*u,0,0,Math.PI*2);ctx.fill();
   }
   if(crashRocketImage.complete && crashRocketImage.naturalWidth){
-    const h=2.15*u,w=h*crashRocketImage.naturalWidth/crashRocketImage.naturalHeight;
+    const h=1.85*u,w=h*crashRocketImage.naturalWidth/crashRocketImage.naturalHeight;
     ctx.drawImage(crashRocketImage,-w/2,-h/2,w,h);
   }
   ctx.restore();

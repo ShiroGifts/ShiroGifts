@@ -1554,16 +1554,13 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
 <body>
 
 <div class="header">
-  <div class="logo">
-    <div class="logo-icon" data-ic="brand"></div>
-    Shiro<span>Gifts</span>
-  </div>
+  <button class="header-profile" type="button" onclick="switchPage('inventory')" aria-label="Открыть инвентарь">
+    <span class="header-avatar" id="headerAvatar">S</span>
+    <span class="header-name" id="headerName">Игрок</span>
+  </button>
   <div class="header-right">
-    <div class="online-badge">
-      <span class="online-dot"></span>
-      <span id="onlineCount">—</span>
-    </div>
-    <div class="balance"><span class="star" id="balanceCurrencyIcon">⭐</span> <span id="balanceVal">0</span><button id="topupBtn" onclick="topUp()" aria-label="Пополнить баланс" style="margin-left:6px;border:0;border-radius:50%;width:24px;height:24px;background:var(--accent);color:#fff;font-size:19px;font-weight:900;line-height:1;cursor:pointer">+</button><button id="currencyToggle" onclick="toggleCurrency()" aria-label="Сменить валюту" style="margin-left:5px;border:1px solid var(--border);border-radius:10px;padding:5px 8px;background:var(--surface-2);color:var(--text);font-size:11px;font-weight:800;cursor:pointer">TON</button></div>
+    <span id="onlineCount" hidden>—</span>
+    <div class="balance"><span class="star" id="balanceCurrencyIcon">⭐</span> <span id="balanceVal">0</span><button id="topupBtn" onclick="topUp()" aria-label="Пополнить баланс" style="margin-left:6px;border:0;border-radius:50%;width:24px;height:24px;background:var(--accent);color:#fff;font-size:19px;font-weight:900;line-height:1;cursor:pointer">+</button></div>
   </div>
 </div>
 
@@ -1591,6 +1588,7 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
       <div class="profile-username" id="profileUsername">Telegram</div>
       <div class="profile-id" id="profileTelegramId"></div>
     </div>
+    <button id="currencyToggle" class="profile-currency-toggle" type="button" onclick="toggleCurrency()" aria-label="Сменить валюту">TON</button>
   </div>
   <div class="promo-panel profile-reward-panel" id="dailyNameRewardPanel">
     <div class="promo-heading">🎁 Награда за ник · 10 ★</div>
@@ -1691,19 +1689,13 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
   <div class="section-title">Апгрейд подарка</div>
   <div class="upgrade-box">
     <div class="upgrade-row">
-      <div class="upgrade-slot" id="slotFrom">
-        <span class="gift-img">—</span>
-        <span class="label">Выберите предмет</span>
+      <div class="upgrade-slot" id="slotFrom" role="button" tabindex="0" aria-label="Выбрать предмет из инвентаря" onclick="openUpgradePicker('from')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openUpgradePicker('from')}">
+        <span class="gift-img">—</span><span class="label">Выбрать из инвентаря</span>
       </div>
-      <div class="upgrade-arrow">→</div>
-      <div class="upgrade-slot" id="slotTo">
-        <span class="gift-img">—</span>
-        <span class="label">Выберите цель</span>
+      <div class="upgrade-arrow" aria-hidden="true"><svg viewBox="0 0 48 24" width="38" height="22" xmlns="http://www.w3.org/2000/svg"><path d="M2 12h40M32 3l10 9-10 9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="upgrade-slot" id="slotTo" role="button" tabindex="0" aria-label="Выбрать желаемый предмет" onclick="openUpgradePicker('to')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openUpgradePicker('to')}">
+        <span class="gift-img">—</span><span class="label">Выбрать желаемый</span>
       </div>
-    </div>
-    <div class="upgrade-select-actions">
-      <button class="btn-big upgrade-select-btn" type="button" onclick="openUpgradePicker('from')">🎒 Инвентарь <span id="fromSelectedShort">Выбрать предмет</span></button>
-      <button class="btn-big upgrade-select-btn secondary" type="button" onclick="openUpgradePicker('to')">🎯 Желаемое <span id="toSelectedShort">Выбрать цель</span></button>
     </div>
 
     <div class="upgrade-spin-modes" role="group" aria-label="Режим прокрутки">
@@ -1746,10 +1738,12 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
   </div>
 </div>
 
+<div class="page" id="page-mines"></div>
+
 <div class="nav">
   <div class="nav-item active" data-page="cases" onclick="switchPage('cases')"><span class="icon" data-ic="chestN"></span>Кейсы</div>
   <div class="nav-item" data-page="crash" onclick="switchPage('crash')"><span class="icon" data-ic="rocket"></span>Краш</div>
-  <div class="nav-item" data-page="inventory" onclick="switchPage('inventory')"><span class="icon" data-ic="user"></span>Профиль</div>
+  <div class="nav-item" data-page="mines" onclick="switchPage('mines')"><span class="icon">◆</span>Мины</div>
   <div class="nav-item" data-page="promo" onclick="switchPage('promo')"><span class="icon" data-ic="promo"></span>Промокод</div>
   <div class="nav-item" data-page="upgrade" onclick="switchPage('upgrade')"><span class="icon" data-ic="up"></span>Апгрейд</div>
 </div>
@@ -1759,7 +1753,12 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
     <div class="upgrade-picker-head"><b id="upgradePickerTitle">Выберите предмет</b><button type="button" onclick="closeUpgradePicker()">✕</button></div>
     <div class="upgrade-chance-control" id="upgradeChanceControl" style="display:none">
       <div class="upgrade-chance-label"><span>Желаемый шанс</span><b id="upgradeDesiredChanceLabel">30%</b></div>
-      <input id="upgradeDesiredChance" type="range" min="1" max="90" step="0.1" value="30" oninput="setUpgradeDesiredChance(this.value)">
+      <div class="upgrade-chance-presets" role="group" aria-label="Желаемый шанс апгрейда">
+        <button type="button" data-chance="10" onclick="setUpgradeDesiredChance(10)">10%</button>
+        <button type="button" data-chance="30" class="active" onclick="setUpgradeDesiredChance(30)">30%</button>
+        <button type="button" data-chance="50" onclick="setUpgradeDesiredChance(50)">50%</button>
+        <button type="button" data-chance="80" onclick="setUpgradeDesiredChance(80)">80%</button>
+      </div>
       <div class="upgrade-chance-hint" id="upgradeChanceHint">Подберём ближайший подходящий NFT или подарок</div>
     </div>
     <div class="picker-list" id="pickerList"></div>
@@ -2104,20 +2103,23 @@ function renderProfile() {
   const nameEl = document.getElementById('profileName');
   const usernameEl = document.getElementById('profileUsername');
   const idEl = document.getElementById('profileTelegramId');
-  const avatarEl = document.getElementById('profileAvatar');
+  const headerName = document.getElementById('headerName');
   if (nameEl) nameEl.textContent = displayName;
   if (usernameEl) usernameEl.textContent = user.username ? '@' + user.username : 'Профиль Telegram';
   if (idEl) idEl.textContent = user.id ? 'ID: ' + user.id : '';
-  if (avatarEl) {
+  if (headerName) headerName.textContent = user.username ? '@' + user.username : displayName;
+  const initials = displayName.split(' ').filter(Boolean).map(x => x[0]).join('').slice(0,2).toUpperCase() || 'S';
+  ['profileAvatar','headerAvatar'].forEach(id => {
+    const avatarEl = document.getElementById(id);
+    if (!avatarEl) return;
     avatarEl.replaceChildren();
-    const initials = displayName.split(' ').filter(Boolean).map(x => x[0]).join('').slice(0,2).toUpperCase();
     if (user.photo_url) {
       const img = document.createElement('img');
       img.src = user.photo_url; img.alt = ''; img.referrerPolicy = 'no-referrer';
       img.onerror = () => { avatarEl.textContent = initials; };
       avatarEl.appendChild(img);
     } else avatarEl.textContent = initials;
-  }
+  });
 }
 
 async function loadAccount() {
@@ -2546,6 +2548,9 @@ function refreshPepeEasterEggs(pageName) {
   selected.anchor.appendChild(pepe);
 }
 function switchPage(name) {
+  if (document.getElementById('casePreview')?.classList.contains('show')) closeCasePreview();
+  if (document.getElementById('upgradePickerBackdrop')?.classList.contains('show')) closeUpgradePicker();
+  if (document.getElementById('crashGiftPickerBackdrop')?.classList.contains('show')) closeCrashGiftPicker();
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const nextPage = document.getElementById('page-' + name);
   if (nextPage) nextPage.classList.add('active');
@@ -2628,7 +2633,7 @@ function dropMeta(key) {
     return { img: currencyMode === 'TON' ? IC.ton : IC.star, name: `+${money(amount)}`, amount, type: 'stars' };
   }
   const gift = GIFTS[key];
-  return gift ? { img: gift.img, name: gift.name, price: gift.price, type: 'gift' } : { img: '🎁', name: 'Подарок', type: 'gift' };
+  return gift ? { img: gift.img, name: gift.name, price: gift.price, rarity: gift.rarity || 'Подарок', type: 'gift' } : { img: '🎁', name: 'Подарок', type: 'gift', rarity: 'Обычный' };
 }
 
 function shuffled(items) {
@@ -2638,6 +2643,16 @@ function shuffled(items) {
     [out[i], out[j]] = [out[j], out[i]];
   }
   return out;
+}
+function dropRarityInfo(item) {
+  const rarity = String(item?.rarity || '').toLowerCase();
+  if (item?.type === 'nothing') return { cls: 'rarity-empty', label: 'Пусто' };
+  if (rarity.includes('мифич')) return { cls: 'rarity-mythic', label: 'Мифический' };
+  if (rarity.includes('легендар')) return { cls: 'rarity-legendary', label: 'Легендарный' };
+  if (rarity.includes('эпич')) return { cls: 'rarity-epic', label: 'Эпический' };
+  if (rarity.includes('редк')) return { cls: 'rarity-rare', label: 'Редкий' };
+  if (rarity.includes('nft')) return { cls: rarity.includes('джекпот') ? 'rarity-legendary' : 'rarity-nft', label: rarity.includes('джекпот') ? 'Джекпот NFT' : 'NFT' };
+  return { cls: 'rarity-common', label: 'Обычный' };
 }
 function openCase(caseId) {
   if (!ageConfirmed) return toast('Сначала подтвердите возраст 18+.', true);
@@ -2661,8 +2676,9 @@ function openCase(caseId) {
 
   document.getElementById('previewDrops').innerHTML = drops.map(key => {
     const item = dropMeta(key);
-
-    return `<div class="preview-drop"><div class="drop-img">${item.img}</div><div class="drop-name">${item.name}</div>${key === 'plush_pepe_royal' ? '<div class="jackpot-item-label">★ ДЖЕКПОТ ★</div>' : ''}</div>`;
+    const rarity = dropRarityInfo(item);
+    const priceText = item.type === 'nothing' ? '—' : item.type === 'stars' ? '+' + money(item.amount) : money(item.price || 0);
+    return `<div class="preview-drop ${rarity.cls}"><div class="drop-price">${priceText}</div><div class="drop-img">${item.img}</div><div class="drop-name">${item.name}</div><div class="drop-rarity">${rarity.label}</div>${key === 'plush_pepe_royal' ? '<div class="jackpot-item-label">★ ДЖЕКПОТ ★</div>' : ''}</div>`;
   }).join('');
   document.getElementById('casePreview').classList.add('show');
   haptic('light'); playUiSound('preview');
@@ -2942,9 +2958,8 @@ function openUpgradePicker(which) {
     if (fromItem && upgradeToKey && calcChance(fromItem.gift, upgradeToKey) >= 0.000001) {
       upgradeDesiredChance = calcChance(fromItem.gift, upgradeToKey) * 100;
     }
-    const slider = document.getElementById('upgradeDesiredChance');
-    if (slider) slider.value = String(upgradeDesiredChance);
     updateUpgradeChanceLabel();
+    syncUpgradeChanceButtons();
   }
 
   // There is deliberately ONE list node. It is populated for the requested
@@ -3019,6 +3034,7 @@ function updateUpgradeChanceLabel() {
   const hint = document.getElementById('upgradeChanceHint');
   const fromItem = upgradeFromUid ? inventory.find(i => i.uid === upgradeFromUid) : null;
   if (label) label.textContent = upgradeDesiredChance.toFixed(1).replace(/\.0$/,'') + '%';
+  syncUpgradeChanceButtons();
   if (!hint) return;
   if (!fromItem) {
     hint.textContent = 'Сначала выбери предмет, затем подберём ближайшую цель.';
@@ -3029,18 +3045,26 @@ function updateUpgradeChanceLabel() {
     ? 'Ближайшая цель: ' + GIFTS[key].name + ' · ' + (calcChance(fromItem.gift,key)*100).toFixed(2) + '%'
     : 'Для этого предмета пока нет подходящих целей с шансом от 1%.';
 }
+function syncUpgradeChanceButtons() {
+  const presets = [10,30,50,80];
+  const selected = presets.reduce((best,value) =>
+    Math.abs(value-upgradeDesiredChance) < Math.abs(best-upgradeDesiredChance) ? value : best, presets[0]);
+  document.querySelectorAll('#upgradeChanceControl [data-chance]').forEach(button =>
+    button.classList.toggle('active', Number(button.dataset.chance) === selected));
+}
 function setUpgradeDesiredChance(value) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return;
-  upgradeDesiredChance = Math.max(1,Math.min(90,parsed));
+  const preset = Number(value);
+  if (![10,30,50,80].includes(preset)) return;
+  upgradeDesiredChance = preset;
   const fromItem = upgradeFromUid ? inventory.find(i => i.uid === upgradeFromUid) : null;
   if (fromItem) {
     const key = nearestUpgradeTarget(fromItem,upgradeDesiredChance);
     upgradeToKey = key;
-    renderToPicker();
+    if (document.getElementById('upgradePickerBackdrop')?.classList.contains('show')) renderToPicker();
     renderUpgrade();
   }
   updateUpgradeChanceLabel();
+  syncUpgradeChanceButtons();
 }
 function renderToPicker() {
   const wrap = document.getElementById('pickerList');
@@ -3111,11 +3135,11 @@ function updateUpgradeSlots() {
   const fromGift = fromItem ? GIFTS[fromItem.gift] : null;
   const toGift = upgradeToKey ? GIFTS[upgradeToKey] : null;
   document.getElementById('slotFrom').innerHTML = fromGift
-    ? `<span class="gift-img">${fromGift.img}</span><span class="label">${fromGift.name} ${money(fromGift.price)}</span>`
-    : `<span class="gift-img">—</span><span class="label">Выберите предмет</span>`;
+    ? `<span class="gift-img">${fromGift.img}</span><span class="label">${fromGift.name} · ${money(fromGift.price)}</span>`
+    : `<span class="gift-img">＋</span><span class="label">Выбрать из инвентаря</span>`;
   document.getElementById('slotTo').innerHTML = toGift
-    ? `<span class="gift-img">${toGift.img}</span><span class="label">${toGift.name} ${money(toGift.price)}</span>`
-    : `<span class="gift-img">—</span><span class="label">Выберите цель</span>`;
+    ? `<span class="gift-img">${toGift.img}</span><span class="label">${toGift.name} · ${money(toGift.price)}</span>`
+    : `<span class="gift-img">＋</span><span class="label">Выбрать желаемый</span>`;
 }
 
 function renderWheel() {
@@ -4141,5 +4165,159 @@ button:not(.nav-item):focus-visible{
     border-color:rgba(225,237,255,.32)!important;
     background-color:rgba(255,255,255,.07)!important;
   }
+}
+</style>
+
+
+<style>
+/* SHIRO GLASS LAYOUT — fixed identity, safe scrolling and compact navigation */
+body{padding-bottom:calc(112px + env(safe-area-inset-bottom))!important;overflow-x:hidden}
+.header{
+  position:sticky!important;top:0!important;z-index:120!important;
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:8px!important;padding:calc(env(safe-area-inset-top) + 7px) 12px 8px!important;
+  background:rgba(17,27,54,.43)!important;
+  border-bottom:1px solid rgba(226,237,255,.12)!important;
+  -webkit-backdrop-filter:blur(26px) saturate(175%)!important;
+  backdrop-filter:blur(26px) saturate(175%)!important;
+  box-shadow:0 7px 22px rgba(0,0,0,.10)!important;
+}
+.header-profile{
+  display:flex!important;align-items:center!important;gap:8px!important;min-width:0!important;
+  max-width:55%!important;padding:3px 8px 3px 3px!important;border-radius:999px!important;
+  border:1px solid rgba(255,255,255,.15)!important;
+  background:rgba(255,255,255,.075)!important;color:var(--text)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14)!important;
+}
+.header-avatar{
+  width:32px;height:32px;flex:0 0 32px;border-radius:50%;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,#8c79ff,#4c3e9c);
+  border:1px solid rgba(255,255,255,.35);color:#fff;font-size:12px;font-weight:900;
+}
+.header-avatar img{width:100%;height:100%;object-fit:cover}
+.header-name{min-width:0;max-width:145px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:850}
+.header-right{display:flex!important;align-items:center!important;gap:5px!important;min-width:0}
+.header .balance{
+  padding:4px 6px!important;gap:4px!important;min-height:32px!important;
+  border:1px solid rgba(255,255,255,.16)!important;border-radius:999px!important;
+  background:rgba(255,255,255,.09)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12)!important;
+  -webkit-backdrop-filter:blur(16px)!important;backdrop-filter:blur(16px)!important;
+  font-size:12px!important;white-space:nowrap
+}
+.header .balance #topupBtn{width:22px!important;height:22px!important;flex:0 0 22px!important;margin:0 0 0 2px!important}
+.header #currencyToggle{display:none!important}
+.page{padding-bottom:calc(112px + env(safe-area-inset-bottom))!important;scroll-margin-top:70px}
+.nav{z-index:130!important;bottom:calc(8px + env(safe-area-inset-bottom))!important}
+#page-inventory .profile-hero{
+  align-items:center!important;gap:10px!important;padding:11px!important;
+  border:1px solid rgba(255,255,255,.16)!important;border-radius:18px!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.045))!important;
+  -webkit-backdrop-filter:blur(20px) saturate(155%)!important;backdrop-filter:blur(20px) saturate(155%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 8px 22px rgba(0,0,0,.14)!important;
+}
+#page-inventory .profile-avatar{width:46px!important;height:46px!important;flex:0 0 46px!important;font-size:16px!important}
+#page-inventory .profile-identity{flex:1 1 auto!important;min-width:0!important}
+#page-inventory .profile-name{font-size:13px!important;line-height:1.15!important}
+#page-inventory .profile-username{font-size:10px!important;margin-top:2px!important}
+#page-inventory .profile-id{font-size:9px!important;margin-top:1px!important}
+.profile-currency-toggle{
+  flex:0 0 auto!important;min-width:48px!important;height:36px!important;padding:0 10px!important;
+  border-radius:12px!important;font-size:11px!important;font-weight:900!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.2),rgba(255,255,255,.07))!important;
+  border-color:rgba(255,255,255,.24)!important;
+}
+#page-mines{min-height:40vh}
+#casePreview{z-index:80!important;padding-top:calc(66px + env(safe-area-inset-top))!important}
+#casePreview .case-preview-top{
+  position:sticky!important;top:calc(56px + env(safe-area-inset-top))!important;z-index:8!important;
+  min-height:46px!important;margin:0 -4px 5px!important;padding:5px 4px!important;
+  border:1px solid rgba(255,255,255,.14)!important;border-radius:16px!important;
+  background:rgba(19,29,55,.52)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(160%)!important;backdrop-filter:blur(22px) saturate(160%)!important;
+}
+#casePreview .case-back{flex:0 0 42px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.18)!important}
+#casePreview .case-preview-title{font-size:15px!important;text-align:center!important;min-width:0}
+#casePreview .case-preview-art{height:clamp(112px,25vh,170px)!important;margin:2px auto 0!important}
+#casePreview .case-preview-art img{width:clamp(118px,34vw,160px)!important;height:clamp(118px,34vw,160px)!important}
+#casePreview .case-preview-price{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  min-height:30px!important;padding:5px 14px!important;margin:0 auto 10px!important;
+  border:1px solid rgba(255,218,126,.3)!important;border-radius:999px!important;
+  background:linear-gradient(145deg,rgba(255,211,111,.18),rgba(255,255,255,.045))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 4px 12px rgba(0,0,0,.12)!important;
+  font-size:14px!important;font-weight:900!important
+}
+#casePreview .case-preview-drops-title{font-size:14px!important;margin:8px 0 9px!important}
+#casePreview .case-preview-drops{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important;padding-bottom:calc(28px + env(safe-area-inset-bottom))!important}
+#casePreview .preview-drop{
+  min-width:0!important;min-height:104px!important;height:auto!important;padding:7px 4px 6px!important;
+  gap:4px!important;border-radius:13px!important;
+  background:linear-gradient(145deg,var(--drop-tint,rgba(100,160,255,.19)),rgba(255,255,255,.035) 72%)!important;
+  border:1px solid var(--drop-border,rgba(130,180,255,.42))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 4px 12px rgba(0,0,0,.12)!important;
+}
+#casePreview .preview-drop .drop-price{
+  align-self:center;max-width:100%;font-size:10px;line-height:1.1;font-weight:900;
+  color:var(--drop-color,#b9d8ff);white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+#casePreview .preview-drop .drop-img{height:36px!important;max-width:100%;display:flex;align-items:center;justify-content:center;font-size:30px!important;line-height:1!important}
+#casePreview .preview-drop .drop-img img,#casePreview .preview-drop .drop-img svg{width:34px!important;height:34px!important;max-width:100%!important;object-fit:contain!important}
+#casePreview .preview-drop .drop-name{width:100%;font-size:9px!important;line-height:1.15!important;color:#f3f6ff!important;overflow-wrap:anywhere}
+#casePreview .preview-drop .drop-rarity{font-size:8px;line-height:1.1;font-weight:850;letter-spacing:.15px;color:var(--drop-color,#b9d8ff);opacity:.95}
+#casePreview .preview-drop.rarity-common{--drop-tint:rgba(54,143,255,.2);--drop-border:rgba(80,164,255,.55);--drop-color:#8ec9ff}
+#casePreview .preview-drop.rarity-rare{--drop-tint:rgba(43,205,255,.17);--drop-border:rgba(75,214,255,.48);--drop-color:#7be4ff}
+#casePreview .preview-drop.rarity-epic{--drop-tint:rgba(166,99,255,.2);--drop-border:rgba(186,128,255,.52);--drop-color:#d0a6ff}
+#casePreview .preview-drop.rarity-legendary{--drop-tint:rgba(255,190,54,.2);--drop-border:rgba(255,205,90,.58);--drop-color:#ffdc83}
+#casePreview .preview-drop.rarity-mythic{--drop-tint:rgba(255,57,88,.2);--drop-border:rgba(255,92,112,.58);--drop-color:#ff899b}
+#casePreview .preview-drop.rarity-nft{--drop-tint:rgba(192,127,255,.19);--drop-border:rgba(202,151,255,.5);--drop-color:#e0baff}
+#casePreview .preview-drop.rarity-empty{--drop-tint:rgba(160,174,198,.1);--drop-border:rgba(160,174,198,.25);--drop-color:#b7c1d2}
+#page-upgrade .upgrade-select-actions{display:none!important}
+#page-upgrade .upgrade-row{gap:9px!important;margin-bottom:8px!important}
+#page-upgrade .upgrade-slot{
+  cursor:pointer!important;min-width:0!important;flex:1 1 0!important;
+  border:1px solid rgba(220,235,255,.22)!important;border-radius:17px!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.15),rgba(255,255,255,.045))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 6px 16px rgba(0,0,0,.13)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(155%)!important;backdrop-filter:blur(18px) saturate(155%)!important;
+  transition:border-color .18s,transform .18s,background .18s!important
+}
+#page-upgrade .upgrade-slot:active{transform:scale(.975)!important;border-color:rgba(170,207,255,.6)!important}
+#page-upgrade .upgrade-slot:focus-visible{outline:2px solid rgba(151,190,255,.8);outline-offset:2px}
+#page-upgrade .upgrade-slot .gift-img{max-width:100%;overflow:hidden}
+#page-upgrade .upgrade-slot .gift-img img,#page-upgrade .upgrade-slot .gift-img svg{max-width:54px;max-height:54px;object-fit:contain}
+#page-upgrade .upgrade-arrow{display:flex;align-items:center;justify-content:center;flex:0 0 34px;color:#a9c8ff!important;font-size:0!important;filter:drop-shadow(0 2px 6px rgba(100,160,255,.35))}
+#page-upgrade .upgrade-arrow svg{display:block;width:34px;height:20px}
+#page-upgrade .upgrade-chance-presets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:9px 0 7px}
+#page-upgrade .upgrade-chance-presets button{
+  min-width:0;min-height:36px;padding:6px 3px!important;border-radius:11px!important;
+  font-size:12px!important;font-weight:900!important
+}
+#page-upgrade .upgrade-chance-presets button.active{
+  color:#fff!important;border-color:rgba(190,205,255,.5)!important;
+  background:linear-gradient(145deg,rgba(160,145,255,.42),rgba(87,92,205,.25))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 4px 12px rgba(112,100,230,.2)!important
+}
+#page-upgrade .upgrade-chance-control{background:linear-gradient(145deg,rgba(255,255,255,.1),rgba(255,255,255,.035))!important;border-color:rgba(255,255,255,.16)!important}
+#page-upgrade .wheel-wrap{
+  width:clamp(220px,68vw,285px)!important;height:clamp(220px,68vw,285px)!important;
+  margin:5px auto!important;flex:0 0 auto!important
+}
+#page-upgrade .wheel{width:100%!important;height:100%!important}
+#page-upgrade .wheel-center{width:56px!important;height:56px!important}
+@media(max-height:760px){
+  #page-upgrade .wheel-wrap{width:clamp(195px,59vw,245px)!important;height:clamp(195px,59vw,245px)!important}
+}
+@media(max-height:640px){
+  #page-upgrade .wheel-wrap{width:clamp(168px,51vw,205px)!important;height:clamp(168px,51vw,205px)!important}
+}
+@media(max-width:360px){
+  .header-name{max-width:105px}
+  .header-profile{max-width:52%!important}
+  #casePreview .case-preview-drops{gap:5px!important}
+  #casePreview .preview-drop{min-height:98px!important;padding:6px 3px!important}
+  #casePreview .preview-drop .drop-name{font-size:8px!important}
+  #page-upgrade .wheel-wrap{width:clamp(190px,61vw,230px)!important;height:clamp(190px,61vw,230px)!important}
 }
 </style>

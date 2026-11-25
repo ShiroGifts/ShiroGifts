@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS withdrawal_requests (
   id BIGSERIAL PRIMARY KEY,
   telegram_id BIGINT NOT NULL REFERENCES users(telegram_id),
   withdrawal_type TEXT NOT NULL CHECK (withdrawal_type IN ('ordinary_gift','random_nft')),
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','sent','rejected')),
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','processing','approved','sent','rejected')),
   admin_note TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()

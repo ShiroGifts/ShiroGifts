@@ -132,6 +132,8 @@ async function migrate() {
     -- Ledger entry types evolve with app features; avoid blocking startup on historical valid entries.
     ALTER TABLE wallet_ledger DROP CONSTRAINT IF EXISTS wallet_ledger_entry_type_check;
     CREATE INDEX IF NOT EXISTS crash_rounds_status_idx ON crash_rounds(status, id DESC);
+    ALTER TABLE crash_bets ADD COLUMN IF NOT EXISTS source_inventory_id BIGINT REFERENCES inventory(id);
+    ALTER TABLE crash_bets ADD COLUMN IF NOT EXISTS cashout_inventory_id BIGINT REFERENCES inventory(id);
     CREATE INDEX IF NOT EXISTS crash_bets_round_idx ON crash_bets(round_id, created_at DESC);
 
     CREATE TABLE IF NOT EXISTS promo_codes (

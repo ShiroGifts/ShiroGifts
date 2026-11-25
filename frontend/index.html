@@ -3452,7 +3452,7 @@ async function crashAction() {
       const enteredAmount = Number(String(document.getElementById('crashBet').value).replace(',', '.'));
       const amount = currencyMode === 'TON' ? Math.round(enteredAmount * STARS_PER_TON) : Number.parseInt(document.getElementById('crashBet').value, 10);
       if (!Number.isFinite(enteredAmount) || !Number.isSafeInteger(amount) || amount < 1 || amount > 10000 || (currencyMode === 'TON' && Math.abs(enteredAmount - amount / STARS_PER_TON) > 0.000001)) return toast('Ставка минимум 1 Star (0,01 TON).', true);
-      await apiRequest('/api/crash/bet', { method:'POST', body:JSON.stringify({ amount }) });
+      await apiRequest('/api/crash/bet', { method:'POST', body:JSON.stringify({ amount, currency:currencyMode }) });
       haptic('light'); toast('Ставка принята');
       }
     } else if (round.phase === 'flying' && myBet && myBet.cashed === null) {
@@ -3540,14 +3540,16 @@ function feedCheckEmpty() {
 }
 
 // Имена — через textContent (никакого innerHTML с данными игроков: защита от XSS)
-function addFeedRow({ betId, name, avatar, bet, isYou }) {
+function addFeedRow({ betId, name, avatar, betLabel, wagerType, isYou }) {
   const feed = document.getElementById('crashFeed');
   const row = document.createElement('div');
   row.className = 'feed-row';
   const mk = (cls, text) => { const e = document.createElement('span'); e.className = cls; e.textContent = text; return e; };
+  const kind = wagerType === 'NFT' ? '🎁 NFT' : wagerType === 'TON' ? '💎 TON' : '⭐ Stars';
   row.append(mk('f-avatar', isYou ? '👤' : (avatar || '👤')),
              mk('f-name', name || 'Аноним'),
-             mk('f-bet', money(bet)),
+             mk('f-bet', betLabel || '—'),
+             mk('f-kind', kind),
              mk('f-result', 'в игре...'));
   row.lastChild.style.color = 'var(--text-dim)';
   feedRows[betId] = row;
@@ -3599,7 +3601,13 @@ async function syncCrashState() {
     renderHistory();
     (data.bets || []).forEach(b => {
       const id = String(b.id), isYou = !!myBet && id === String(myBet.id);
-      if (!feedRows[id]) addFeedRow({betId:id,name:isYou?'Вы':b.name,bet:b.bet,isYou});
+      if (!feedRows[id]) {
+        const wagerType = b.wagerType === 'NFT' ? 'NFT' : b.wagerType === 'TON' ? 'TON' : 'STARS';
+        const betLabel = wagerType === 'NFT' ? fmt(b.bet) + ' Stars' : wagerType === 'TON'
+          ? (Number(b.bet) / STARS_PER_TON).toLocaleString('ru-RU', { maximumFractionDigits: 2 }) + ' TON'
+          : fmt(b.bet) + ' Stars';
+        addFeedRow({betId:id,name:isYou?'Вы':b.name,betLabel,wagerType,isYou});
+      }
       if (b.mult !== null && b.mult !== undefined) setFeedResult(id,Number(b.mult),Number(b.win)||0,false);
       else if (b.crashed) setFeedResult(id,Number(incoming.crashMult)||1,0,true);
       if (isYou) feedYouRowId = id;
@@ -3943,3 +3951,9 @@ window.addEventListener('resize', () => {
 </script>
 </body>
 </html>
+
+<style>
+/* Crash wager type marker */
+#crashFeed .f-kind{flex:0 0 auto;padding:3px 6px;border-radius:7px;background:rgba(118,151,210,.14);border:1px solid rgba(135,170,230,.2);color:#c9dcff;font-size:9px;font-weight:900;letter-spacing:.2px;white-space:nowrap}
+#crashFeed .f-bet{white-space:nowrap}
+</style>

@@ -2387,8 +2387,10 @@ function askWithdraw(uid) {
       if (result.delivered) toast('Подарок отправлен вам в Telegram!');
       else if (result.adminRequired) toast('Не удалось отправить автоматически. Заявка передана владельцу.');
       else toast('Заявка на вывод NFT отправлена владельцу.');
-    } catch(error) { toast(error.message === 'referrals_required' ? 'Для вывода NFT нужно 5 приглашённых пользователей.' : error.message, true); }
-    finally { hideLoader(); }
+    } catch(error) {
+      await loadAccount();
+      toast(error.message === 'referrals_required' ? 'Для вывода NFT нужно 5 приглашённых пользователей.' : error.message, true);
+    } finally { hideLoader(); }
   };
 }
 

@@ -35,7 +35,7 @@ async function migrate() {
     ALTER TABLE inventory ADD COLUMN IF NOT EXISTS source_ref TEXT;
 
     ALTER TABLE inventory DROP CONSTRAINT IF EXISTS inventory_status_check;
-    ALTER TABLE inventory ADD CONSTRAINT inventory_status_check CHECK (status IN ('owned','sold','withdrawn','upgraded','burned','withdraw_pending'));
+    ALTER TABLE inventory ADD CONSTRAINT inventory_status_check CHECK (status IN ('owned','sold','withdrawn','upgraded','burned','withdraw_pending','crash_locked'));
     ALTER TABLE withdrawal_requests ADD COLUMN IF NOT EXISTS inventory_id BIGINT REFERENCES inventory(id);
     ALTER TABLE withdrawal_requests DROP CONSTRAINT IF EXISTS withdrawal_requests_status_check;
     ALTER TABLE withdrawal_requests ADD CONSTRAINT withdrawal_requests_status_check

@@ -37,7 +37,11 @@ async function migrate() {
     ALTER TABLE inventory DROP CONSTRAINT IF EXISTS inventory_status_check;
     ALTER TABLE inventory ADD CONSTRAINT inventory_status_check CHECK (status IN ('owned','sold','withdrawn','upgraded','burned','withdraw_pending'));
     ALTER TABLE withdrawal_requests ADD COLUMN IF NOT EXISTS inventory_id BIGINT REFERENCES inventory(id);
-    CREATE UNIQUE INDEX IF NOT EXISTS withdrawal_one_pending_per_item ON withdrawal_requests(inventory_id) WHERE status = 'pending' AND inventory_id IS NOT NULL;
+    ALTER TABLE withdrawal_requests DROP CONSTRAINT IF EXISTS withdrawal_requests_status_check;
+    ALTER TABLE withdrawal_requests ADD CONSTRAINT withdrawal_requests_status_check
+      CHECK (status IN ('pending','processing','approved','sent','rejected'));
+    DROP INDEX IF EXISTS withdrawal_one_pending_per_item;
+    CREATE UNIQUE INDEX withdrawal_one_pending_per_item ON withdrawal_requests(inventory_id) WHERE status IN ('pending','processing','approved') AND inventory_id IS NOT NULL;
 
     CREATE TABLE IF NOT EXISTS pending_star_invoices (
       payload TEXT PRIMARY KEY,

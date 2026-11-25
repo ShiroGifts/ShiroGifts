@@ -60,8 +60,8 @@ router.post('/upgrade', async (req, res) => {
     const success = randomInt(0, 1000000) < Math.round(chance * 1000000);
     // The secret x2 marker appears rarely, with appearance probability inversely proportional to the base win chance.
     // It occupies 8% of the winning sector; the server decides whether the spin lands on it.
-    const x2SectorShare = 0.08;
-    const x2AppearanceChance = Math.min(0.005, 0.00005 / chance);
+    const x2SectorShare = 0.008;
+    const x2AppearanceChance = Math.min(0.05, 0.0005 / chance);
     const x2Available = randomInt(0, 1000000) < Math.round(x2AppearanceChance * 1000000);
     const doubleReward = success && x2Available && randomInt(0, 1000000) < Math.round(x2SectorShare * 1000000);
     const x2Chance = chance * x2AppearanceChance * x2SectorShare;

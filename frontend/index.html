@@ -1534,6 +1534,14 @@ body:has(#page-crash.active){overflow-x:hidden!important;overflow-y:auto!importa
 #page-crash .crash-feed .feed-row{flex:0 0 auto!important}
 @media(max-height:740px){#page-crash .crash-feed{flex-basis:60px!important;height:60px!important;min-height:60px!important;max-height:60px!important}}
 
+
+/* Crash: keep document scrolling after switching from a long page; bets scroll inside their own list. */
+body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;min-height:100%!important;overflow-y:auto!important;overflow-x:hidden!important;touch-action:pan-y!important}
+#page-crash.active{height:auto!important;max-height:none!important;overflow:visible!important;touch-action:pan-y!important}
+#page-crash .crash-box{overflow:visible!important;contain:none!important}
+#page-crash .crash-feed{display:flex!important;flex:0 0 auto!important;height:auto!important;min-height:0!important;max-height:150px!important;overflow-x:hidden!important;overflow-y:auto!important;contain:layout paint!important;overscroll-behavior:contain!important;touch-action:pan-y!important;-webkit-overflow-scrolling:touch!important}
+#page-crash .crash-feed .feed-row{flex:0 0 auto!important}
+@media(max-height:740px){#page-crash .crash-feed{max-height:120px!important}}
 </style>
 </head>
 <body>
@@ -2526,7 +2534,10 @@ function switchPage(name) {
   if (nextPage) nextPage.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === name));
   requestAnimationFrame(() => {
-    window.scrollTo({top:0,left:0,behavior:'instant'});
+    document.body.style.overflowY = 'auto';
+    document.body.style.overflowX = 'hidden';
+    document.documentElement.style.overflowY = 'auto';
+    window.scrollTo(0,0);
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
     if (nextPage) nextPage.scrollTop = 0;
@@ -3322,7 +3333,7 @@ function drawCrash() {
   ctx.globalAlpha = 1;
   {
     const th = crashHeading(t), bob = crashState === 'flying' ? Math.sin(performance.now() / 160) * 2 * k : 0;
-    ctx.save(); ctx.translate(cx,cy+bob);ctx.rotate(th+Math.PI/2);drawRocket(ctx,23*k,crashState==='flying');ctx.restore();
+    ctx.save(); ctx.translate(cx,cy+bob);ctx.rotate(th+Math.PI/4);drawRocket(ctx,23*k,crashState==='flying');ctx.restore();
   }
 }
 

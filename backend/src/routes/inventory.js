@@ -115,36 +115,55 @@ router.post('/inventory/withdraw', async (req, res) => {
     }
     const recent = await client.query(
       `SELECT COUNT(*)::int AS count FROM withdrawal_requests
-       WHERE telegram_id=$1 AND created_at>NOW()-INTERVAL '24 hours' AND status IN ('pending','approved','sent')`,
+       WHERE telegram_id=$1 AND created_at>NOW()-INTERVAL '24 hours' AND status IN ('pending','processing','approved','sent')`,
       [telegramId]
     );
     if(Number(recent.rows[0].count)>=3){await client.query('ROLLBACK');return res.status(429).json({ok:false,error:'withdrawal_daily_limit'});}
     if (!isNft) {
-      const caption = 'Выиграно в @shirogiftsbot';
-      const delivery = await deliverTelegramGift(telegramId,gift.item_key,caption);
-      if (delivery.error === 'insufficient_bot_stars') {
-        const request = await client.query(
-          `INSERT INTO withdrawal_requests(telegram_id,inventory_id,withdrawal_type,status,admin_note)
-           VALUES($1,$2,'ordinary_gift','pending',$3) RETURNING id,status,created_at`,
-          [telegramId,id,'Недостаточно звёзд на балансе бота для автоматической отправки. Требуется: '+delivery.price+', доступно: '+delivery.balance]
-        );
-        await client.query("UPDATE inventory SET status='withdraw_pending' WHERE id=$1",[id]);
-        await client.query('COMMIT');
-        notifyAdminGift({ telegramId, username: req.telegramUser.username, firstName: req.telegramUser.first_name, itemName: gift.name, source: 'Заявка на вывод: недостаточно звёзд у бота', inventoryId: id }).catch(() => {});
-        return res.json({ok:true,delivered:false,requestId:String(request.rows[0].id),status:request.rows[0].status,type:'ordinary_gift',adminRequired:true});
-      }
-      if (!delivery.ok) {
-        await client.query('ROLLBACK');
-        return res.status(delivery.error==='telegram_gift_unavailable'?409:502).json({ok:false,error:delivery.error});
-      }
+      // Commit the reservation before calling Telegram. Never hold a DB transaction open
+      // across an external API call, and keep a recoverable processing row if the process stops.
       const request = await client.query(
         `INSERT INTO withdrawal_requests(telegram_id,inventory_id,withdrawal_type,status,admin_note)
-         VALUES($1,$2,'ordinary_gift','sent',$3) RETURNING id`,
-        [telegramId,id,'Автоматически отправлено через Telegram. '+caption]
+         VALUES($1,$2,'ordinary_gift','processing','Автоматическая отправка через Telegram начата') RETURNING id,status,created_at`,
+        [telegramId,id]
       );
-      await client.query("UPDATE inventory SET status='withdrawn' WHERE id=$1",[id]);
+      await client.query("UPDATE inventory SET status='withdraw_pending' WHERE id=$1",[id]);
       await client.query('COMMIT');
-      return res.json({ok:true,delivered:true,requestId:String(request.rows[0].id),type:'ordinary_gift'});
+
+      const caption = 'Выиграно в @shirogiftsbot';
+      const delivery = await deliverTelegramGift(telegramId,gift.item_key,caption);
+      if (delivery.ok) {
+        await client.query('BEGIN');
+        await client.query(
+          "UPDATE withdrawal_requests SET status='sent', updated_at=NOW(), admin_note=$2 WHERE id=$1 AND status='processing'",
+          [request.rows[0].id,'Автоматически отправлено через Telegram. '+caption]
+        );
+        await client.query("UPDATE inventory SET status='withdrawn' WHERE id=$1 AND status='withdraw_pending'",[id]);
+        await client.query('COMMIT');
+        return res.json({ok:true,delivered:true,requestId:String(request.rows[0].id),type:'ordinary_gift'});
+      }
+
+      const detail = delivery.error === 'insufficient_bot_stars'
+        ? 'Недостаточно звёзд на балансе бота для автоматической отправки. Требуется: '+delivery.price+', доступно: '+delivery.balance
+        : 'Автоматическая отправка не завершилась ('+String(delivery.error || 'unknown_error')+'). Требуется ручная проверка.';
+      await client.query('BEGIN');
+      await client.query(
+        "UPDATE withdrawal_requests SET status='pending', updated_at=NOW(), admin_note=$2 WHERE id=$1 AND status='processing'",
+        [request.rows[0].id,detail]
+      );
+      await client.query('COMMIT');
+      notifyAdminGift({
+        telegramId, username:req.telegramUser.username, firstName:req.telegramUser.first_name,
+        itemName:gift.name,
+        source:delivery.error === 'insufficient_bot_stars'
+          ? 'Заявка на вывод: недостаточно звёзд у бота'
+          : 'Заявка на вывод: требуется ручная проверка отправки',
+        inventoryId:id
+      }).catch(() => {});
+      return res.json({
+        ok:true,delivered:false,requestId:String(request.rows[0].id),
+        status:'pending',type:'ordinary_gift',adminRequired:true
+      });
     }
     const request = await client.query(
       `INSERT INTO withdrawal_requests(telegram_id,inventory_id,withdrawal_type)
@@ -165,10 +184,10 @@ router.post('/inventory/withdraw', async (req, res) => {
 router.get('/admin/withdrawals', async (req, res) => {
   if (!isAdmin(req)) return res.status(403).json({ ok: false, error: 'admin_only' });
   const rows = await pool.query(
-    `SELECT wr.id, wr.telegram_id, wr.withdrawal_type, wr.status, wr.created_at,
+    `SELECT wr.id, wr.telegram_id, wr.withdrawal_type, wr.status, wr.admin_note, wr.created_at,
             i.item_key, i.name, i.value_stars
      FROM withdrawal_requests wr LEFT JOIN inventory i ON i.id = wr.inventory_id
-     WHERE wr.status IN ('pending','approved') ORDER BY wr.created_at ASC LIMIT 100`
+     WHERE wr.status IN ('pending','processing','approved') ORDER BY wr.created_at ASC LIMIT 100`
   );
   res.json({ ok: true, requests: rows.rows });
 });
@@ -181,7 +200,7 @@ router.post('/admin/withdrawals/:id/resolve', async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    const request = await client.query("SELECT id, inventory_id FROM withdrawal_requests WHERE id = $1 AND status = 'pending' FOR UPDATE", [id]);
+    const request = await client.query("SELECT id, inventory_id FROM withdrawal_requests WHERE id = $1 AND status IN ('pending','processing') FOR UPDATE", [id]);
     if (!request.rowCount) { await client.query('ROLLBACK'); return res.status(404).json({ ok: false, error: 'pending_request_not_found' }); }
     await client.query('UPDATE withdrawal_requests SET status = $2, updated_at = NOW(), admin_note = $3 WHERE id = $1', [id, action, String(req.body.note || '').slice(0,500)]);
     if (request.rows[0].inventory_id) {

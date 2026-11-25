@@ -187,7 +187,7 @@ router.get('/admin/withdrawals', async (req, res) => {
     `SELECT wr.id, wr.telegram_id, wr.withdrawal_type, wr.status, wr.admin_note, wr.created_at,
             i.item_key, i.name, i.value_stars
      FROM withdrawal_requests wr LEFT JOIN inventory i ON i.id = wr.inventory_id
-     WHERE wr.status IN ('pending','processing','approved') ORDER BY wr.created_at ASC LIMIT 100`
+     WHERE wr.status IN ('pending','approved') OR (wr.status = 'processing' AND wr.created_at < NOW() - INTERVAL '10 minutes') ORDER BY wr.created_at ASC LIMIT 100`
   );
   res.json({ ok: true, requests: rows.rows });
 });
@@ -200,7 +200,7 @@ router.post('/admin/withdrawals/:id/resolve', async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    const request = await client.query("SELECT id, inventory_id FROM withdrawal_requests WHERE id = $1 AND status IN ('pending','processing') FOR UPDATE", [id]);
+    const request = await client.query("SELECT id, inventory_id FROM withdrawal_requests WHERE id = $1 AND (status IN ('pending','approved') OR (status = 'processing' AND created_at < NOW() - INTERVAL '10 minutes')) FOR UPDATE", [id]);
     if (!request.rowCount) { await client.query('ROLLBACK'); return res.status(404).json({ ok: false, error: 'pending_request_not_found' }); }
     await client.query('UPDATE withdrawal_requests SET status = $2, updated_at = NOW(), admin_note = $3 WHERE id = $1', [id, action, String(req.body.note || '').slice(0,500)]);
     if (request.rows[0].inventory_id) {

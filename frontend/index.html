@@ -1787,11 +1787,17 @@ async function loadAccount() {
     renderRef();
     renderProfile();
     document.getElementById('ageGate').classList.toggle('show', !ageConfirmed);
-    inventory = (data.inventory || []).map(item => ({
+    const serverInventory = (data.inventory || []).map(item => ({
       uid: String(item.id), gift: item.item_key, status: item.status,
       name: item.name, emoji: item.emoji, rarity: item.rarity,
       price: Number(item.value_stars) || 0
     }));
+    if (isOwnerDemoActive() && demoInventorySnapshot) {
+      const temporaryDemoItems = inventory.filter(item => item.demo === true);
+      inventory = [...serverInventory, ...temporaryDemoItems];
+    } else {
+      inventory = serverInventory;
+    }
     updateBalanceUI();
     renderInventory();
     renderUpgrade();
@@ -1805,7 +1811,8 @@ async function loadAccount() {
 async function topUp() {
   if (!ageConfirmed) return toast('Сначала подтвердите возраст 18+.', true);
   if (!tg?.initData) return toast('Откройте Mini App через Telegram.', true);
-  const raw = window.prompt('Пополнение через Mini App\n\nБез комиссии: отправьте Stars или передайте NFT с подписью своего Telegram ID на @zik_3. ID можно скопировать в разделе «Промокод». Зачисление — в течение 24 часов.\n\nСколько Stars пополнить сейчас? Минимум 5.', '50');
+  const balanceBeforePayment = balance;
+  const raw = window.prompt('Пополнение баланса через Telegram Stars.\n\nВведите сумму от 5 до 10000 Stars.', '50');
   if (raw === null) return;
   const amount = Number(raw);
   if (!Number.isSafeInteger(amount) || amount < 5 || amount > 10000) {
@@ -1825,7 +1832,7 @@ async function topUp() {
         for (let i = 0; i < 8; i++) {
           await new Promise(resolve => setTimeout(resolve, 1000));
           await loadAccount();
-          if (balance >= amount) break;
+          if (balance >= balanceBeforePayment + amount) break;
         }
       } else if (status === 'failed') toast('Оплата не прошла.', true);
     });
@@ -2390,6 +2397,9 @@ document.getElementById('modalConfirm').addEventListener('click', () => {
   if (modalAction) modalAction();
 });
 
+function isOwnerDemoBoostActive() {
+  return isOwnerDemoActive() && !!document.getElementById('demoBoostEnabled')?.checked;
+}
 function calcChance(fromKey, toKey) {
   const from = GIFTS[fromKey];
   const to = GIFTS[toKey];
@@ -2484,7 +2494,7 @@ function renderToPicker() {
   wrap.innerHTML = keys.map(k => {
     const g = GIFTS[k];
     const chance = fromItem ? calcChance(fromItem.gift, k) : 0;
-    const unavailable = !!fromItem && chance < 0.01;
+    const unavailable = !!fromItem && chance < 0.01 && !isOwnerDemoBoostActive();
     const sel = k === upgradeToKey ? 'selected' : '';
     return `<div class="inv-item picker-item ${sel} ${unavailable ? 'upgrade-unavailable' : ''}" ${unavailable ? 'aria-disabled="true"' : `onclick="selectTo('${k}')"`}>
       <span class="gift-img">${g.img}</span>
@@ -2501,14 +2511,14 @@ function selectFrom(uid) {
   closeUpgradePicker();
   haptic();
   const fromItem = inventory.find(i => i.uid === uid);
-  if (!upgradeToKey || GIFTS[upgradeToKey].price <= GIFTS[fromItem.gift].price || calcChance(fromItem.gift, upgradeToKey) < 0.01) upgradeToKey = null;
+  if (!upgradeToKey || GIFTS[upgradeToKey].price <= GIFTS[fromItem.gift].price || (!isOwnerDemoBoostActive() && calcChance(fromItem.gift, upgradeToKey) < 0.01)) upgradeToKey = null;
   renderUpgrade();
 }
 
 function selectTo(key) {
   if (upgradeBusy) return;
   const fromItem = upgradeFromUid ? inventory.find(i => i.uid === upgradeFromUid) : null;
-  if (fromItem && calcChance(fromItem.gift, key) < 0.01) {
+  if (fromItem && !isOwnerDemoBoostActive() && calcChance(fromItem.gift, key) < 0.01) {
     haptic('error');
     return toast('Нельзя апгрейдить на этот предмет: шанс ниже 1%.', true);
   }
@@ -2564,7 +2574,7 @@ function renderWheel() {
 function updateUpgradeButton() {
   const btn = document.getElementById('upgradeBtn');
   const fromItem = upgradeFromUid ? inventory.find(i => i.uid === upgradeFromUid) : null;
-  const ready = !!(fromItem && GIFTS[fromItem.gift] && upgradeToKey && GIFTS[upgradeToKey] && calcChance(fromItem.gift, upgradeToKey) >= 0.01);
+  const ready = !!(fromItem && GIFTS[fromItem.gift] && upgradeToKey && GIFTS[upgradeToKey] && (calcChance(fromItem.gift, upgradeToKey) >= 0.01 || isOwnerDemoBoostActive()));
   btn.disabled = !ready || upgradeBusy;
   btn.textContent = ready ? 'Крутить колесо' : 'Выберите предметы';
 }
@@ -2577,7 +2587,7 @@ async function doUpgrade() {
   const fromGift = GIFTS[fromItem.gift];
   const toGift = GIFTS[upgradeToKey];
   if (!fromGift || !toGift || toGift.price <= fromGift.price) return toast('Некорректная пара', true);
-  if (calcChance(fromItem.gift, upgradeToKey) < 0.01) return toast('Нельзя апгрейдить на этот предмет: шанс ниже 1%.', true);
+  if (!isOwnerDemoBoostActive() && calcChance(fromItem.gift, upgradeToKey) < 0.01) return toast('Нельзя апгрейдить на этот предмет: шанс ниже 1%.', true);
 
   upgradeBusy = true;
   updateUpgradeButton();

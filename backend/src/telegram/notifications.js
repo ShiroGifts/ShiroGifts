@@ -1,4 +1,12 @@
+const { pool } = require('../db/pool');
+
 async function notifyAdminGift({ telegramId, username, firstName, itemName, source, inventoryId }) {
+  try {
+    const setting = await pool.query("SELECT value FROM app_settings WHERE key = 'gift_admin_notifications_enabled'");
+    if (setting.rowCount && setting.rows[0].value === 'false') return;
+  } catch (error) {
+    console.error('[GIFT ADMIN NOTIFY SETTING]', error.code || error.message);
+  }
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const admins = String(process.env.ADMIN_TELEGRAM_IDS || '').split(',').map(x => x.trim()).filter(Boolean);
   if (!token || !admins.length) return;

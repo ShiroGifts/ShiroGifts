@@ -110,7 +110,7 @@ const CASES = [
     { type: 'gift', key: 'money_pot', weight: 1 },
     { type: 'gift', key: 'holiday_drink', weight: 1 },
     { type: 'gift', key: 'winter_wreath', weight: 1 },
-    { type: 'nothing', weight: 647 }
+    { type: 'nothing', weight: 2079 }
   ]}
 ];
 

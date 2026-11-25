@@ -3728,7 +3728,7 @@ function renderUpgradeWheelSecret(chance,available){
   if(!seg||!marker||!wheel)return;
   const blueWidth=chance*360;
   if(!available||blueWidth<=0){seg.style.background=`conic-gradient(var(--accent) 0deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;marker.style.display='none';return;}
-  const secretWidth=Math.min(18,blueWidth*0.35),secretStart=(blueWidth-secretWidth)/2,secretEnd=secretStart+secretWidth;
+  const secretWidth=Math.min(18,blueWidth),secretStart=(blueWidth-secretWidth)/2,secretEnd=secretStart+secretWidth;
   // Keep the x2 hit area invisible on the wheel; only its floating marker is shown.
   seg.style.background=`conic-gradient(var(--accent) 0deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;
   const angle=(secretStart+secretEnd)/2*Math.PI/180,radius=Math.max(16,wheel.clientWidth/2-marker.offsetWidth/2-4);
@@ -3802,7 +3802,7 @@ async function doUpgrade() {
     const spin = ({fast:{ms:2500,turns:5,ease:'cubic-bezier(.2,.7,.25,1)'},classic:{ms:5500,turns:7,ease:'cubic-bezier(.12,.62,.22,1)'},gamble:{ms:8500,turns:12,ease:'cubic-bezier(.08,.72,.12,1)'}})[upgradeSpinMode];
     const x2Available=!!result.x2Available,doubleReward=!!result.doubleReward;
     renderUpgradeWheelSecret(chance,x2Available);
-    const blueWidth=chance*360,secretWidth=Math.min(18,blueWidth*0.35);
+    const blueWidth=chance*360,secretWidth=Math.min(18,blueWidth);
     let sectorCenter,sectorSize;
     if(success&&x2Available&&doubleReward){sectorCenter=blueWidth/2;sectorSize=secretWidth;}
     else if(success&&x2Available){const secretStart=(blueWidth-secretWidth)/2,secretEnd=secretStart+secretWidth;if(Math.random()<0.5){sectorCenter=secretStart/2;sectorSize=secretStart;}else{sectorCenter=(secretEnd+blueWidth)/2;sectorSize=blueWidth-secretEnd;}}

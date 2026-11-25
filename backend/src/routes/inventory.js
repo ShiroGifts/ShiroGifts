@@ -62,33 +62,40 @@ async function deliverTelegramGift(telegramId, itemKey, caption) {
   const giftId = TELEGRAM_GIFT_IDS[itemKey];
   if (!token || !giftId) return { ok:false, error:'telegram_gift_unavailable' };
   const base = 'https://api.telegram.org/bot' + token + '/';
-  const catalogResponse = await fetch(base + 'getAvailableGifts');
-  const catalog = await catalogResponse.json();
-  const availableGift = catalog.result?.gifts?.find(g => String(g.id) === giftId);
-  if (!catalogResponse.ok || !catalog.ok || !availableGift) return { ok:false, error:'telegram_gift_unavailable' };
-  const balanceResponse = await fetch(base + 'getMyStarBalance');
-  const balanceResult = await balanceResponse.json();
-  if (!balanceResponse.ok || !balanceResult.ok || !balanceResult.result) {
-    console.error('[TELEGRAM STAR BALANCE]', balanceResult.description || 'getMyStarBalance failed');
-    return { ok:false, error:'telegram_balance_unavailable' };
-  }
-  const balance = Number(balanceResult.result.amount || 0);
-  const price = Number(availableGift.star_count || 0);
-  if (balance < price) return { ok:false, error:'insufficient_bot_stars', balance, price };
-  const response = await fetch(base + 'sendGift', {
-    method:'POST', headers:{'content-type':'application/json'},
-    body:JSON.stringify({ user_id:Number(telegramId), gift_id:giftId, text:caption.slice(0,128) })
-  });
-  const result = await response.json();
-  if (!response.ok || !result.ok) {
-    const description = String(result.description || '');
-    if (/not enough stars|insufficient stars/i.test(description)) {
-      return { ok:false, error:'insufficient_bot_stars', balance, price };
+  try {
+    const timeout = () => AbortSignal.timeout(10000);
+    const catalogResponse = await fetch(base + 'getAvailableGifts', { signal:timeout() });
+    const catalog = await catalogResponse.json();
+    const availableGift = catalog.result?.gifts?.find(g => String(g.id) === giftId);
+    if (!catalogResponse.ok || !catalog.ok || !availableGift) return { ok:false, error:'telegram_gift_unavailable' };
+    const balanceResponse = await fetch(base + 'getMyStarBalance', { signal:timeout() });
+    const balanceResult = await balanceResponse.json();
+    if (!balanceResponse.ok || !balanceResult.ok || !balanceResult.result) {
+      console.error('[TELEGRAM STAR BALANCE]', balanceResult.description || 'getMyStarBalance failed');
+      return { ok:false, error:'telegram_balance_unavailable' };
     }
-    console.error('[TELEGRAM SEND GIFT]', description || 'sendGift failed');
-    return { ok:false, error:'telegram_gift_send_failed' };
+    const balance = Number(balanceResult.result.amount || 0);
+    const price = Number(availableGift.star_count || 0);
+    if (balance < price) return { ok:false, error:'insufficient_bot_stars', balance, price };
+    const response = await fetch(base + 'sendGift', {
+      method:'POST', headers:{'content-type':'application/json'},
+      body:JSON.stringify({ user_id:Number(telegramId), gift_id:giftId, text:caption.slice(0,128) }),
+      signal:timeout()
+    });
+    const result = await response.json();
+    if (!response.ok || !result.ok) {
+      const description = String(result.description || '');
+      if (/not enough stars|insufficient stars/i.test(description)) {
+        return { ok:false, error:'insufficient_bot_stars', balance, price };
+      }
+      console.error('[TELEGRAM SEND GIFT]', description || 'sendGift failed');
+      return { ok:false, error:'telegram_gift_send_failed' };
+    }
+    return { ok:true, price };
+  } catch (error) {
+    console.error('[TELEGRAM GIFT DELIVERY ERROR]', error.name || error.message);
+    return { ok:false, error:'telegram_api_unavailable' };
   }
-  return { ok:true, price };
 }
 
 router.post('/inventory/withdraw', async (req, res) => {

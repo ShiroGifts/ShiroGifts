@@ -43,6 +43,21 @@ async function migrate() {
     DROP INDEX IF EXISTS withdrawal_one_pending_per_item;
     CREATE UNIQUE INDEX withdrawal_one_pending_per_item ON withdrawal_requests(inventory_id) WHERE status IN ('pending','processing','approved') AND inventory_id IS NOT NULL;
 
+    CREATE TABLE IF NOT EXISTS pending_ton_payments (
+      id UUID PRIMARY KEY,
+      telegram_id BIGINT NOT NULL REFERENCES users(telegram_id),
+      sender_address TEXT NOT NULL,
+      amount_stars BIGINT NOT NULL CHECK (amount_stars BETWEEN 5 AND 10000),
+      amount_nanotons NUMERIC(30,0) NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','paid','expired')),
+      tx_hash TEXT,
+      expires_at TIMESTAMPTZ NOT NULL,
+      paid_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS pending_ton_payments_tx_hash_unique
+      ON pending_ton_payments(tx_hash) WHERE tx_hash IS NOT NULL;
+
     CREATE TABLE IF NOT EXISTS pending_star_invoices (
       payload TEXT PRIMARY KEY,
       telegram_id BIGINT NOT NULL REFERENCES users(telegram_id),

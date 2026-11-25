@@ -112,20 +112,15 @@ router.post('/inventory/withdraw', async (req, res) => {
       if (sourceType === 'case') caption = 'Выиграно в кейсе «' + (CASE_CAPTIONS[gift.source_ref] || gift.source_ref || 'ShiroGifts') + '»';
       else if (sourceType === 'upgrade') caption = 'Выиграно в апгрейде ShiroGifts';
       else if (sourceType === 'roulette') caption = 'Выиграно в рулетке ShiroGifts';
-      const sent = await deliverTelegramGift(telegramId,gift.item_key,caption);
-      if (!sent.ok) {
-        await client.query('ROLLBACK');
-        return res.status(sent.error==='telegram_gift_unavailable'?409:502).json({ok:false,error:sent.error});
-      }
       const request = await client.query(
         `INSERT INTO withdrawal_requests(telegram_id,inventory_id,withdrawal_type,status,admin_note)
-         VALUES($1,$2,'ordinary_gift','sent',$3) RETURNING id`,
-        [telegramId,id,'Telegram sendGift: '+caption]
+         VALUES($1,$2,'ordinary_gift','pending',$3) RETURNING id,status,created_at`,
+        [telegramId,id,'Ожидает ручной отправки. '+caption]
       );
-      await client.query("UPDATE inventory SET status='withdrawn' WHERE id=$1",[id]);
+      await client.query("UPDATE inventory SET status='withdraw_pending' WHERE id=$1",[id]);
       await client.query('COMMIT');
-      notifyAdminGift({ telegramId, username: req.telegramUser.username, firstName: req.telegramUser.first_name, itemName: gift.name, source: 'Подарок отправлен в Telegram', inventoryId: id }).catch(() => {});
-      return res.json({ok:true,delivered:true,requestId:String(request.rows[0].id),type:'ordinary_gift'});
+      notifyAdminGift({ telegramId, username: req.telegramUser.username, firstName: req.telegramUser.first_name, itemName: gift.name, source: 'Новая заявка на вывод подарка', inventoryId: id }).catch(() => {});
+      return res.json({ok:true,delivered:false,requestId:String(request.rows[0].id),status:request.rows[0].status,type:'ordinary_gift'});
     }
     const request = await client.query(
       `INSERT INTO withdrawal_requests(telegram_id,inventory_id,withdrawal_type)

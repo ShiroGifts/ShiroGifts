@@ -3300,24 +3300,27 @@ function initCrashCanvas() {
 
 function crashHeading(t) { const x = 30 + 2.4 * Math.max(0,t); const y = -15 * Math.sqrt(Math.max(0,t)); return Math.atan2(y,x); }
 
+// Use the exact default Telegram "Rocket" gift artwork already used in GIFTS. 
 const crashRocketImage = new Image();
 crashRocketImage.crossOrigin = 'anonymous';
 crashRocketImage.decoding = 'async';
-crashRocketImage.src = '/images/crash-space-rocket.svg?v=spacebot-2_504';
+crashRocketImage.src = 'https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/gift_5170564780938756245.webp';
 crashRocketImage.onload = () => { if (document.getElementById('crashCanvas')) drawCrash(); };
 function drawRocket(ctx,u,flame){
   ctx.save();
-  if(crashRocketImage.complete && crashRocketImage.naturalWidth){
-    const h=1.85*u,w=h*crashRocketImage.naturalWidth/crashRocketImage.naturalHeight;
-    ctx.drawImage(crashRocketImage,-w/2,-h/2,w,h);
-    // Small hand-drawn panel seams and fasteners add definition without a glossy 3D effect.
-    ctx.save();
-    ctx.strokeStyle='rgba(16,25,38,.62)';ctx.lineWidth=Math.max(.7,u*.035);ctx.lineCap='round';
-    ctx.beginPath();ctx.moveTo(-w*.16,-h*.19);ctx.lineTo(w*.16,-h*.19);ctx.moveTo(-w*.18,h*.12);ctx.lineTo(w*.18,h*.12);ctx.stroke();
-    ctx.fillStyle='rgba(205,224,238,.78)';
-    [[-.17,-.12],[.17,-.12],[-.17,.16],[.17,.16]].forEach(([x,y])=>{ctx.beginPath();ctx.arc(x*w,y*h,Math.max(.7,u*.035),0,Math.PI*2);ctx.fill();});
-    ctx.restore();
+  const h=2.05*u,w=crashRocketImage.naturalWidth ? h*crashRocketImage.naturalWidth/crashRocketImage.naturalHeight : h;
+  if(flame){
+    const flicker=0.88+0.12*Math.sin(performance.now()/43);
+    const y=h*.40, fh=h*.48*flicker;
+    const g=ctx.createLinearGradient(0,y,0,y+fh);
+    g.addColorStop(0,'rgba(255,244,176,.96)');
+    g.addColorStop(.28,'rgba(255,174,66,.94)');
+    g.addColorStop(.72,'rgba(255,91,47,.68)');
+    g.addColorStop(1,'rgba(255,91,47,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(-w*.105,y);ctx.quadraticCurveTo(-w*.20,y+fh*.45,0,y+fh);ctx.quadraticCurveTo(w*.20,y+fh*.45,w*.105,y);ctx.closePath();ctx.fill();
+    ctx.fillStyle='rgba(255,239,177,.9)';ctx.beginPath();ctx.moveTo(-w*.045,y);ctx.quadraticCurveTo(-w*.08,y+fh*.34,0,y+fh*.67);ctx.quadraticCurveTo(w*.08,y+fh*.34,w*.045,y);ctx.closePath();ctx.fill();
   }
+  if(crashRocketImage.complete && crashRocketImage.naturalWidth) ctx.drawImage(crashRocketImage,-w/2,-h/2,w,h);
   ctx.restore();
 }
 
@@ -3362,7 +3365,7 @@ function drawCrash() {
     if (round.phase === 'flying') {
       const th = crashHeading(t);
       const gentleRoll = Math.sin(t*3.1)*0.105;
-      ctx.save(); ctx.translate(cx,cy); ctx.rotate(th + 0.94 + gentleRoll);
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate(th + Math.PI/2 + gentleRoll);
       drawRocket(ctx,rocketSize,true); ctx.restore();
     } else {
       const startAt = Number(round.startsAt) || serverNow();
@@ -3371,9 +3374,14 @@ function drawCrash() {
       const eased = progress*progress*(3-2*progress);
       const sx = 28*k, sy = H-30*k;
       const rx = sx+(cx-sx)*eased, ry = sy+(cy-sy)*eased;
+      // Blend the approach angle into the exact initial flight angle, so there is no snap at launch.
       const approach = Math.atan2(cy-sy,cx-sx);
-      ctx.save(); ctx.translate(rx,ry); ctx.rotate(approach+0.94);
-      drawRocket(ctx,rocketSize,false); ctx.restore();
+      const launchAngle = crashHeading(0);
+      const turn = Math.max(0,Math.min(1,(progress-.68)/.32));
+      const smoothTurn = turn*turn*(3-2*turn);
+      const angle = approach+(launchAngle-approach)*smoothTurn;
+      ctx.save(); ctx.translate(rx,ry); ctx.rotate(angle + Math.PI/2);
+      drawRocket(ctx,rocketSize,true); ctx.restore();
     }
   }
 }

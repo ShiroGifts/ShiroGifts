@@ -1873,6 +1873,7 @@ async function loadAccount() {
     renderUpgrade();
     if (ageConfirmed) loadFreeCaseStatus();
     loadDailyNameRewardStatus();
+    if (ageConfirmed) checkPendingTonPayment();
   } catch (error) {
     toast(error.message, true);
   }
@@ -1912,6 +1913,29 @@ async function topUpStars() {
 }
 
 let tonConnectUI = null;
+let tonPendingCheckInFlight = false;
+async function checkPendingTonPayment() {
+  if (tonPendingCheckInFlight || !ageConfirmed) return;
+  let intentId = null;
+  try { intentId = localStorage.getItem('shiro_ton_pending'); } catch (_) {}
+  if (!intentId) return;
+  tonPendingCheckInFlight = true;
+  try {
+    const check = await apiRequest('/api/ton/verify', {
+      method: 'POST', body: JSON.stringify({ intentId })
+    });
+    if (check.status === 'paid') {
+      balance = Number(check.balance) || balance;
+      try { localStorage.removeItem('shiro_ton_pending'); } catch (_) {}
+      updateBalanceUI();
+      toast('TON-платёж подтверждён. Баланс пополнен!');
+    } else if (check.status === 'expired') {
+      try { localStorage.removeItem('shiro_ton_pending'); } catch (_) {}
+    }
+  } catch (_) {
+    // Keep the intent so the next app open can retry verification.
+  } finally { tonPendingCheckInFlight = false; }
+}
 function getTonConnectUI() {
   if (tonConnectUI) return tonConnectUI;
   const UI = window.TON_CONNECT_UI && window.TON_CONNECT_UI.TonConnectUI;
@@ -1948,6 +1972,7 @@ async function topUpTon() {
       method: 'POST',
       body: JSON.stringify({ amountStars, senderAddress: wallet.account.address })
     });
+    try { localStorage.setItem('shiro_ton_pending', intent.intentId); } catch (_) {}
     toast('К отправке: ' + (Number(intent.amountNanotons) / 1e9).toFixed(9) + ' TON. Подтверди перевод в кошельке.', false, 6000);
     await getTonConnectUI().sendTransaction({
       validUntil: Math.floor(Date.now() / 1000) + 300,
@@ -1962,11 +1987,15 @@ async function topUpTon() {
       });
       if (check.status === 'paid') {
         balance = Number(check.balance) || balance;
+        try { localStorage.removeItem('shiro_ton_pending'); } catch (_) {}
         updateBalanceUI();
         toast('TON-платёж подтверждён. Баланс пополнен!');
         return;
       }
-      if (check.status === 'expired') return toast('Срок оплаты истёк. Создай новый платёж.', true);
+      if (check.status === 'expired') {
+        try { localStorage.removeItem('shiro_ton_pending'); } catch (_) {}
+        return toast('Срок оплаты истёк. Создай новый платёж.', true);
+      }
     }
     toast('Перевод отправлен, но подтверждение ещё не пришло. Нажми «+» позже и проверь статус.', true, 6000);
   } catch (error) {

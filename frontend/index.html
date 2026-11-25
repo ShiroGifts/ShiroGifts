@@ -535,7 +535,7 @@ body{background:var(--bg);color:var(--text)}
 .jackpot-tag{background:linear-gradient(135deg,#d9b77a,#80572f)!important;color:#17100a!important}
 .nft-chance{font-size:10px;color:var(--gold);font-weight:800}
 .promo-admin .promo-input,.promo-admin select{background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px;width:100%;margin:5px 0 12px}
-.case-card.tier-nft{background:radial-gradient(circle at 50% 5%,#5a4028 0,#21180f 48%,#17110d 100%);border-color:#9a7448;box-shadow:0 6px 0 #080706,inset 0 0 28px #c29a5630}
+.case-card.tier-nft,.case-preview-art.tier-nft{background:radial-gradient(circle at 50% 5%,#5a4028 0,#21180f 48%,#17110d 100%);border-color:#9a7448;box-shadow:0 6px 0 #080706,inset 0 0 28px #c29a5630}
 .case-card.tier-nft .name{color:#f1dfc3;letter-spacing:.8px;text-transform:uppercase}
 .case-card.tier-nft .gift-img{filter:drop-shadow(0 7px 14px #000)}
 :root{}
@@ -546,7 +546,7 @@ body{background:radial-gradient(ellipse at 50% -18%,#243e72 0%,#0c1222 58%) fixe
 .header{background:linear-gradient(180deg,#0c1222 76%,transparent)}
 .nav{background:rgba(12,18,34,.97);border-top:1px solid #30486e}
 .case-card,.inv-item,.upgrade-box,.crash-box,.ref-box,.picker-item,.upgrade-slot,.promo-panel{background:linear-gradient(155deg,#1d3153,#14223a)!important;border-color:#36527d!important;box-shadow:0 7px 20px rgba(0,0,0,.28)!important}
-.case-card.tier-nft{background:radial-gradient(circle at 50% 4%,#214d87 0,#172b4a 52%,#101c31 100%)!important;border-color:#5a9dff!important;box-shadow:0 8px 24px #071326!important}
+.case-card.tier-nft,.case-preview-art.tier-nft{background:radial-gradient(circle at 50% 4%,#214d87 0,#172b4a 52%,#101c31 100%)!important;border-color:#5a9dff!important;box-shadow:0 8px 24px #071326!important}
 .tier-ruby{background:linear-gradient(145deg,#873d67,#321d43)!important;border-color:#bd5d91!important}
 .tier-diamond{background:linear-gradient(145deg,#267a9e,#183d67)!important;border-color:#65d8ff!important}
 .tier-cosmic{background:linear-gradient(145deg,#5944a5,#25234f)!important;border-color:#a38bff!important}
@@ -620,7 +620,7 @@ body{
 .case-card .price{display:inline-block;margin-top:5px;padding:4px 9px;border-radius:999px;background:rgba(242,200,121,.1);color:#f2d49b!important;font-size:12px}
 .case-card .badge{border-radius:999px;padding:4px 8px;background:#a99aff;color:#17152b;font-size:9px}
 .case-card .badge.sub{background:#38577f;color:#e5efff}
-.case-card.tier-nft{background:radial-gradient(ellipse at 50% 0%,rgba(138,117,255,.32),transparent 55%),linear-gradient(155deg,#22244b,#121a31)!important;border-color:rgba(171,154,255,.55)!important}
+.case-card.tier-nft,.case-preview-art.tier-nft{background:radial-gradient(ellipse at 50% 0%,rgba(138,117,255,.32),transparent 55%),linear-gradient(155deg,#22244b,#121a31)!important;border-color:rgba(171,154,255,.55)!important}
 .inv-item,.upgrade-box,.crash-box,.ref-box,.promo-panel{
   border:1px solid rgba(161,183,224,.18)!important;border-radius:21px!important;
   background:linear-gradient(155deg,rgba(27,42,66,.98),rgba(15,24,40,.98))!important;
@@ -682,18 +682,18 @@ body{
 .case-card .price{position:relative;z-index:1;margin-top:7px!important;padding:5px 12px!important;background:rgba(5,9,18,.34)!important;border:1px solid rgba(255,255,255,.14);color:#fff0c9!important;font-size:12px!important}
 .case-card .nft-hint{position:relative;z-index:1;color:#fff0bd!important;text-shadow:0 1px 8px rgba(0,0,0,.6)}
 .case-card .badge,.case-card .jackpot-tag{z-index:3}
-.case-card.tier-farm{--case-glow:#b77b3e;background:linear-gradient(145deg,#61401f,#2a1c14 75%)!important;border-color:#9d7045!important}
-.case-card.tier-starter{--case-glow:#d28a4a;background:linear-gradient(145deg,#8a572e,#3d261c 78%)!important;border-color:#c58a53!important}
-.case-card.tier-mini{--case-glow:#d9a65e;background:linear-gradient(145deg,#986b37,#45301f 78%)!important;border-color:#d0a56b!important}
-.case-card.tier-bronze{--case-glow:#e08a45;background:linear-gradient(145deg,#a65c2d,#4a281d 78%)!important;border-color:#d68b52!important}
-.case-card.tier-silver{--case-glow:#c6e4f6;background:linear-gradient(145deg,#71869a,#28384a 78%)!important;border-color:#c1d7e9!important}
-.case-card.tier-gold{--case-glow:#ffe18a;background:linear-gradient(145deg,#c08b29,#4e3517 78%)!important;border-color:#f0c96d!important}
-.case-card.tier-legend{--case-glow:#d7a8ff;background:linear-gradient(145deg,#6546a0,#211b42 78%)!important;border-color:#b995ed!important}
-.case-card.tier-ruby{--case-glow:#ff668f;background:linear-gradient(145deg,#a62d59,#39172f 78%)!important;border-color:#f17ba2!important}
-.case-card.tier-diamond{--case-glow:#8eeaff;background:linear-gradient(145deg,#267eaa,#142d4c 78%)!important;border-color:#8de5fa!important}
-.case-card.tier-cosmic{--case-glow:#b49aff;background:radial-gradient(circle at 50% 20%,#5a43a0,#1b204b 65%,#11152d)!important;border-color:#9d8bff!important}
-.case-card.tier-nft{--case-glow:#ffcf76;background:radial-gradient(circle at 50% 10%,#8b5b26,#38231a 65%,#17121a)!important;border-color:#e7bb75!important}
-.case-card.tier-free,.case-card.tier-lock{--case-glow:#8bd8c7;background:linear-gradient(145deg,#236b67,#142f3c 78%)!important;border-color:#7dd9c9!important}
+.case-card.tier-farm,.case-preview-art.tier-farm{--case-glow:#b77b3e;background:linear-gradient(145deg,#61401f,#2a1c14 75%)!important;border-color:#9d7045!important}
+.case-card.tier-starter,.case-preview-art.tier-starter{--case-glow:#d28a4a;background:linear-gradient(145deg,#8a572e,#3d261c 78%)!important;border-color:#c58a53!important}
+.case-card.tier-mini,.case-preview-art.tier-mini{--case-glow:#d9a65e;background:linear-gradient(145deg,#986b37,#45301f 78%)!important;border-color:#d0a56b!important}
+.case-card.tier-bronze,.case-preview-art.tier-bronze{--case-glow:#e08a45;background:linear-gradient(145deg,#a65c2d,#4a281d 78%)!important;border-color:#d68b52!important}
+.case-card.tier-silver,.case-preview-art.tier-silver{--case-glow:#c6e4f6;background:linear-gradient(145deg,#71869a,#28384a 78%)!important;border-color:#c1d7e9!important}
+.case-card.tier-gold,.case-preview-art.tier-gold{--case-glow:#ffe18a;background:linear-gradient(145deg,#c08b29,#4e3517 78%)!important;border-color:#f0c96d!important}
+.case-card.tier-legend,.case-preview-art.tier-legend{--case-glow:#d7a8ff;background:linear-gradient(145deg,#6546a0,#211b42 78%)!important;border-color:#b995ed!important}
+.case-card.tier-ruby,.case-preview-art.tier-ruby{--case-glow:#ff668f;background:linear-gradient(145deg,#a62d59,#39172f 78%)!important;border-color:#f17ba2!important}
+.case-card.tier-diamond,.case-preview-art.tier-diamond{--case-glow:#8eeaff;background:linear-gradient(145deg,#267eaa,#142d4c 78%)!important;border-color:#8de5fa!important}
+.case-card.tier-cosmic,.case-preview-art.tier-cosmic{--case-glow:#b49aff;background:radial-gradient(circle at 50% 20%,#5a43a0,#1b204b 65%,#11152d)!important;border-color:#9d8bff!important}
+.case-card.tier-nft,.case-preview-art.tier-nft{--case-glow:#ffcf76;background:radial-gradient(circle at 50% 10%,#8b5b26,#38231a 65%,#17121a)!important;border-color:#e7bb75!important}
+.case-card.tier-free,.case-card.tier-lock,.case-preview-art.tier-free,.case-preview-art.tier-lock{--case-glow:#8bd8c7;background:linear-gradient(145deg,#236b67,#142f3c 78%)!important;border-color:#7dd9c9!important}
 .case-card.tier-free:after,.case-card.tier-lock:after{height:105px}
 .case-card:active{transform:translateY(2px) scale(.985)!important;filter:brightness(1.12)}
 .case-card .rarity-bar{height:4px;opacity:.9}
@@ -791,17 +791,17 @@ body{
     linear-gradient(145deg,rgba(255,255,255,.12),transparent 42%,rgba(0,0,0,.24))!important;
 }
 .case-card:after{filter:blur(30px);opacity:.62}
-.case-card.tier-farm{--case-glow:#80c7a1;background-color:#153c35!important;background-image:linear-gradient(145deg,#367d68,#173c38 58%,#10242b)!important;border-color:#72c7a7!important}
-.case-card.tier-starter{--case-glow:#ffb36c;background-color:#4b2d1e!important;background-image:linear-gradient(145deg,#a75e37,#573321 58%,#251b1b)!important;border-color:#e6a06d!important}
-.case-card.tier-mini{--case-glow:#f2d17b;background-color:#4b3b1d!important;background-image:linear-gradient(145deg,#b28b3f,#59401f 58%,#281f17)!important;border-color:#e4c478!important}
-.case-card.tier-bronze{--case-glow:#ff9367;background-color:#51281d!important;background-image:linear-gradient(145deg,#c5683e,#693323 58%,#2c1a1b)!important;border-color:#e68a61!important}
-.case-card.tier-silver{--case-glow:#b8e5ff;background-color:#1d3852!important;background-image:linear-gradient(145deg,#6d9fbd,#315a78 58%,#18283d)!important;border-color:#a8d8f5!important}
-.case-card.tier-gold{--case-glow:#ffe89b;background-color:#4b3717!important;background-image:linear-gradient(145deg,#d7ad4c,#77531f 58%,#332316)!important;border-color:#f4d47d!important}
-.case-card.tier-legend{--case-glow:#e0a8ff;background-color:#34204f!important;background-image:linear-gradient(145deg,#8555ad,#492b72 58%,#211b3d)!important;border-color:#c49be8!important}
-.case-card.tier-ruby{--case-glow:#ff82b0;background-color:#4c1b3a!important;background-image:linear-gradient(145deg,#c34d7e,#6b2858 58%,#2c1835)!important;border-color:#f18ab5!important}
-.case-card.tier-diamond{--case-glow:#8cecff;background-color:#123c5a!important;background-image:linear-gradient(145deg,#3b9ec1,#205d88 58%,#152746)!important;border-color:#8ee8ff!important}
-.case-card.tier-cosmic{--case-glow:#b9a4ff;background-color:#28205b!important;background-image:radial-gradient(ellipse at 50% 0%,#7761c5,#393276 48%,#171b3e 100%)!important;border-color:#b2a2ff!important}
-.case-card.tier-nft{--case-glow:#ffe1a0;background-color:#49331d!important;background-image:radial-gradient(ellipse at 50% 0%,#b88b45,#65451f 48%,#241b18 100%)!important;border-color:#f0cf8a!important}
+.case-card.tier-farm,.case-preview-art.tier-farm{--case-glow:#80c7a1;background-color:#153c35!important;background-image:linear-gradient(145deg,#367d68,#173c38 58%,#10242b)!important;border-color:#72c7a7!important}
+.case-card.tier-starter,.case-preview-art.tier-starter{--case-glow:#ffb36c;background-color:#4b2d1e!important;background-image:linear-gradient(145deg,#a75e37,#573321 58%,#251b1b)!important;border-color:#e6a06d!important}
+.case-card.tier-mini,.case-preview-art.tier-mini{--case-glow:#f2d17b;background-color:#4b3b1d!important;background-image:linear-gradient(145deg,#b28b3f,#59401f 58%,#281f17)!important;border-color:#e4c478!important}
+.case-card.tier-bronze,.case-preview-art.tier-bronze{--case-glow:#ff9367;background-color:#51281d!important;background-image:linear-gradient(145deg,#c5683e,#693323 58%,#2c1a1b)!important;border-color:#e68a61!important}
+.case-card.tier-silver,.case-preview-art.tier-silver{--case-glow:#b8e5ff;background-color:#1d3852!important;background-image:linear-gradient(145deg,#6d9fbd,#315a78 58%,#18283d)!important;border-color:#a8d8f5!important}
+.case-card.tier-gold,.case-preview-art.tier-gold{--case-glow:#ffe89b;background-color:#4b3717!important;background-image:linear-gradient(145deg,#d7ad4c,#77531f 58%,#332316)!important;border-color:#f4d47d!important}
+.case-card.tier-legend,.case-preview-art.tier-legend{--case-glow:#e0a8ff;background-color:#34204f!important;background-image:linear-gradient(145deg,#8555ad,#492b72 58%,#211b3d)!important;border-color:#c49be8!important}
+.case-card.tier-ruby,.case-preview-art.tier-ruby{--case-glow:#ff82b0;background-color:#4c1b3a!important;background-image:linear-gradient(145deg,#c34d7e,#6b2858 58%,#2c1835)!important;border-color:#f18ab5!important}
+.case-card.tier-diamond,.case-preview-art.tier-diamond{--case-glow:#8cecff;background-color:#123c5a!important;background-image:linear-gradient(145deg,#3b9ec1,#205d88 58%,#152746)!important;border-color:#8ee8ff!important}
+.case-card.tier-cosmic,.case-preview-art.tier-cosmic{--case-glow:#b9a4ff;background-color:#28205b!important;background-image:radial-gradient(ellipse at 50% 0%,#7761c5,#393276 48%,#171b3e 100%)!important;border-color:#b2a2ff!important}
+.case-card.tier-nft,.case-preview-art.tier-nft{--case-glow:#ffe1a0;background-color:#49331d!important;background-image:radial-gradient(ellipse at 50% 0%,#b88b45,#65451f 48%,#241b18 100%)!important;border-color:#f0cf8a!important}
 .case-card.tier-free,.case-card.tier-lock{--case-glow:#8debd9;background-color:#153c45!important;background-image:linear-gradient(145deg,#328a83,#1b535c 58%,#102a38)!important;border-color:#8ce5d6!important}
 .case-card .gift-img{filter:drop-shadow(0 10px 15px rgba(0,0,0,.5))!important}
 .case-card .price{box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 4px 12px rgba(0,0,0,.12)}

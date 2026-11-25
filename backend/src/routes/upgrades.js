@@ -59,10 +59,10 @@ router.post('/upgrade', async (req, res) => {
     }
     const success = randomInt(0, 1000000) < Math.round(chance * 1000000);
     // The secret x2 marker appears rarely, with appearance probability inversely proportional to the base win chance.
-    // It occupies 8% of the winning sector; the server decides whether the spin lands on it.
+    // It occupies 5% of the full wheel; the server decides whether the spin lands on it.
     const x2SectorShare = Math.min(1, 0.05 / chance); // x2 occupies 5% of the full wheel when the success sector allows it
-    const x2AppearanceChance = Math.min(1, 0.05 / chance); // at 50% success: 10% appearance chance
-    const x2Available = randomInt(0, 1000000) < Math.round(x2AppearanceChance * 1000000);
+    const x2AppearanceChance = chance >= 0.10 ? Math.min(1, 0.05 / chance) : 0; // the golden sector is disabled below 10% win chance
+    const x2Available = x2AppearanceChance > 0 && randomInt(0, 1000000) < Math.round(x2AppearanceChance * 1000000);
     const doubleReward = success && x2Available && randomInt(0, 1000000) < Math.round(x2SectorShare * 1000000);
     const x2Chance = chance * x2AppearanceChance * x2SectorShare;
     let createdInventoryId = null;

@@ -3,14 +3,20 @@ const { pool } = require('../db/pool');
 async function notifyAdminGift({ telegramId, username, firstName, itemName, source, inventoryId }) {
   try {
     const setting = await pool.query("SELECT value FROM app_settings WHERE key = 'gift_admin_notifications_enabled'");
-    if (setting.rowCount && setting.rows[0].value === 'false') return;
+    if (setting.rowCount && setting.rows[0].value === 'false') {
+      console.info('[GIFT ADMIN NOTIFY] disabled by owner setting');
+      return;
+    }
   } catch (error) {
     console.error('[GIFT ADMIN NOTIFY SETTING]', error.code || error.message);
     return;
   }
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const admins = String(process.env.ADMIN_TELEGRAM_IDS || '').split(',').map(x => x.trim()).filter(Boolean);
-  if (!token || !admins.length) return;
+  if (!token || !admins.length) {
+    console.error('[GIFT ADMIN NOTIFY] missing configuration', { tokenConfigured: !!token, adminCount: admins.length });
+    return;
+  }
   const who = [firstName, username ? '@' + username : null].filter(Boolean).join(' ');
   const text = [
     '🎁 Новый подарок в ShiroGifts',

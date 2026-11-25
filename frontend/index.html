@@ -231,6 +231,8 @@
     border-radius:14px; overflow:hidden; margin-bottom:14px;
   }
   #crashCanvas { width:100%; height:100%; display:block; }
+  .crash-3d-canvas { position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none; }
+  .crash-mult,.crash-countdown { z-index:2; }
    .crash-gift-flight{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:4;display:flex;align-items:center;gap:6px;max-width:calc(100% - 24px);box-sizing:border-box;padding:5px 8px;border:1px solid rgba(115,174,255,.38);border-radius:12px;background:rgba(8,18,38,.88);box-shadow:0 5px 24px rgba(31,115,255,.22);color:#eaf3ff;font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden;pointer-events:none;backdrop-filter:blur(8px)}
 .crash-gift-flight-art{display:inline-flex;align-items:center;justify-content:center;flex:0 0 24px;width:24px;height:24px;max-width:24px;max-height:24px;overflow:hidden;font-size:18px;line-height:1}
 .crash-gift-flight-art img,.crash-gift-flight-art svg{display:block!important;width:auto!important;height:auto!important;max-width:24px!important;max-height:24px!important;object-fit:contain!important}
@@ -1547,6 +1549,7 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
 .crash-countdown{position:absolute;z-index:5;top:69px;left:50%;transform:translateX(-50%);padding:4px 8px;border:1px solid rgba(151,184,255,.28);border-radius:8px;background:rgba(7,15,34,.72);color:#c8dcff;font-size:10px;font-weight:800;letter-spacing:.35px;line-height:1.2;white-space:nowrap;pointer-events:none;backdrop-filter:blur(5px)}
 @media(max-height:740px){.crash-countdown{top:66px;font-size:9px;padding:3px 7px}}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
@@ -3278,6 +3281,87 @@ function updateCrashGiftProgress() {
   el.style.display = "flex";
 }
 
+let crash3D = null;
+function initCrash3D() {
+  const wrap = document.querySelector('.crash-canvas-wrap');
+  if (!wrap || !window.THREE) return;
+  if (crash3D) {
+    crash3D.renderer.setSize(wrap.clientWidth, wrap.clientHeight, false);
+    crash3D.camera.aspect = wrap.clientWidth / Math.max(1, wrap.clientHeight);
+    crash3D.camera.updateProjectionMatrix();
+    return;
+  }
+  const THREE = window.THREE;
+  const renderer = new THREE.WebGLRenderer({ alpha:true, antialias:true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(wrap.clientWidth, wrap.clientHeight, false);
+  renderer.setClearColor(0x000000, 0);
+  renderer.domElement.className = 'crash-3d-canvas';
+  wrap.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, wrap.clientWidth / Math.max(1,wrap.clientHeight), .1, 100);
+  camera.position.set(0,0,8.5);
+
+  scene.add(new THREE.AmbientLight(0xb9d7ff, 1.05));
+  const key = new THREE.DirectionalLight(0xffffff, 2.1); key.position.set(-3,4,6); scene.add(key);
+  const rim = new THREE.PointLight(0x3e9fff, 2.2, 12); rim.position.set(2,-1,3); scene.add(rim);
+  const rocket = new THREE.Group();
+  rocket.scale.setScalar(.78);
+  scene.add(rocket);
+
+  const metal = new THREE.MeshStandardMaterial({color:0x9eb5c9,metalness:.86,roughness:.24});
+  const bright = new THREE.MeshStandardMaterial({color:0xeaf5ff,metalness:.72,roughness:.2});
+  const dark = new THREE.MeshStandardMaterial({color:0x263e58,metalness:.7,roughness:.3});
+  const glass = new THREE.MeshPhysicalMaterial({color:0x168bd0,metalness:.35,roughness:.12,clearcoat:1,clearcoatRoughness:.08,emissive:0x06345a,emissiveIntensity:.65});
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(.32,.39,1.35,40,1,false),metal);
+  body.position.y=-.02; rocket.add(body);
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(.34,.68,40),bright);
+  nose.position.y=1.0; rocket.add(nose);
+  const nozzle = new THREE.Mesh(new THREE.CylinderGeometry(.22,.29,.28,32),dark);
+  nozzle.position.y=-.82; rocket.add(nozzle);
+  const innerNozzle = new THREE.Mesh(new THREE.CylinderGeometry(.13,.18,.08,32),bright);
+  innerNozzle.position.y=-.99; rocket.add(innerNozzle);
+
+  const windowFrame = new THREE.Mesh(new THREE.SphereGeometry(1,32,24),bright);
+  windowFrame.scale.set(.225,.27,.09); windowFrame.position.set(0,.35,.31); rocket.add(windowFrame);
+  const windowGlass = new THREE.Mesh(new THREE.SphereGeometry(1,32,24),glass);
+  windowGlass.scale.set(.183,.22,.095); windowGlass.position.set(0,.36,.385); rocket.add(windowGlass);
+  const shine = new THREE.Mesh(new THREE.SphereGeometry(1,16,12),new THREE.MeshBasicMaterial({color:0xd9f8ff,transparent:true,opacity:.65}));
+  shine.scale.set(.045,.13,.018); shine.position.set(-.065,.42,.47); rocket.add(shine);
+
+  for(let n=0;n<4;n++){
+    const shape = new THREE.Shape();
+    shape.moveTo(-.29,-.48); shape.lineTo(-.61,-.88); shape.lineTo(-.48,-.9);
+    shape.lineTo(-.2,-.68); shape.lineTo(-.2,-.48); shape.closePath();
+    const fin = new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.07,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.025,bevelThickness:.025}),n%2?dark:metal);
+    fin.rotation.y=n*Math.PI/2; fin.position.z=-.035; rocket.add(fin);
+  }
+  const band = new THREE.Mesh(new THREE.TorusGeometry(.355,.035,10,40),bright);
+  band.rotation.x=Math.PI/2; band.position.y=-.55; rocket.add(band);
+
+  const flameMat = new THREE.MeshBasicMaterial({color:0xff8735,transparent:true,opacity:.88});
+  const flame = new THREE.Mesh(new THREE.ConeGeometry(.23,.9,28),flameMat);
+  flame.rotation.z=Math.PI; flame.position.y=-1.42; rocket.add(flame);
+  const core = new THREE.Mesh(new THREE.ConeGeometry(.105,.62,24),new THREE.MeshBasicMaterial({color:0xfff0ae,transparent:true,opacity:.95}));
+  core.rotation.z=Math.PI; core.position.y=-1.34; rocket.add(core);
+  const flight = new THREE.Group(); flight.add(rocket); scene.add(flight);
+
+  crash3D = {renderer,scene,camera,flight,rocket,flame,core};
+}
+function updateCrash3D(t, flying) {
+  if (!crash3D) return;
+  const now = performance.now();
+  // Local +Y is the rocket nose. This angle makes it tangent to the existing flight curve.
+  crash3D.flight.rotation.z = -crashHeading(t) - Math.PI/2;
+  // Roll around the rocket's own longitudinal axis, with a gentle idle spin before launch.
+  crash3D.rocket.rotation.y = now * (flying ? .0028 : .00065);
+  const pulse = flying ? 1 + Math.sin(now/72)*.12 : .88;
+  crash3D.flame.scale.set(1,pulse,1);
+  crash3D.core.scale.set(1,1+Math.sin(now/58)*.1,1);
+  crash3D.renderer.render(crash3D.scene,crash3D.camera);
+}
+
 function initCrashCanvas() {
   const c = document.getElementById('crashCanvas');
   const wrap = c.parentElement;
@@ -3287,6 +3371,7 @@ function initCrashCanvas() {
   c.style.height = wrap.clientHeight + 'px';
   const ctx = c.getContext('2d');
   ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+  initCrash3D();
   drawCrash();
 }
 
@@ -3345,10 +3430,7 @@ function drawCrash() {
   // частицы (выхлоп/взрыв) в экранных координатах
   crashParticles.forEach(p => { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * k, 0, 7); ctx.fill(); });
   ctx.globalAlpha = 1;
-  {
-    const th = crashHeading(t), bob = crashState === 'flying' ? Math.sin(performance.now() / 160) * 2 * k : 0;
-    ctx.save(); ctx.translate(cx,cy+bob);ctx.rotate(th+Math.PI/4);drawRocket(ctx,23*k,crashState==='flying');ctx.restore();
-  }
+  // The rocket itself is rendered as a 3D model on the transparent WebGL canvas.
 }
 
 function spawnParticles(x, y, crashed) {
@@ -3501,7 +3583,10 @@ function crashFrame() {
     } else countdown.style.display = 'none';
   }
   updateParticles();
-  if (document.getElementById('page-crash').classList.contains('active')) drawCrash();
+  if (document.getElementById('page-crash').classList.contains('active')) {
+    drawCrash();
+    updateCrash3D(timeAt(crashMult), round.phase === 'flying');
+  }
   requestAnimationFrame(crashFrame);
 }
 

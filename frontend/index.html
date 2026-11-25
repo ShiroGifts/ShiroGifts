@@ -1367,17 +1367,29 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
 #upgradePickerBackdrop .picker-item{min-width:0;max-width:100%;overflow:hidden;overflow-wrap:anywhere}
 @media(max-width:360px){#upgradePickerBackdrop .upgrade-picker-sheet{padding-left:10px;padding-right:10px}.upgrade-chance-control{padding:10px}.sell-all-bar{font-size:11px}}
 
-/* During a spin the button is portalled to <body>, outside animated page wrappers.
-   This keeps fixed positioning tied to the viewport on mobile WebViews. */
-body.upgrade-spinning #upgradeBtn{
-  position:fixed!important;left:50%!important;right:auto!important;top:auto!important;
-  bottom:calc(82px + env(safe-area-inset-bottom))!important;
-  transform:translateX(-50%)!important;width:min(calc(100vw - 36px),484px)!important;
-  max-width:484px!important;z-index:999!important;margin:0!important;
-  min-height:46px!important;padding:12px 14px!important;
-  box-shadow:0 6px 24px rgba(0,0,0,.5)!important
+/* Spin state never changes the button's layout or viewport position. */
+body.upgrade-spinning #page-upgrade #upgradeBtn{
+  position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+  transform:none!important;width:100%!important;max-width:none!important;z-index:1!important;
+  margin-top:5px!important;min-height:38px!important;
 }
-@media(max-height:560px){body.upgrade-spinning #upgradeBtn{bottom:calc(74px + env(safe-area-inset-bottom))!important;min-height:42px!important}}
+/* Keep large Telegram NFT artwork inside the two fixed upgrade slots. */
+#page-upgrade .upgrade-row{min-width:0;max-width:100%;overflow:hidden}
+#page-upgrade .upgrade-slot{min-width:0;max-width:calc((100% - 54px)/2);overflow:hidden;box-sizing:border-box}
+#page-upgrade .upgrade-slot .gift-img{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;height:32px!important;
+  overflow:hidden!important;line-height:1!important;
+}
+#page-upgrade .upgrade-slot .gift-img img,
+#page-upgrade .upgrade-slot .gift-img svg{
+  display:block!important;width:auto!important;height:auto!important;
+  max-width:42px!important;max-height:30px!important;object-fit:contain!important;flex:0 1 auto!important;
+}
+#page-upgrade .upgrade-slot .label{
+  display:block!important;width:100%!important;max-width:100%!important;
+  overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+}
 </style>
 </head>
 <body>
@@ -2782,6 +2794,9 @@ function renderFromPicker() {
   }).join('');
 }
 
+function isConcreteNftUpgradeTarget(key) {
+  return key !== 'random_nft' && String(GIFTS[key]?.rarity || '').toUpperCase().includes('NFT');
+}
 function eligibleUpgradeTargetKeys(fromItem) {
   if (!fromItem || !GIFTS[fromItem.gift]) return [];
   return Object.keys(GIFTS).filter(key =>
@@ -2834,19 +2849,30 @@ function renderToPicker() {
     wrap.innerHTML = `<div style="color:var(--text-dim);font-size:12px;padding:8px">Сначала выберите предмет из инвентаря</div>`;
     return;
   }
-  const keys = eligibleUpgradeTargetKeys(fromItem);
+  const eligible = new Set(eligibleUpgradeTargetKeys(fromItem));
+  // Show the complete concrete NFT catalogue. Cheaper NFTs stay visible but
+  // disabled because the server correctly forbids upgrading to a cheaper item.
+  const keys = Object.keys(GIFTS).filter(k =>
+    k !== 'random_nft' && (eligible.has(k) || isConcreteNftUpgradeTarget(k))
+  );
   if (keys.length === 0) {
-    wrap.innerHTML = `<div style="color:var(--text-dim);font-size:12px;padding:8px">Нет целей с шансом от 1%</div>`;
+    wrap.innerHTML = `<div style="color:var(--text-dim);font-size:12px;padding:8px">Нет подходящих целей</div>`;
     return;
   }
   wrap.innerHTML = keys.map(k => {
     const g = GIFTS[k];
-    const chance = calcChance(fromItem.gift,k);
+    const available = eligible.has(k);
+    const chance = available ? calcChance(fromItem.gift,k) : 0;
     const sel = k === upgradeToKey ? 'selected' : '';
-    return `<div class="inv-item picker-item ${sel}" onclick="selectTo('${k}')">
+    const unavailable = available ? '' : 'upgrade-unavailable';
+    const action = available ? `onclick="selectTo('${k}')"` : 'aria-disabled="true"';
+    const detail = available
+      ? (g.rarity || 'Подарок') + ' · ' + (chance*100).toFixed(2) + '%'
+      : (g.rarity || 'NFT') + ' · дешевле выбранного предмета';
+    return `<div class="inv-item picker-item ${sel} ${unavailable}" ${action}>
       <span class="gift-img">${g.img}</span>
       <div class="name">${g.name}</div>
-      <div class="rarity">${g.rarity || 'Подарок'} · ${(chance*100).toFixed(2)}%</div>
+      <div class="rarity">${detail}</div>
       <div class="value">${money(g.price)}</div>
     </div>`;
   }).join('');
@@ -2865,9 +2891,13 @@ function selectFrom(uid) {
 function selectTo(key) {
   if (upgradeBusy) return;
   const fromItem = upgradeFromUid ? inventory.find(i => i.uid === upgradeFromUid) : null;
-  if (fromItem && !isOwnerDemoBoostActive() && calcChance(fromItem.gift, key) < 0.000001) {
+  if (!fromItem || !GIFTS[key] || GIFTS[key].price <= GIFTS[fromItem.gift]?.price) {
     haptic('error');
-    return toast('Нельзя апгрейдить на этот предмет: шанс ниже 1%.', true);
+    return toast('Цель должна быть дороже выбранного предмета.', true);
+  }
+  if (!isOwnerDemoBoostActive() && calcChance(fromItem.gift, key) < 0.000001) {
+    haptic('error');
+    return toast('Шанс апгрейда слишком мал.', true);
   }
   upgradeToKey = key;
   upgradeDesiredChance = calcChance(fromItem?.gift || '', key) * 100;
@@ -2940,11 +2970,8 @@ async function doUpgrade() {
 
   upgradeBusy = true;
   const upgradeButton = document.getElementById('upgradeBtn');
-  if (upgradeButton && upgradeButton.parentNode !== document.body) {
-    upgradeButtonPlaceholder = document.createComment('upgrade-button-position');
-    upgradeButton.parentNode.insertBefore(upgradeButtonPlaceholder, upgradeButton);
-    document.body.appendChild(upgradeButton);
-  }
+  // Keep the action button in its original layout slot. Moving it to <body>
+  // or fixing it to the viewport makes it jump to the bottom on mobile WebViews.
   document.body.classList.add('upgrade-spinning');
   updateUpgradeButton();
   if (!pendingUpgradeRequestId) pendingUpgradeRequestId = crypto.randomUUID();
@@ -3028,11 +3055,6 @@ async function doUpgrade() {
   } finally {
     upgradeBusy = false;
     document.body.classList.remove('upgrade-spinning');
-    const spinningButton = document.getElementById('upgradeBtn');
-    if (upgradeButtonPlaceholder && spinningButton) {
-      upgradeButtonPlaceholder.replaceWith(spinningButton);
-      upgradeButtonPlaceholder = null;
-    }
     renderUpgrade();
   }
 }

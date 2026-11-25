@@ -3380,7 +3380,7 @@ function drawCrash() {
       const turn = Math.max(0,Math.min(1,(progress-.68)/.32));
       const smoothTurn = turn*turn*(3-2*turn);
       const angle = approach+(launchAngle-approach)*smoothTurn;
-      ctx.save(); ctx.translate(rx,ry); ctx.rotate(angle + Math.PI/4);
+      ctx.save(); ctx.translate(rx,ry); ctx.rotate(angle + Math.PI/2);
       drawRocket(ctx,rocketSize,true); ctx.restore();
     }
   }

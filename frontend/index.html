@@ -1954,6 +1954,80 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
 #crashStakePickerBackdrop .upgrade-picker-head button{width:40px!important;height:40px!important;flex:0 0 40px!important;border:1px solid rgba(255,255,255,.18)!important;border-radius:12px!important;background:rgba(255,255,255,.09)!important;color:#fff!important;font-size:20px!important}
 #crashStakePickerBackdrop .btn-big{display:block!important;flex:0 0 auto!important;width:100%!important;min-height:50px!important}
 
+
+/* Latest UI repair: keep both upgrade selectors as full, tappable controls. */
+#page-cases .hero-panel{background:linear-gradient(145deg,rgba(255,255,255,.19),rgba(255,255,255,.085))!important;border:1px solid rgba(255,255,255,.27)!important;border-radius:22px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 10px 24px rgba(13,25,61,.17)!important;-webkit-backdrop-filter:blur(20px) saturate(155%)!important;backdrop-filter:blur(20px) saturate(155%)!important}
+#page-cases .hero-copy{color:rgba(241,246,255,.82)!important}
+#page-cases .hero-pill{background:rgba(15,27,51,.13)!important;border-color:rgba(255,255,255,.22)!important}
+#page-upgrade{padding-bottom:calc(84px + env(safe-area-inset-bottom))!important}
+#page-upgrade .upgrade-box{height:auto!important;min-height:0!important;max-height:none!important;display:block!important;overflow:visible!important;padding:12px 12px 14px!important;gap:0!important;margin-bottom:8px!important}
+#page-upgrade .upgrade-row{display:flex!important;align-items:stretch!important;gap:8px!important;height:98px!important;min-height:98px!important;margin:0 0 9px!important;overflow:visible!important}
+#page-upgrade .upgrade-slot.upgrade-select-card{appearance:none!important;-webkit-appearance:none!important;flex:1 1 0!important;min-width:0!important;width:calc((100% - 46px)/2)!important;height:98px!important;min-height:98px!important;max-height:98px!important;padding:8px 6px!important;margin:0!important;box-sizing:border-box!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:5px!important;overflow:hidden!important;cursor:pointer!important;color:#f3f6ff!important;font-family:inherit!important;text-align:center!important;border:1px solid rgba(210,222,255,.3)!important;border-radius:15px!important;background:linear-gradient(145deg,rgba(255,255,255,.19),rgba(255,255,255,.075))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 7px 18px rgba(8,15,37,.16)!important;-webkit-backdrop-filter:blur(18px) saturate(155%)!important;backdrop-filter:blur(18px) saturate(155%)!important}
+#page-upgrade .upgrade-slot.upgrade-select-card:active{transform:scale(.98)!important}
+#page-upgrade .upgrade-slot.upgrade-select-card .gift-img{display:flex!important;align-items:center!important;justify-content:center!important;width:52px!important;height:52px!important;min-height:52px!important;max-height:52px!important;flex:0 0 52px!important;font-size:38px!important;line-height:1!important;overflow:hidden!important}
+#page-upgrade .upgrade-slot.upgrade-select-card .gift-img img,#page-upgrade .upgrade-slot.upgrade-select-card .gift-img svg{width:48px!important;height:48px!important;max-width:48px!important;max-height:48px!important;object-fit:contain!important}
+#page-upgrade .upgrade-slot.upgrade-select-card .label{display:block!important;width:100%!important;max-width:100%!important;margin:0!important;color:#e4ebff!important;font-size:10px!important;line-height:1.2!important;font-weight:800!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#page-upgrade .upgrade-arrow{width:30px!important;min-width:30px!important;flex:0 0 30px!important;align-self:center!important;background:transparent!important;box-shadow:none!important}
+#page-upgrade .upgrade-spin-modes{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important;margin:0 0 7px!important;padding:0!important;background:transparent!important;transform:none!important}
+#page-upgrade .upgrade-spin-modes button{top:0!important;transform:none!important;min-height:36px!important;padding:7px 4px!important;font-size:10px!important}
+#page-upgrade .wheel-wrap{width:clamp(230px,70vw,278px)!important;height:clamp(230px,70vw,278px)!important;margin:0 auto 2px!important;flex:0 0 auto!important;filter:drop-shadow(0 8px 16px rgba(8,15,38,.22))}
+#page-upgrade .wheel{width:100%!important;height:100%!important}
+#page-upgrade .wheel-center{width:58px!important;height:58px!important}
+#page-upgrade .chance{font-size:26px!important;line-height:1.05!important;margin:0 0 5px!important}
+#page-upgrade .chance small{font-size:9px!important;line-height:1.25!important;margin-top:3px!important}
+#page-upgrade #upgradeBtn{display:block!important;width:100%!important;min-height:48px!important;margin:0!important;padding:10px 12px!important;font-size:14px!important;position:relative!important;top:auto!important;bottom:auto!important;transform:none!important}
+.wheel-x2-marker{position:absolute;z-index:4;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;box-sizing:border-box;color:#49300a;font-size:11px;font-weight:1000;letter-spacing:-.7px;background:radial-gradient(circle at 35% 25%,#fff5b0 0%,#ffd64e 44%,#e69b19 100%);border:2px solid #fff0a0;box-shadow:0 2px 8px rgba(255,191,48,.65),inset 0 1px 2px rgba(255,255,255,.75);pointer-events:none;text-shadow:0 1px 0 rgba(255,255,255,.3)}
+#upgradePickerBackdrop .upgrade-picker-sheet{background:linear-gradient(145deg,#172947,#101b31)!important;border:1px solid rgba(207,222,255,.18)!important}
+#upgradePickerBackdrop .upgrade-picker-head{margin-bottom:10px!important}
+#upgradePickerBackdrop .upgrade-chance-control{display:block!important;flex:0 0 auto!important;width:100%!important;margin:0 0 12px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+#upgradePickerBackdrop .upgrade-chance-presets{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;width:100%!important}
+#upgradePickerBackdrop .upgrade-chance-presets button{min-width:0!important;min-height:44px!important;padding:8px 3px!important;border:1px solid rgba(190,207,245,.22)!important;border-radius:12px!important;background:rgba(255,255,255,.075)!important;color:#e5edff!important;font-size:13px!important;font-weight:900!important}
+#upgradePickerBackdrop .upgrade-chance-presets button.active{background:rgba(126,154,255,.28)!important;border-color:rgba(166,189,255,.72)!important;color:#fff!important}
+#upgradePickerBackdrop .picker-list{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;flex:1 1 auto!important;min-height:0!important;max-height:none!important;height:auto!important;overflow-x:hidden!important;overflow-y:auto!important;gap:10px!important;padding:0 2px 24px!important}
+#upgradePickerBackdrop .picker-item{min-height:146px!important;height:auto!important;max-height:none!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;padding:12px 9px!important;overflow:hidden!important;border-radius:15px!important}
+#upgradePickerBackdrop .picker-item .gift-img{height:56px!important;min-height:56px!important;flex:0 0 56px!important;margin:0 0 7px!important;font-size:40px!important}
+#upgradePickerBackdrop .picker-item .gift-img img,#upgradePickerBackdrop .picker-item .gift-img svg{width:52px!important;height:52px!important;max-width:100%!important;max-height:52px!important;object-fit:contain!important}
+#upgradePickerBackdrop .picker-item .name{font-size:12px!important;line-height:1.25!important;overflow-wrap:anywhere!important}
+#upgradePickerBackdrop .picker-item .rarity{font-size:10px!important;line-height:1.25!important;margin:3px 0 6px!important}
+#upgradePickerBackdrop .picker-item .value{font-size:12px!important;margin-top:auto!important}
+@media(max-height:700px){#page-upgrade .upgrade-row{height:88px!important;min-height:88px!important}#page-upgrade .upgrade-slot.upgrade-select-card{height:88px!important;min-height:88px!important;max-height:88px!important}#page-upgrade .upgrade-slot.upgrade-select-card .gift-img{width:43px!important;height:43px!important;min-height:43px!important;max-height:43px!important;flex-basis:43px!important}#page-upgrade .upgrade-slot.upgrade-select-card .gift-img img,#page-upgrade .upgrade-slot.upgrade-select-card .gift-img svg{width:40px!important;height:40px!important;max-width:40px!important;max-height:40px!important}#page-upgrade .wheel-wrap{width:clamp(210px,63vw,245px)!important;height:clamp(210px,63vw,245px)!important}#page-upgrade #upgradeBtn{min-height:44px!important}}
+@media(max-width:360px){#page-upgrade .upgrade-box{padding:9px!important}#page-upgrade .upgrade-row{gap:5px!important}#page-upgrade .upgrade-slot.upgrade-select-card .label{font-size:9px!important}#page-upgrade .wheel-wrap{width:clamp(210px,68vw,235px)!important;height:clamp(210px,68vw,235px)!important}}
+/* Mines — native Shiro glass board, 5×5. */
+#page-mines{padding-bottom:calc(90px + env(safe-area-inset-bottom))!important}
+.mines-panel{padding:15px 13px 14px;border:1px solid rgba(220,232,255,.2);border-radius:23px;background:linear-gradient(145deg,rgba(255,255,255,.16),rgba(255,255,255,.055));box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 14px 32px rgba(8,15,37,.2);-webkit-backdrop-filter:blur(22px) saturate(155%);backdrop-filter:blur(22px) saturate(155%)}
+.mines-heading{display:flex;align-items:center;gap:11px;margin-bottom:15px}
+.mines-heading-icon{width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(145deg,rgba(139,160,255,.35),rgba(114,119,223,.12));border:1px solid rgba(202,214,255,.22);color:#e6eaff;font-size:23px}
+.mines-heading-title{font-size:15px;font-weight:900;color:#f5f7ff}
+.mines-heading-copy{margin-top:3px;font-size:10px;line-height:1.4;color:rgba(224,233,255,.68)}
+.mines-controls{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px}
+.mines-field{min-width:0}
+.mines-field label{display:block;margin:0 0 6px 2px;color:#cbd8f3;font-size:10px;font-weight:900}
+.mines-input{width:100%;height:46px;min-width:0;padding:0 10px;border:1px solid rgba(216,228,255,.2);border-radius:12px;background:rgba(8,17,35,.28);color:#f5f7ff;font-size:14px;font-weight:900;outline:none;appearance:none}
+.mines-bet-wrap{position:relative}
+.mines-bet-wrap .mines-input{padding-right:53px}
+.mines-bet-wrap span{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:9px;font-weight:900;color:#cbd8f3;pointer-events:none}
+.mines-start{min-height:46px!important;padding:10px!important;font-size:13px!important}
+.mines-start:disabled{opacity:.42}
+.mines-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:12px 0 13px}
+.mines-stats>div{min-width:0;padding:9px 5px;border:1px solid rgba(220,232,255,.13);border-radius:11px;background:rgba(10,20,42,.22);text-align:center}
+.mines-stats small{display:block;color:rgba(219,229,249,.6);font-size:8px;font-weight:800;white-space:nowrap}
+.mines-stats b{display:block;margin-top:4px;color:#f4f6ff;font-size:12px;font-weight:1000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mines-board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;width:100%;padding:9px;border:1px solid rgba(219,230,255,.16);border-radius:18px;background:rgba(7,15,32,.25);box-shadow:inset 0 1px 12px rgba(4,9,22,.15)}
+.mines-cell{aspect-ratio:1/1;min-width:0;padding:0;display:grid;place-items:center;border:1px solid rgba(204,220,255,.23);border-radius:12px;background:linear-gradient(145deg,rgba(255,255,255,.19),rgba(255,255,255,.075));box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 4px 8px rgba(5,12,30,.14);color:#dce7ff;font-size:20px;cursor:pointer;transition:transform .12s,border-color .12s,background .12s}
+.mines-cell:active:not(:disabled){transform:scale(.94)}
+.mines-cell:disabled{cursor:default;opacity:1}
+.mines-cell-question{font-size:16px;color:rgba(215,228,255,.62)}
+.mines-cell.safe-open{border-color:rgba(96,235,188,.42);background:linear-gradient(145deg,rgba(52,204,154,.25),rgba(27,115,111,.18));color:#a7ffe0}
+.mines-gem{font-size:22px;text-shadow:0 0 12px rgba(116,255,208,.42)}
+.mines-cell.mine-hit,.mines-cell.mine-reveal{border-color:rgba(255,137,151,.5);background:linear-gradient(145deg,rgba(255,104,123,.25),rgba(119,37,62,.28))}
+.mines-cell svg{width:34px;height:34px;max-width:80%;max-height:80%}
+.mines-cell.mine-hit{box-shadow:0 0 0 1px rgba(255,130,148,.22),0 0 18px rgba(255,87,111,.17)}
+.mines-cashout{min-height:46px!important;margin-top:12px;padding:10px!important;font-size:13px!important;background:linear-gradient(135deg,#4fd6a4,#2caa91)!important;color:#092b2b!important;box-shadow:0 7px 18px rgba(43,190,154,.2)!important}
+.mines-cashout:disabled{opacity:.35}
+.mines-status{min-height:18px;margin:10px 2px 0;text-align:center;color:#e7edff;font-size:11px;line-height:1.4;font-weight:800}
+.mines-fairness{margin:8px 2px 0;text-align:center;color:rgba(214,225,247,.47);font-size:8px;line-height:1.4;overflow-wrap:anywhere}
+@media(max-width:360px){.mines-panel{padding:12px 10px}.mines-board{gap:5px;padding:7px}.mines-cell{border-radius:9px}.mines-stats{gap:4px}.mines-stats b{font-size:10px}}
+
 </style>
 
 </head>
@@ -2499,6 +2573,11 @@ function toggleCurrency() {
     if (Number.isFinite(oldValue)) crashInput.value = currencyMode === 'TON'
       ? (oldValue / STARS_PER_TON).toFixed(2)
       : String(Math.round(oldValue * STARS_PER_TON));
+  }
+  const minesInput=document.getElementById('minesBetInput');
+  if(minesInput&&!minesInput.disabled&&minesInput.value){
+    const oldValue=Number(String(minesInput.value).replace(',','.'));
+    if(Number.isFinite(oldValue))minesInput.value=currencyMode==='TON'?(oldValue/STARS_PER_TON).toFixed(2):String(Math.round(oldValue*STARS_PER_TON));
   }
   updateBalanceUI();
   renderCases(); renderInventory(); renderUpgrade();
@@ -3754,6 +3833,97 @@ async function doUpgrade() {
     document.body.classList.remove('upgrade-spinning');
     renderUpgrade();
   }
+}
+
+/* ===== MINES ===== */
+let minesGame=null,minesBusy=false;
+function renderMinesCurrency(){
+  const input=document.getElementById('minesBetInput'),label=document.getElementById('minesCurrencyLabel');
+  if(input){input.step=currencyMode==='TON'?'0.01':'1';input.min=currencyMode==='TON'?'0.01':'1';}
+  if(label)label.textContent=currencyMode==='TON'?'TON':'Stars';
+}
+function minesBombSvg(){
+  return '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M28 7c4-5 9-4 12-1-3 1-5 4-5 7" fill="none" stroke="#ffd36c" stroke-width="3.5" stroke-linecap="round"/><path d="M34 4l5 1-2 5" fill="none" stroke="#fff0a8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="23" cy="27" r="15" fill="#263650" stroke="#8da7d2" stroke-width="2.5"/><path d="M13 21c4-7 14-9 21-3" fill="none" stroke="#a9c2ed" stroke-width="2" stroke-linecap="round"/><path d="M18 27h.1M28 27h.1" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/><path d="M18 34c3 2 7 2 10 0" fill="none" stroke="#ff8792" stroke-width="2" stroke-linecap="round"/></svg>';
+}
+function renderMinesUI(){
+  const board=document.getElementById('minesBoard');if(!board)return;
+  const game=minesGame,active=!!game&&game.status==='active';
+  const picked=new Set((game&&game.pickedCells)||[]),mines=new Set((game&&game.minePositions)||[]);
+  const safeCount=[...picked].filter(cell=>!mines.has(cell)).length;
+  const mineCount=document.getElementById('minesMineCount'),safeEl=document.getElementById('minesSafeCount');
+  const multEl=document.getElementById('minesMultiplier'),payoutEl=document.getElementById('minesPayout');
+  if(mineCount)mineCount.textContent=game?String(game.mineCount):'—';
+  if(safeEl)safeEl.textContent=String(safeCount);
+  if(multEl)multEl.textContent='x'+(game?Number(game.multiplier||1).toFixed(2):'1.00');
+  if(payoutEl)payoutEl.textContent=game&&game.status==='active'&&safeCount?money(Math.floor(Number(game.betStars)*Number(game.multiplier))):money(game&&game.status==='cashed_out'?game.payoutStars:0);
+  board.innerHTML=Array.from({length:25},(_,cell)=>{
+    const isPicked=picked.has(cell),isMine=mines.has(cell),revealMine=game&&game.status!=='active'&&isMine;
+    let cls='mines-cell',content='<span class="mines-cell-question">✦</span>';
+    if(isPicked&&isMine){cls+=' mine-hit';content=minesBombSvg();}
+    else if(isPicked){cls+=' safe-open';content='<span class="mines-gem">◆</span>';}
+    else if(revealMine){cls+=' mine-reveal';content=minesBombSvg();}
+    const disabled=!active||isPicked;
+    return '<button type="button" class="'+cls+'" '+(disabled?'disabled':'')+' onclick="pickMinesCell('+cell+')" aria-label="Клетка '+(cell+1)+'">'+content+'</button>';
+  }).join('');
+  const start=document.getElementById('minesStartBtn'),cash=document.getElementById('minesCashoutBtn');
+  const betInput=document.getElementById('minesBetInput'),countInput=document.getElementById('minesCountSelect');
+  if(start){start.disabled=active||minesBusy;start.textContent=active?'Игра идёт':'Начать игру';}
+  if(cash){cash.disabled=!active||safeCount<1||minesBusy;cash.textContent=safeCount?('Забрать '+money(Math.floor(Number(game?.betStars||0)*Number(game?.multiplier||1)))):'Забрать выигрыш';}
+  if(betInput)betInput.disabled=active||minesBusy;
+  if(countInput)countInput.disabled=active||minesBusy;
+  const status=document.getElementById('minesStatus'),fair=document.getElementById('minesFairness');
+  if(status){
+    if(!game)status.textContent='Выбери ставку и количество мин, чтобы начать.';
+    else if(game.status==='active')status.textContent=safeCount?'Безопасно! Можешь открыть ещё клетку или забрать выигрыш.':'Поле готово. Выбирай первую клетку.';
+    else if(game.status==='lost')status.textContent='Мина! Ставка проиграна. Попробуй ещё раз.';
+    else status.textContent='Выигрыш зачислен: '+money(game.payoutStars)+'.';
+  }
+  if(fair&&game)fair.textContent=game.status==='active'?'Хеш поля: '+String(game.seedHash||'').slice(0,20)+'… · расположение уже зафиксировано.':'Проверочный seed: '+String(game.serverSeed||'').slice(0,22)+'… · хеш: '+String(game.seedHash||'').slice(0,16)+'…';
+  renderMinesCurrency();
+}
+async function loadMinesState(){
+  if(!tg?.initData)return;
+  try{const data=await apiRequest('/api/mines/state');minesGame=data.game||null;renderMinesUI();}
+  catch(error){if(error.message!=='Откройте приложение через Telegram, чтобы войти в аккаунт.')toast('Не удалось загрузить игру «Мины».',true);}
+}
+async function startMinesGame(){
+  if(!ageConfirmed)return toast('Сначала подтвердите возраст 18+.',true);
+  if(minesBusy||minesGame?.status==='active')return;
+  const entered=Number(String(document.getElementById('minesBetInput')?.value||'').replace(',','.'));
+  const betStars=currencyMode==='TON'?Math.round(entered*STARS_PER_TON):Math.round(entered);
+  const mineCount=Number(document.getElementById('minesCountSelect')?.value||5);
+  if(!Number.isFinite(entered)||entered<=0||!Number.isSafeInteger(betStars)||betStars<1||betStars>10000||(currencyMode==='TON'&&Math.abs(entered-betStars/STARS_PER_TON)>0.000001))return toast('Ставка должна быть от 1 Star (0,01 TON) до 10000 Stars.',true);
+  minesBusy=true;renderMinesUI();
+  try{
+    const data=await apiRequest('/api/mines/start',{method:'POST',body:JSON.stringify({betStars,mineCount})});
+    minesGame=data.game;await loadAccount();renderMinesUI();haptic('light');toast('Игра началась! Мины уже зафиксированы.');
+  }catch(error){
+    const messages={insufficient_balance:'Недостаточно средств на балансе.',mines_game_active:'У тебя уже есть незавершённая игра.',invalid_mines_bet:'Некорректная сумма ставки.',invalid_mine_count:'Выбери от 3 до 10 мин.'};
+    toast(messages[error.message]||'Не удалось начать игру: '+error.message,true);
+  }finally{minesBusy=false;renderMinesUI();}
+}
+async function pickMinesCell(cell){
+  if(minesBusy||!minesGame||minesGame.status!=='active')return;
+  minesBusy=true;renderMinesUI();
+  try{
+    const data=await apiRequest('/api/mines/pick',{method:'POST',body:JSON.stringify({gameId:minesGame.id,cell})});
+    minesGame=data.game;renderMinesUI();
+    if(data.mineHit){haptic('error');toast('Мина! Ставка проиграна.',true);await loadAccount();}
+    else if(data.autoCashout){haptic('success');toast('Все безопасные клетки открыты! Выигрыш '+money(minesGame.payoutStars));await loadAccount();}
+    else haptic('light');
+  }catch(error){
+    toast(error.message==='mines_cell_unavailable'?'Эта клетка уже открыта.':'Не удалось открыть клетку.',true);
+    await loadMinesState();
+  }finally{minesBusy=false;renderMinesUI();}
+}
+async function cashoutMines(){
+  if(minesBusy||!minesGame||minesGame.status!=='active'||!(minesGame.pickedCells||[]).length)return;
+  minesBusy=true;renderMinesUI();
+  try{
+    const data=await apiRequest('/api/mines/cashout',{method:'POST',body:JSON.stringify({gameId:minesGame.id})});
+    minesGame=data.game;renderMinesUI();await loadAccount();haptic('success');toast('Выигрыш зачислен: '+money(minesGame.payoutStars));
+  }catch(error){toast(error.message==='mines_cashout_unavailable'?'Сначала открой безопасную клетку.':'Не удалось забрать выигрыш.',true);await loadMinesState();}
+  finally{minesBusy=false;renderMinesUI();}
 }
 
 /* ===== CRASH ===== */

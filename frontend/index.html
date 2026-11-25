@@ -1526,7 +1526,28 @@ function playUiSound(kind) {
 
 
 const S=b=>`<svg class="ic" viewBox="0 0 64 64" fill="none" stroke="#0a0c12" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">${b}</svg>`;
-const chest=(a,b)=>S(`<ellipse cx="32" cy="57" rx="25" ry="4" fill="#000" opacity=".28" stroke="none"/><path d="M7 28h50v25a5 5 0 01-5 5H12a5 5 0 01-5-5z" fill="${a}" stroke="#17202a"/><path d="M7 28h50v-6a8 8 0 00-8-8H15a8 8 0 00-8 8z" fill="${b}" stroke="#17202a"/><path d="M7 29h50M13 34v17m38-17v17" stroke="#f0d49b" stroke-width="2" opacity=".75"/><path d="M25 29h14v29H25z" fill="#d8b77a" stroke="#735b38"/><rect x="26" y="34" width="12" height="13" rx="3" fill="#1b2633" stroke="#e5c68c"/><path d="M28 34v-4a4 4 0 018 0v4" stroke="#f0d49b" stroke-width="2.5" fill="none"/><circle cx="32" cy="40" r="1.6" fill="#f0d49b" stroke="none"/>`);
+const chest=(a,b)=>`<svg class="ic case-chest-art" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="chestBody" x1="0" y1="0" x2="0.9" y2="1"><stop stop-color="${b}"/><stop offset=".48" stop-color="${a}"/><stop offset="1" stop-color="#171522"/></linearGradient>
+    <linearGradient id="chestLid" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${b}"/><stop offset=".55" stop-color="${a}"/><stop offset="1" stop-color="#211b27"/></linearGradient>
+    <linearGradient id="chestGold" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff0b2"/><stop offset=".45" stop-color="#e7b95f"/><stop offset="1" stop-color="#8d572b"/></linearGradient>
+    <linearGradient id="chestGem" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset=".35" stop-color="${b}"/><stop offset="1" stop-color="${a}"/></linearGradient>
+  </defs>
+  <ellipse cx="48" cy="84" rx="34" ry="6" fill="#050711" opacity=".5"/>
+  <path d="M12 39h72v31a8 8 0 0 1-8 8H20a8 8 0 0 1-8-8z" fill="url(#chestBody)" stroke="#171522" stroke-width="3"/>
+  <path d="M17 48h62v21a4 4 0 0 1-4 4H21a4 4 0 0 1-4-4z" fill="#080d1b" opacity=".2"/>
+  <path d="M10 37h76v-8a15 15 0 0 0-15-15H25a15 15 0 0 0-15 15z" fill="url(#chestLid)" stroke="#171522" stroke-width="3"/>
+  <path d="M12 31h72M18 39v29m60-29v29" stroke="url(#chestGold)" stroke-width="4" stroke-linecap="round"/>
+  <path d="M21 18h54M17 25h62" stroke="#fff" stroke-width="1.8" opacity=".28" stroke-linecap="round"/>
+  <path d="M22 43h8v29h-8zm44 0h8v29h-8z" fill="url(#chestGold)" stroke="#513b2b" stroke-width="1.5"/>
+  <path d="M39 38h18v38H39z" rx="3" fill="url(#chestGold)" stroke="#513b2b" stroke-width="2"/>
+  <path d="M34 42h28v20H34z" rx="5" fill="#182035" stroke="url(#chestGold)" stroke-width="3"/>
+  <path d="M48 44l8 8-8 8-8-8z" fill="url(#chestGem)" stroke="#fff0c2" stroke-width="1.5"/>
+  <path d="M45 51l3-4 3 4-3 4z" fill="#fff" opacity=".55"/>
+  <circle cx="16" cy="43" r="2" fill="#fff0b2"/><circle cx="80" cy="43" r="2" fill="#fff0b2"/>
+  <path d="M19 78l-4 5h10m52-5 4 5H71" fill="none" stroke="url(#chestGold)" stroke-width="3" stroke-linecap="round"/>
+  <path d="M34 11l2-5m26 5-2-5" stroke="#fff" stroke-width="2" opacity=".55" stroke-linecap="round"/>
+</svg>`;
 function imageAsset(url, alt) { return '<img src="' + url + '" alt="' + alt + '" loading="lazy" decoding="async">'; }
 const casePhoto = chest('#813d22','#ef8645');
 // Свои иллюстрации в стиле TG-стикеров. Реальные картинки подарков подставляются в GIFTS[key].img как <img src=...> (см. getAvailableGifts).

@@ -180,6 +180,17 @@ const GIFT_DATA = {
   swiss_watch: { name: 'Swiss Watch NFT', emoji: '⌚', rarity: 'NFT · Средний', value: 6940 },
   perfume_bottle: { name: 'Perfume Bottle NFT', emoji: '🧴', rarity: 'NFT · Средний', value: 9050 },
 };
+Object.values(GIFT_DATA).forEach(gift => {
+  const current = String(gift.rarity || '').trim();
+  const value = Number(gift.value) || 0;
+  let tier = value < 50 ? 'Обычный' : value < 150 ? 'Редкий' : value < 1000 ? 'Эпический' : value < 5000 ? 'Легендарный' : 'Мифический';
+  if (!current || /^NFT(?:\\s*[·-]\\s*Средний)?$/i.test(current)) {
+    gift.rarity = current.toUpperCase().includes('NFT') ? 'NFT · ' + tier : tier;
+  } else if (/^NFT\\s*[·-]\\s*ДЖЕКПОТ$/i.test(current)) {
+    gift.rarity = 'NFT · Мифический · Джекпот';
+  }
+});
+
 
 function getCase(id) { return CASES.find(item => item.id === id); }
 function pickDrop(drops) {

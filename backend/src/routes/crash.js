@@ -220,7 +220,7 @@ router.post('/crash/preorder', async (req,res) => {
   const telegramId = String(req.telegramUser.id), client = await pool.connect();
   try {
     await client.query('BEGIN');
-    const active = await client.query("SELECT id,status,starts_at FROM crash_rounds WHERE status IN ('scheduled','running','crashed') ORDER BY id DESC LIMIT 1 FOR UPDATE");
+    const active = await client.query("SELECT id,status,starts_at FROM crash_rounds WHERE status IN ('scheduled','running','crashed') ORDER BY id DESC LIMIT 1");
     if (active.rowCount && active.rows[0].status === 'scheduled') {
       await client.query('ROLLBACK');
       return res.status(409).json({ok:false,error:'round_open_for_bet'});

@@ -1976,7 +1976,7 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
 #page-upgrade .chance{font-size:26px!important;line-height:1.05!important;margin:0 0 5px!important}
 #page-upgrade .chance small{font-size:9px!important;line-height:1.25!important;margin-top:3px!important}
 #page-upgrade #upgradeBtn{display:block!important;width:100%!important;min-height:48px!important;margin:0!important;padding:10px 12px!important;font-size:14px!important;position:relative!important;top:auto!important;bottom:auto!important;transform:none!important}
-.wheel-x2-marker{position:absolute;z-index:4;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;box-sizing:border-box;color:#49300a;font-size:11px;font-weight:1000;letter-spacing:-.7px;background:radial-gradient(circle at 35% 25%,#fff5b0 0%,#ffd64e 44%,#e69b19 100%);border:2px solid #fff0a0;box-shadow:0 2px 8px rgba(255,191,48,.65),inset 0 1px 2px rgba(255,255,255,.75);pointer-events:none;text-shadow:0 1px 0 rgba(255,255,255,.3)}
+.wheel-x2-marker{position:absolute;z-index:4;width:26px;height:26px;transform:translate(-50%,-50%);border-radius:50%;display:grid;place-items:center;box-sizing:border-box;color:#49300a;font-size:16px;font-weight:1000;line-height:1;background:radial-gradient(circle at 35% 25%,#fff5b0 0%,#ffd64e 44%,#e69b19 100%);border:2px solid #fff0a0;box-shadow:0 2px 8px rgba(255,191,48,.65),inset 0 1px 2px rgba(255,255,255,.75);pointer-events:none;text-shadow:0 1px 0 rgba(255,255,255,.3)}
 #upgradePickerBackdrop .upgrade-picker-sheet{background:linear-gradient(145deg,#172947,#101b31)!important;border:1px solid rgba(207,222,255,.18)!important}
 #upgradePickerBackdrop .upgrade-picker-head{margin-bottom:10px!important}
 #upgradePickerBackdrop .upgrade-chance-control{flex:0 0 auto!important;width:100%!important;margin:0 0 12px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
@@ -2200,7 +2200,7 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
       <div class="wheel-pointer" id="wheelPointer"></div>
       <div class="wheel" id="wheel">
         <div class="wheel-segments" id="wheelSegments"></div>
-        <div class="wheel-x2-marker" id="wheelX2Marker" aria-label="Секретный сектор x2" style="display:none">×2</div>
+        <div class="wheel-x2-marker" id="wheelX2Marker" aria-label="Секретный сектор" style="display:none">?</div>
       </div>
       <div class="wheel-center" id="wheelCenter" aria-hidden="true"></div>
     </div>
@@ -3711,7 +3711,7 @@ function renderUpgradeWheelSecret(chance,available){
   const secretWidth=Math.min(18,blueWidth),secretStart=(blueWidth-secretWidth)/2,secretEnd=secretStart+secretWidth;
   // Keep the x2 hit area invisible on the wheel; only its floating marker is shown.
   seg.style.background=`conic-gradient(var(--accent) 0deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;
-  const angle=(secretStart+secretEnd)/2*Math.PI/180,radius=Math.max(16,wheel.clientWidth/2-19);
+  const angle=(secretStart+secretEnd)/2*Math.PI/180,radius=Math.max(16,wheel.clientWidth/2-marker.offsetWidth/2-4);
   marker.style.left=`calc(50% + ${Math.sin(angle)*radius}px)`;
   marker.style.top=`calc(50% - ${Math.cos(angle)*radius}px)`;marker.style.display='grid';
 }

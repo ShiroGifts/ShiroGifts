@@ -132,6 +132,8 @@ async function migrate() {
     CREATE INDEX IF NOT EXISTS upgrade_events_user_idx ON upgrade_events(telegram_id, created_at DESC);
     ALTER TABLE upgrade_events ADD COLUMN IF NOT EXISTS double_reward BOOLEAN NOT NULL DEFAULT FALSE;
     ALTER TABLE upgrade_events ADD COLUMN IF NOT EXISTS second_created_inventory_id BIGINT REFERENCES inventory(id);
+    ALTER TABLE upgrade_events ADD COLUMN IF NOT EXISTS x2_available BOOLEAN NOT NULL DEFAULT FALSE;
+    ALTER TABLE upgrade_events ADD COLUMN IF NOT EXISTS x2_chance NUMERIC(12,9) NOT NULL DEFAULT 0;
 
     CREATE TABLE IF NOT EXISTS mines_games (
       id UUID PRIMARY KEY,

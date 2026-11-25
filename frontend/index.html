@@ -2266,7 +2266,7 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
 </div>
 
 <div class="upgrade-picker-backdrop" id="crashGiftPickerBackdrop" onclick="closeCrashGiftPicker()"><div class="upgrade-picker-sheet crash-gift-sheet" onclick="event.stopPropagation()"><div class="upgrade-picker-head"><b>Выберите подарок для ставки</b><button type="button" onclick="closeCrashGiftPicker()">✕</button></div><div class="picker-list" id="crashGiftPickerList"></div><button class="btn-big" id="crashGiftSubmit" type="button" onclick="submitCrashGift()" disabled>Поставить подарком</button></div></div>
-<div class="upgrade-picker-backdrop" id="crashStakePickerBackdrop" onclick="closeCrashStakePicker()"><div class="upgrade-picker-sheet crash-stake-sheet" onclick="event.stopPropagation()"><div class="upgrade-picker-head"><b>Ставка в валюте</b><button type="button" onclick="closeCrashStakePicker()">✕</button></div><label class="crash-stake-label" for="crashStakeAmount">Размер ставки</label><div class="crash-stake-input-wrap"><input class="crash-input" id="crashStakeAmount" type="number" value="50" min="1" step="1"><span id="crashStakeCurrencyLabel">Stars</span></div><button class="btn-big" type="button" onclick="submitCrashStake()">Поставить</button></div></div>
+<div class="upgrade-picker-backdrop" id="crashStakePickerBackdrop" onclick="closeCrashStakePicker()"><div class="upgrade-picker-sheet crash-stake-sheet" onclick="event.stopPropagation()"><div class="upgrade-picker-head"><b>Ставка</b><button type="button" onclick="closeCrashStakePicker()">✕</button></div><label class="crash-stake-label" for="crashStakeAmount">Размер ставки</label><div class="crash-stake-input-wrap"><input class="crash-input" id="crashStakeAmount" type="number" value="50" min="1" step="1"><span id="crashStakeCurrencyLabel">Stars</span></div><button class="btn-big" type="button" onclick="submitCrashStake()">Поставить</button></div></div>
 <div class="toast" id="toast"></div>
 
 <div class="loader" id="loader">
@@ -3839,7 +3839,7 @@ async function doUpgrade() {
 let minesGame=null,minesBusy=false;
 function renderMinesCurrency(){
   const input=document.getElementById('minesBetInput'),label=document.getElementById('minesCurrencyLabel');
-  if(input){input.step=currencyMode==='TON'?'0.01':'1';input.min=currencyMode==='TON'?'0.01':'1';}
+  if(input){input.step=currencyMode==='TON'?'0.01':'1';input.min=currencyMode==='TON'?'0.01':'1';if(!input.dataset.currencyReady){input.value=currencyMode==='TON'?'0.50':'50';input.dataset.currencyReady='1';}}
   if(label)label.textContent=currencyMode==='TON'?'TON':'Stars';
 }
 function minesBombSvg(){

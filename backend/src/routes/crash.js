@@ -35,6 +35,51 @@ async function createScheduledRound() {
   );
 }
 
+async function activateCrashPreorders(roundId) {
+  const queued = await pool.query("SELECT id FROM crash_preorders WHERE status='pending' ORDER BY created_at ASC");
+  for (const queuedRow of queued.rows) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const orderResult = await client.query("SELECT * FROM crash_preorders WHERE id=$1 AND status='pending' FOR UPDATE", [queuedRow.id]);
+      if (!orderResult.rowCount) { await client.query('ROLLBACK'); continue; }
+      const order = orderResult.rows[0];
+      const targetRound = await client.query("SELECT id,status,starts_at FROM crash_rounds WHERE id=$1 FOR UPDATE", [roundId]);
+      if (!targetRound.rowCount || targetRound.rows[0].status !== 'scheduled' || new Date(targetRound.rows[0].starts_at).getTime() <= Date.now()) { await client.query('ROLLBACK'); continue; }
+      const duplicate = await client.query('SELECT id FROM crash_bets WHERE round_id=$1 AND telegram_id=$2', [roundId, order.telegram_id]);
+      if (duplicate.rowCount) {
+        await client.query("UPDATE crash_preorders SET status='failed',error_code='bet_already_placed' WHERE id=$1", [order.id]);
+        await client.query('COMMIT'); continue;
+      }
+      let stake = Number(order.amount_stars || 0), sourceInventoryId = null;
+      if (order.wager_type === 'gift') {
+        const item = await client.query("SELECT id,value_stars FROM inventory WHERE id=$1 AND telegram_id=$2 AND status='crash_preorder_locked' FOR UPDATE", [order.inventory_id, order.telegram_id]);
+        if (!item.rowCount || !Number.isSafeInteger(Number(item.rows[0].value_stars)) || Number(item.rows[0].value_stars) < 1) {
+          await client.query("UPDATE crash_preorders SET status='failed',error_code='crash_item_not_found' WHERE id=$1", [order.id]);
+          await client.query("UPDATE inventory SET status='owned' WHERE id=$1 AND telegram_id=$2 AND status='crash_preorder_locked'", [order.inventory_id, order.telegram_id]);
+          await client.query('COMMIT'); continue;
+        }
+        sourceInventoryId = item.rows[0].id; stake = Number(item.rows[0].value_stars);
+        await client.query("UPDATE inventory SET status='crash_locked' WHERE id=$1", [sourceInventoryId]);
+      } else {
+        const balance = await client.query('SELECT COALESCE(SUM(amount_stars),0)::bigint AS balance FROM wallet_ledger WHERE telegram_id=$1', [order.telegram_id]);
+        if (Number(balance.rows[0].balance) < stake) {
+          await client.query("UPDATE crash_preorders SET status='failed',error_code='insufficient_balance' WHERE id=$1", [order.id]);
+          await client.query('COMMIT'); continue;
+        }
+        const ref = 'crash:' + roundId + ':bet:' + order.telegram_id;
+        await client.query("INSERT INTO wallet_ledger(telegram_id,amount_stars,entry_type,reference_id) VALUES($1,$2,'crash_bet',$3)", [order.telegram_id, -stake, ref]);
+      }
+      await client.query('INSERT INTO crash_bets(round_id,telegram_id,stake_stars,source_inventory_id,wager_currency) VALUES($1,$2,$3,$4,$5)', [roundId, order.telegram_id, stake, sourceInventoryId, sourceInventoryId ? 'NFT' : order.wager_currency]);
+      await client.query("UPDATE crash_preorders SET status='activated',activated_round_id=$2,error_code=NULL WHERE id=$1", [order.id, roundId]);
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => {});
+      console.error('[CRASH PREORDER ACTIVATE]', error.code || error.message);
+    } finally { client.release(); }
+  }
+}
+
 async function engineTick() {
   if (tickBusy || !engineClient) return;
   tickBusy = true;
@@ -44,6 +89,7 @@ async function engineTick() {
     const r = q.rows[0];
     const now = Date.now();
     if (r.status === 'scheduled') {
+      await activateCrashPreorders(r.id);
       const startAt = r.starts_at ? new Date(r.starts_at).getTime() : now;
       if (now >= startAt) {
         await pool.query(`UPDATE crash_rounds SET status='running', started_at=NOW() WHERE id=$1 AND status='scheduled'`, [r.id]);
@@ -109,7 +155,7 @@ router.get('/crash/state', async (req, res) => {
     const isCrashed = r.status === 'crashed' || r.status === 'settled';
     const phase = r.status === 'scheduled' ? 'betting' : r.status === 'running' ? 'flying' : 'crashed';
     const userId = String(req.telegramUser.id);
-    const [mine, bets, history] = await Promise.all([
+    const [mine, bets, history, preorder] = await Promise.all([
       pool.query('SELECT id,stake_stars,cashout_multiplier,payout_stars FROM crash_bets WHERE round_id=$1 AND telegram_id=$2', [r.id,userId]),
       pool.query(`SELECT b.id,b.telegram_id,b.stake_stars,b.cashout_multiplier,b.payout_stars,b.source_inventory_id,b.cashout_inventory_id,u.first_name,
         src.item_key AS gift_key,src.emoji AS gift_emoji,dst.item_key AS cashout_gift_key
@@ -117,14 +163,15 @@ router.get('/crash/state', async (req, res) => {
         LEFT JOIN inventory src ON src.id=b.source_inventory_id
         LEFT JOIN inventory dst ON dst.id=b.cashout_inventory_id
         WHERE b.round_id=$1 ORDER BY b.created_at DESC LIMIT 12`, [r.id]),
-      pool.query(`SELECT crash_multiplier FROM crash_rounds WHERE status IN ('crashed','settled') ORDER BY id DESC LIMIT 12`)
+      pool.query(`SELECT crash_multiplier FROM crash_rounds WHERE status IN ('crashed','settled') ORDER BY id DESC LIMIT 12`),
+      pool.query("SELECT id,status,wager_type,amount_stars,wager_currency,error_code FROM crash_preorders WHERE telegram_id=$1 ORDER BY id DESC LIMIT 1", [userId])
     ]);
     const b = mine.rows[0];
     const ownBet = b ? {id:String(b.id),amount:Number(b.stake_stars),cashed:b.cashout_multiplier==null?null:Number(b.cashout_multiplier),payout:b.payout_stars==null?null:Number(b.payout_stars)} : null;
     const serverTime = Date.now();
     const currentMult = r.status === 'running' ? multiplierAt(serverTime - new Date(r.started_at).getTime()) : 1;
     res.json({ok:true,serverTime,round:{id:String(r.id),phase,startsAt:r.starts_at?new Date(r.starts_at).getTime():null,startedAt:r.started_at?new Date(r.started_at).getTime():null,crashMult:isCrashed?Number(r.crash_multiplier):null,currentMult},
-      myBet:ownBet,history:history.rows.map(x=>Number(x.crash_multiplier)).filter(Number.isFinite),
+      myBet:ownBet,preorder:preorder.rows[0]?{id:String(preorder.rows[0].id),status:preorder.rows[0].status,type:preorder.rows[0].wager_type,amount:Number(preorder.rows[0].amount_stars)||null,currency:preorder.rows[0].wager_currency,error:preorder.rows[0].error_code||null}:null,history:history.rows.map(x=>Number(x.crash_multiplier)).filter(Number.isFinite),
       bets:bets.rows.map(x=>({id:String(x.id),name:x.first_name||'Игрок',bet:Number(x.stake_stars),giftKey:x.gift_key||null,giftEmoji:x.gift_emoji||null,cashoutGiftKey:x.cashout_gift_key||null,mult:x.cashout_multiplier==null?null:Number(x.cashout_multiplier),win:x.payout_stars==null?0:Number(x.payout_stars),crashed:x.cashout_multiplier==null&&r.status==='crashed'})),
       fairness:{serverSeedHash:r.server_seed_hash,revealedSeed:isCrashed?r.server_seed_revealed:null,clientSeed:isCrashed?r.client_seed:null,nonce:isCrashed?Number(r.nonce):null}});
   } catch(error) { console.error('[CRASH STATE]',error.code||error.message); res.status(500).json({ok:false,error:'crash_state_failed'}); }
@@ -159,6 +206,55 @@ router.post('/crash/bet', async (req,res) => {
     await client.query('COMMIT');
     res.json({ok:true,amount,roundId:String(round.rows[0].id)});
   } catch(error){await client.query('ROLLBACK').catch(()=>{});console.error('[CRASH BET]',error.code||error.message);res.status(error.code==='23505'?409:500).json({ok:false,error:error.code==='23505'?'bet_already_placed':'crash_bet_failed'});}
+  finally{client.release();}
+});
+
+
+router.post('/crash/preorder', async (req,res) => {
+  const type = req.body && req.body.type === 'gift' ? 'gift' : 'stars';
+  const amount = Number(req.body && req.body.amount);
+  const inventoryId = String(req.body && req.body.inventoryId || '');
+  const currency = req.body && req.body.currency === 'TON' ? 'TON' : 'STARS';
+  if (type === 'stars' && (!Number.isSafeInteger(amount) || amount < 1 || amount > 10000)) return res.status(400).json({ok:false,error:'invalid_bet_amount'});
+  if (type === 'gift' && !/^\\d+$/.test(inventoryId)) return res.status(400).json({ok:false,error:'invalid_crash_item'});
+  const telegramId = String(req.telegramUser.id), client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const active = await client.query("SELECT id,status,starts_at FROM crash_rounds WHERE status IN ('scheduled','running','crashed') ORDER BY id DESC LIMIT 1 FOR UPDATE");
+    if (active.rowCount && active.rows[0].status === 'scheduled') {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ok:false,error:'round_open_for_bet'});
+    }
+    if (type === 'gift') {
+      const item = await client.query("SELECT id FROM inventory WHERE id=$1 AND telegram_id=$2 AND status='owned' FOR UPDATE", [inventoryId, telegramId]);
+      if (!item.rowCount) { await client.query('ROLLBACK'); return res.status(404).json({ok:false,error:'crash_item_not_found'}); }
+      await client.query("UPDATE inventory SET status='crash_preorder_locked' WHERE id=$1", [inventoryId]);
+    }
+    const created = await client.query(
+      "INSERT INTO crash_preorders(telegram_id,wager_type,amount_stars,wager_currency,inventory_id,status) VALUES($1,$2,$3,$4,$5,'pending') RETURNING id",
+      [telegramId,type,type==='stars'?amount:null,currency,type==='gift'?inventoryId:null]
+    );
+    await client.query('COMMIT');
+    res.json({ok:true,preorderId:String(created.rows[0].id),status:'pending'});
+  } catch(error) {
+    await client.query('ROLLBACK').catch(()=>{});
+    if (error.code === '23505') return res.status(409).json({ok:false,error:'preorder_already_exists'});
+    console.error('[CRASH PREORDER]',error.code||error.message);
+    res.status(500).json({ok:false,error:'crash_preorder_failed'});
+  } finally { client.release(); }
+});
+
+router.post('/crash/preorder/cancel', async (req,res) => {
+  const telegramId=String(req.telegramUser.id),client=await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const order=await client.query("SELECT id,inventory_id FROM crash_preorders WHERE telegram_id=$1 AND status='pending' ORDER BY id DESC LIMIT 1 FOR UPDATE",[telegramId]);
+    if(!order.rowCount){await client.query('ROLLBACK');return res.status(404).json({ok:false,error:'preorder_not_found'});}
+    if(order.rows[0].inventory_id) await client.query("UPDATE inventory SET status='owned' WHERE id=$1 AND telegram_id=$2 AND status='crash_preorder_locked'",[order.rows[0].inventory_id,telegramId]);
+    await client.query("UPDATE crash_preorders SET status='cancelled' WHERE id=$1",[order.rows[0].id]);
+    await client.query('COMMIT');
+    res.json({ok:true});
+  } catch(error){await client.query('ROLLBACK').catch(()=>{});console.error('[CRASH PREORDER CANCEL]',error.code||error.message);res.status(500).json({ok:false,error:'preorder_cancel_failed'});}
   finally{client.release();}
 });
 

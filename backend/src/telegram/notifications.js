@@ -6,6 +6,7 @@ async function notifyAdminGift({ telegramId, username, firstName, itemName, sour
     if (setting.rowCount && setting.rows[0].value === 'false') return;
   } catch (error) {
     console.error('[GIFT ADMIN NOTIFY SETTING]', error.code || error.message);
+    return;
   }
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const admins = String(process.env.ADMIN_TELEGRAM_IDS || '').split(',').map(x => x.trim()).filter(Boolean);

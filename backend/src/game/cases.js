@@ -173,6 +173,9 @@ const GIFT_DATA = {
   sky_stilettos: { name: 'Sky Stilettos NFT', emoji: '👠', rarity: 'NFT · Средний', value: 2480 },
   ufc_strike: { name: 'UFC Strike NFT', emoji: '🥊', rarity: 'NFT · Средний', value: 2010 },
   ionic_dryer: { name: 'Ionic Dryer NFT', emoji: '💨', rarity: 'NFT · Средний', value: 1910 },
+  neko_helmet: { name: 'Neko Helmet NFT', emoji: '🪖', rarity: 'NFT · Средний', value: 4520 },
+  swiss_watch: { name: 'Swiss Watch NFT', emoji: '⌚', rarity: 'NFT · Средний', value: 6940 },
+  perfume_bottle: { name: 'Perfume Bottle NFT', emoji: '🧴', rarity: 'NFT · Средний', value: 9050 },
 };
 
 function getCase(id) { return CASES.find(item => item.id === id); }

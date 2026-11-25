@@ -19,6 +19,11 @@ async function migrate() {
     INSERT INTO app_settings(key, value)
       VALUES ('gift_admin_notifications_enabled', 'true')
       ON CONFLICT (key) DO NOTHING;
+    CREATE TABLE IF NOT EXISTS referral_bonus_credits (
+      telegram_id BIGINT PRIMARY KEY REFERENCES users(telegram_id),
+      bonus_count INTEGER NOT NULL DEFAULT 0 CHECK (bonus_count BETWEEN 0 AND 5),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
     CREATE TABLE IF NOT EXISTS inventory (
       id BIGSERIAL PRIMARY KEY,
       telegram_id BIGINT NOT NULL REFERENCES users(telegram_id),

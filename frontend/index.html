@@ -1444,7 +1444,7 @@ body.upgrade-spinning #page-upgrade #upgradeBtn{
 #crashGiftPickerBackdrop{z-index:1001}#crashGiftPickerBackdrop .picker-list{grid-template-columns:repeat(2,minmax(0,1fr))}#crashGiftPickerBackdrop .picker-item{min-height:150px}
 @media(max-width:380px){#page-crash .crash-canvas-wrap{height:260px!important}}
 
-#crashGiftPickerBackdrop{position:fixed;inset:0;z-index:1001;display:none;align-items:stretch;justify-content:stretch;padding:0;margin:0;background:rgba(3,7,18,.94);overscroll-behavior:contain}#crashGiftPickerBackdrop.show{display:flex}#crashGiftPickerBackdrop .upgrade-picker-sheet{width:100%;height:100%;height:100dvh;max-height:none;min-height:0;box-sizing:border-box;margin:0;padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 14px);display:flex;flex-direction:column;gap:0;overflow:hidden;border:0;border-radius:0;background:var(--bg);box-shadow:none}#crashGiftPickerBackdrop .upgrade-picker-head{flex:0 0 auto;min-height:54px;margin:0 0 14px;padding:0 0 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border)}#crashGiftPickerBackdrop .upgrade-picker-head b{font-size:17px;font-weight:900}#crashGiftPickerBackdrop .upgrade-picker-head button{flex:0 0 42px;width:42px;height:42px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--text);font-size:20px}#crashGiftPickerBackdrop .picker-list{flex:1 1 auto;min-height:0;width:100%;box-sizing:border-box;display:grid;align-content:start;align-items:stretch;gap:14px;overflow-x:hidden;overflow-y:auto;padding:0 2px calc(24px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch;overscroll-behavior:contain}#crashGiftPickerBackdrop .picker-item{width:auto;min-width:0;box-sizing:border-box;margin:0;padding:16px 12px;display:block;text-align:center;overflow-wrap:anywhere}#crashGiftPickerBackdrop .picker-item .gift-img{height:52px!important;max-height:52px!important;font-size:34px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0 0 8px}#crashGiftPickerBackdrop .picker-item .gift-img img{display:block!important;width:auto!important;height:auto!important;max-width:42px!important;max-height:42px!important;object-fit:contain!important}#crashGiftPickerBackdrop .picker-item .name{font-size:14px;font-weight:800;line-height:1.25;white-space:normal}#crashGiftPickerBackdrop .picker-item .rarity{font-size:11px;color:var(--text-dim);margin:3px 0 8px}#crashGiftPickerBackdrop .picker-item .value{font-size:13px;color:var(--gold);font-weight:800}
+#crashGiftPickerBackdrop{position:fixed;inset:0;z-index:1001;display:none;align-items:stretch;justify-content:stretch;padding:0;margin:0;background:rgba(3,7,18,.94);overscroll-behavior:contain}#crashGiftPickerBackdrop.show{display:flex}#crashGiftPickerBackdrop .upgrade-picker-sheet{width:100%;height:100%;height:100dvh;max-height:none;min-height:0;box-sizing:border-box;margin:0;padding:calc(env(safe-area-inset-top) + 14px) 8px calc(env(safe-area-inset-bottom) + 14px);display:flex;flex-direction:column;gap:0;overflow:hidden;border:0;border-radius:0;background:var(--bg);box-shadow:none}#crashGiftPickerBackdrop .upgrade-picker-head{flex:0 0 auto;min-height:54px;margin:0 0 14px;padding:0 0 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border)}#crashGiftPickerBackdrop .upgrade-picker-head b{font-size:17px;font-weight:900}#crashGiftPickerBackdrop .upgrade-picker-head button{flex:0 0 42px;width:42px;height:42px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--text);font-size:20px}#crashGiftPickerBackdrop .picker-list{flex:1 1 auto;min-height:0;width:100%;box-sizing:border-box;display:grid;align-content:start;align-items:stretch;gap:10px;overflow-x:hidden;overflow-y:auto;padding:0 0 calc(24px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch;overscroll-behavior:contain}#crashGiftPickerBackdrop .picker-item{width:100%;min-width:0;box-sizing:border-box;margin:0;padding:16px 8px;display:block;text-align:center;overflow-wrap:anywhere}#crashGiftPickerBackdrop .picker-item .gift-img{height:52px!important;max-height:52px!important;font-size:34px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0 0 8px}#crashGiftPickerBackdrop .picker-item .gift-img img{display:block!important;width:auto!important;height:auto!important;max-width:42px!important;max-height:42px!important;object-fit:contain!important}#crashGiftPickerBackdrop .picker-item .name{font-size:14px;font-weight:800;line-height:1.25;white-space:normal}#crashGiftPickerBackdrop .picker-item .rarity{font-size:11px;color:var(--text-dim);margin:3px 0 8px}#crashGiftPickerBackdrop .picker-item .value{font-size:13px;color:var(--gold);font-weight:800}
 
 /* Crash layout: game stays at the top; history and bets scroll below it. */
 body:has(#page-crash.active){overflow-x:hidden!important;overflow-y:auto!important;touch-action:pan-y!important;padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}
@@ -1542,6 +1542,10 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
 #page-crash .crash-feed{display:flex!important;flex:0 0 auto!important;height:auto!important;min-height:0!important;max-height:150px!important;overflow-x:hidden!important;overflow-y:auto!important;contain:layout paint!important;overscroll-behavior:contain!important;touch-action:pan-y!important;-webkit-overflow-scrolling:touch!important}
 #page-crash .crash-feed .feed-row{flex:0 0 auto!important}
 @media(max-height:740px){#page-crash .crash-feed{max-height:120px!important}}
+
+/* Small independent countdown badge; keep the multiplier readable. */
+.crash-countdown{position:absolute;z-index:5;top:69px;left:50%;transform:translateX(-50%);padding:4px 8px;border:1px solid rgba(151,184,255,.28);border-radius:8px;background:rgba(7,15,34,.72);color:#c8dcff;font-size:10px;font-weight:800;letter-spacing:.35px;line-height:1.2;white-space:nowrap;pointer-events:none;backdrop-filter:blur(5px)}
+@media(max-height:740px){.crash-countdown{top:66px;font-size:9px;padding:3px 7px}}
 </style>
 </head>
 <body>
@@ -1580,15 +1584,15 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
   <div class="profile-hero">
     <div class="profile-avatar" id="profileAvatar">S</div>
     <div class="profile-identity">
-      <div class="profile-name-line"><div class="profile-name" id="profileName">Игрок ShiroGifts</div><span class="profile-promo-badge" id="profilePromoBadge" style="display:none">+25 ★ / 24 ч</span></div>
+      <div class="profile-name-line"><div class="profile-name" id="profileName">Игрок ShiroGifts</div><span class="profile-promo-badge" id="profilePromoBadge" style="display:none">+10 ★ / 24 ч</span></div>
       <div class="profile-username" id="profileUsername">Telegram</div>
       <div class="profile-id" id="profileTelegramId"></div>
     </div>
   </div>
   <div class="promo-panel profile-reward-panel" id="dailyNameRewardPanel">
-    <div class="promo-heading">🎁 Награда за ник · 25 ★</div>
-    <div class="promo-description" id="dailyNameRewardText">Добавь @ShiroGiftsBot в отображаемое имя Telegram и забирай 25 Stars раз в 24 часа.</div>
-    <button class="btn-big" id="dailyNameRewardBtn" onclick="claimDailyNameReward()">Проверить и забрать 25 ★</button>
+    <div class="promo-heading">🎁 Награда за ник · 10 ★</div>
+    <div class="promo-description" id="dailyNameRewardText">Добавь @ShiroGiftsBot в отображаемое имя Telegram и забирай 10 Stars раз в 24 часа.</div>
+    <button class="btn-big" id="dailyNameRewardBtn" onclick="claimDailyNameReward()">Проверить и забрать 10 ★</button>
     <div class="promo-status" id="dailyNameRewardStatus" aria-live="polite"></div>
   </div>
 
@@ -1602,6 +1606,12 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
     <button class="btn btn-withdraw" style="width:100%" onclick="copyRefLink()">Копировать ссылку</button>
   </div>
       <details class="owner-tools" style="margin-top:22px"><summary>Инструменты владельца</summary>
+    <div class="promo-heading" style="margin-top:18px">Выдать 5/5 рефералов игроку</div>
+    <div class="promo-description">Откроет игроку вывод NFT без приглашения друзей. Учитывается отдельно от реальных приглашений.</div>
+    <label class="promo-label" for="adminReferralTelegramId">Telegram ID игрока</label>
+    <input class="promo-input" id="adminReferralTelegramId" inputmode="numeric" placeholder="Например, 123456789">
+    <button class="btn-big" type="button" onclick="grantReferralCredit()">Выдать 5/5 рефералов</button>
+    <div class="promo-status" id="adminReferralResult" aria-live="polite"></div>
     <div class="promo-heading" style="margin-top:18px">Режим записи (только мой аккаунт)</div>
     <div class="promo-description">Изолированная демонстрация: тестовые выигрыши не списывают Stars и не добавляют предметы в настоящий инвентарь. Подменённый онлайн виден только в твоём окне.</div>
     <label class="promo-label"><input id="demoModeEnabled" type="checkbox" onchange="updateDemoMode()"> Включить режим записи (кейсы + апгрейд)</label>
@@ -1716,6 +1726,7 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
     <div class="crash-canvas-wrap">
       <canvas id="crashCanvas"></canvas>
       <div class="crash-mult" id="crashMult">1.00x</div>
+      <div class="crash-countdown" id="crashCountdown" style="display:none" aria-live="off"></div>
       <div id="crashGiftFlight" class="crash-gift-flight" style="display:none"></div>
     </div>
     <div class="crash-feed-title">Последние полёты</div>
@@ -1987,6 +1998,9 @@ const GIFTS = {
   sky_stilettos: { name: 'Sky Stilettos NFT', price: 2480, img: tgNft('sky_stilettos','Sky Stilettos NFT'), rarity: 'NFT · Средний' },
   ufc_strike: { name: 'UFC Strike NFT', price: 2010, img: tgNft('ufc_strike','UFC Strike NFT'), rarity: 'NFT · Средний' },
   ionic_dryer: { name: 'Ionic Dryer NFT', price: 1910, img: tgNft('ionic_dryer','Ionic Dryer NFT'), rarity: 'NFT · Средний' },
+  neko_helmet: { name: 'Neko Helmet NFT', price: 4520, img: tgNft('neko_helmet','Neko Helmet NFT'), rarity: 'NFT · Средний' },
+  swiss_watch: { name: 'Swiss Watch NFT', price: 6940, img: tgNft('swiss_watch','Swiss Watch NFT'), rarity: 'NFT · Средний' },
+  perfume_bottle: { name: 'Perfume Bottle NFT', price: 9050, img: tgNft('perfume_bottle','Perfume Bottle NFT'), rarity: 'NFT · Средний' },
 };
 
 const CASES = [
@@ -2047,13 +2061,13 @@ function updateCurrencyCopy() {
   const button = document.getElementById('currencyToggle');
   if (button) button.textContent = currencyMode === 'TON' ? '⭐' : 'TON';
   const promo = document.getElementById('profilePromoBadge');
-  if (promo) promo.textContent = '+ ' + money(25) + ' / 24 ч';
+  if (promo) promo.textContent = '+ ' + money(10) + ' / 24 ч';
   const dailyTitle = document.querySelector('#page-inventory .promo-heading');
-  if (dailyTitle) dailyTitle.textContent = '🎁 Награда за ник · ' + money(25);
+  if (dailyTitle) dailyTitle.textContent = '🎁 Награда за ник · ' + money(10);
   const dailyBtn = document.getElementById('dailyNameRewardBtn');
-  if (dailyBtn && !dailyBtn.disabled) dailyBtn.textContent = 'Проверить и забрать ' + money(25);
+  if (dailyBtn && !dailyBtn.disabled) dailyBtn.textContent = 'Проверить и забрать ' + money(10);
   const dailyText = document.getElementById('dailyNameRewardText');
-  if (dailyText) dailyText.textContent = 'Добавь @ShiroGiftsBot в отображаемое имя Telegram и забирай ' + money(25) + ' раз в 24 часа.';
+  if (dailyText) dailyText.textContent = 'Добавь @ShiroGiftsBot в отображаемое имя Telegram и забирай ' + money(10) + ' раз в 24 часа.';
 }
 function updateBalanceUI() {
   const icon = document.getElementById('balanceCurrencyIcon');
@@ -2463,12 +2477,12 @@ async function loadDailyNameRewardStatus() {
     } else if (!data.canClaim) {
       text.textContent = 'Упоминание бота найдено! Следующая награда доступна через 24 часа после прошлого получения.';
       button.disabled = true;
-      button.textContent = money(25) + ' уже получены';
+      button.textContent = money(10) + ' уже получены';
       status.textContent = dailyNameRewardNextAt ? 'Следующая награда: ' + new Date(dailyNameRewardNextAt).toLocaleString('ru-RU') : '';
     } else {
-      text.textContent = 'Упоминание @ShiroGiftsBot найдено в имени. Забирай ' + money(25) + '!';
+      text.textContent = 'Упоминание @ShiroGiftsBot найдено в имени. Забирай ' + money(10) + '!';
       button.disabled = false;
-      button.textContent = 'Забрать ' + money(25);
+      button.textContent = 'Забрать ' + money(10);
       status.textContent = '';
     }
   } catch (_) {}
@@ -2485,7 +2499,7 @@ async function claimDailyNameReward() {
     updateBalanceUI();
     dailyNameRewardNextAt = data.nextClaimAt ? new Date(data.nextClaimAt).getTime() : Date.now() + 86400000;
     haptic('success');
-    toast('Начислено ' + money(25) + '!');
+    toast('Начислено ' + money(10) + '!');
     await loadDailyNameRewardStatus();
   } catch (error) {
     if (error.message === 'daily_name_tag_required') {
@@ -3476,8 +3490,16 @@ function crashFrame() {
     const th = crashHeading(timeAt(crashMult)), tx = cw.clientWidth / 2 - Math.cos(th) * 24 * k, ty = cw.clientHeight * 0.52 - Math.sin(th) * 24 * k;
     for (let i = 0; i < 2; i++) crashParticles.push({ x: tx, y: ty, vx: -Math.cos(th) * 2.2 + (Math.random() - .5), vy: -Math.sin(th) * 2.2 + (Math.random() - .5) - 0.1, r: Math.random() * 3 + 2, life: 0.8, color: Math.random() < .5 ? '#ffc42e' : '#ff6a2b' });
   } else if (round.phase === 'betting') {
-    multEl.classList.add('wait'); multEl.textContent = 'Старт через ' + Math.max(0, (round.startsAt - serverNow()) / 1000).toFixed(1) + ' с';
+    multEl.classList.remove('wait'); multEl.textContent = '1.00x';
   } else { multEl.classList.remove('wait'); multEl.textContent = crashMult.toFixed(2) + 'x'; }
+  const countdown = document.getElementById('crashCountdown');
+  if (countdown) {
+    if (round.phase === 'betting' && Number.isFinite(Number(round.startsAt))) {
+      const left = Math.max(0, (Number(round.startsAt) - serverNow()) / 1000);
+      countdown.textContent = 'ВЗЛЁТ ЧЕРЕЗ ' + left.toFixed(1) + ' с';
+      countdown.style.display = 'block';
+    } else countdown.style.display = 'none';
+  }
   updateParticles();
   if (document.getElementById('page-crash').classList.contains('active')) drawCrash();
   requestAnimationFrame(crashFrame);
@@ -3855,14 +3877,14 @@ async function createPromo() {
 }
 
 /* ===== РЕФЕРАЛЫ / ВЫВОД NFT ===== */
-const BOT_USERNAME = 'ShiroGiftsBot'; // TODO: username вашего бота
+const BOT_USERNAME = 'ShiroGiftsBot';
 const REF_NEED = 5;
 const NFT_WAIT_DAYS = 7;
 let referralsCount = 0; // приходит с сервера (в демо можно выставить в консоли)
 
 function refLink() {
   const id = tg?.initDataUnsafe?.user?.id || 'demo';
-  return `https://t.me/${BOT_USERNAME}?startapp=ref_${id}`;
+  return `https://t.me/${BOT_USERNAME}/ShiroNft?startapp=ref_${id}`;
 }
 function renderRef() {
   document.getElementById('refCount').textContent = Math.min(referralsCount, REF_NEED);

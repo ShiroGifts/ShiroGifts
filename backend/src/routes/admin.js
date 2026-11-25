@@ -124,4 +124,28 @@ router.post('/admin/settings/gift-notifications', async (req, res) => {
   }
 });
 
+
+router.post('/admin/referrals/grant', async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ ok: false, error: 'admin_only' });
+  const targetId = String(req.body && req.body.telegramId || '').trim();
+  if (!/^\\d{5,20}$/.test(targetId)) return res.status(400).json({ ok: false, error: 'invalid_telegram_id' });
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('INSERT INTO users (telegram_id) VALUES ($1) ON CONFLICT (telegram_id) DO NOTHING', [targetId]);
+    await client.query(
+      `INSERT INTO referral_bonus_credits (telegram_id, bonus_count, updated_at)
+       VALUES ($1, 5, NOW())
+       ON CONFLICT (telegram_id) DO UPDATE SET bonus_count = 5, updated_at = NOW()`,
+      [targetId]
+    );
+    await client.query('COMMIT');
+    res.json({ ok: true, telegramId: targetId, referralsCount: 5, required: 5 });
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => {});
+    console.error('[ADMIN REFERRAL GRANT ERROR]', error.code || error.message);
+    res.status(500).json({ ok: false, error: 'referral_grant_failed' });
+  } finally { client.release(); }
+});
+
 module.exports = router;

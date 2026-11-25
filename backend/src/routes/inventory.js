@@ -164,7 +164,11 @@ router.post('/inventory/withdraw', async (req, res) => {
     const gift = item.rows[0];
     const isNft = String(gift.rarity).toUpperCase().includes('NFT') || gift.item_key === 'random_nft';
     if (isNft) {
-      const refs = await client.query('SELECT COUNT(*)::int AS count FROM referrals WHERE referrer_telegram_id=$1',[telegramId]);
+      const refs = await client.query(
+        `SELECT (SELECT COUNT(*)::int FROM referrals WHERE referrer_telegram_id=$1) +
+                COALESCE((SELECT bonus_count FROM referral_bonus_credits WHERE telegram_id=$1),0) AS count`,
+        [telegramId]
+      );
       if (Number(refs.rows[0].count)<5) {
         await client.query('ROLLBACK');
         return res.status(403).json({ok:false,error:'referrals_required',referralsCount:Number(refs.rows[0].count),referralsRequired:5});

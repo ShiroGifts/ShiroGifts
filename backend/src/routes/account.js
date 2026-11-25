@@ -19,7 +19,10 @@ router.get('/me', async (req, res) => {
       [id]
     );
     const profile = await client.query('SELECT age_confirmed_at FROM users WHERE telegram_id = $1', [id]);
-    const referrals = await client.query('SELECT COUNT(*)::int AS count FROM referrals WHERE referrer_telegram_id = $1', [id]);
+    const referrals = await client.query(
+      `SELECT (SELECT COUNT(*)::int FROM referrals WHERE referrer_telegram_id = $1) +
+              COALESCE((SELECT bonus_count FROM referral_bonus_credits WHERE telegram_id = $1), 0) AS count`, [id]
+    );
     res.json({
       ok: true,
       user: { id, firstName: req.telegramUser.first_name || '', username: req.telegramUser.username || null },
@@ -74,7 +77,7 @@ router.post('/daily-name-reward/claim', async (req, res) => {
       return res.status(429).json({ ok: false, error: 'daily_reward_cooldown', nextClaimAt: nextClaimAt.toISOString() });
     }
     await client.query(
-      "INSERT INTO wallet_ledger (telegram_id, amount_stars, entry_type, reference_id) VALUES ($1, 25, 'daily_reward', $2)",
+      "INSERT INTO wallet_ledger (telegram_id, amount_stars, entry_type, reference_id) VALUES ($1, 10, 'daily_reward', $2)",
       [telegramId, 'daily-name:' + telegramId + ':' + Date.now()]
     );
     await client.query(
@@ -84,7 +87,7 @@ router.post('/daily-name-reward/claim', async (req, res) => {
     const wallet = await client.query('SELECT COALESCE(SUM(amount_stars), 0)::bigint AS balance FROM wallet_ledger WHERE telegram_id = $1', [telegramId]);
     const claimed = await client.query('SELECT last_claimed_at FROM daily_name_rewards WHERE telegram_id = $1', [telegramId]);
     await client.query('COMMIT');
-    res.json({ ok: true, amount: 25, balance: Number(wallet.rows[0].balance), nextClaimAt: new Date(new Date(claimed.rows[0].last_claimed_at).getTime() + 24 * 60 * 60 * 1000).toISOString() });
+    res.json({ ok: true, amount: 10, balance: Number(wallet.rows[0].balance), nextClaimAt: new Date(new Date(claimed.rows[0].last_claimed_at).getTime() + 24 * 60 * 60 * 1000).toISOString() });
   } catch (error) {
     await client.query('ROLLBACK').catch(() => {});
     console.error('[DAILY NAME CLAIM ERROR]', error.code || error.message);

@@ -86,7 +86,10 @@ const CASES = [
     { type: 'gift', key: 'sky_stilettos', weight: 1700 },
     { type: 'gift', key: 'ufc_strike', weight: 1700 },
     { type: 'gift', key: 'ionic_dryer', weight: 1700 },
-    { type: 'nothing', weight: 407400 },
+    { type: 'gift', key: 'neko_helmet', weight: 100 },
+    { type: 'gift', key: 'swiss_watch', weight: 100 },
+    { type: 'gift', key: 'perfume_bottle', weight: 100 },
+    { type: 'nothing', weight: 407100 },
   ]},
   { id: 'nft2', name: 'НФТ 2', price: 600, drops: [
     { type: 'gift', key: 'bday_candle', weight: 5 },

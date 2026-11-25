@@ -147,16 +147,6 @@ router.post('/inventory/withdraw', async (req, res) => {
       return res.json({ok:true,delivered:true,requestId:String(request.rows[0].id),type:'ordinary_gift'});
     }
     const request = await client.query(
-        `INSERT INTO withdrawal_requests(telegram_id,inventory_id,withdrawal_type,status,admin_note)
-         VALUES($1,$2,'ordinary_gift','pending',$3) RETURNING id,status,created_at`,
-        [telegramId,id,'Ожидает ручной отправки. '+caption]
-      );
-      await client.query("UPDATE inventory SET status='withdraw_pending' WHERE id=$1",[id]);
-      await client.query('COMMIT');
-      notifyAdminGift({ telegramId, username: req.telegramUser.username, firstName: req.telegramUser.first_name, itemName: gift.name, source: 'Новая заявка на вывод подарка', inventoryId: id }).catch(() => {});
-      return res.json({ok:true,delivered:false,requestId:String(request.rows[0].id),status:request.rows[0].status,type:'ordinary_gift'});
-    }
-    const request = await client.query(
       `INSERT INTO withdrawal_requests(telegram_id,inventory_id,withdrawal_type)
        VALUES($1,$2,'random_nft') RETURNING id,status,created_at`,
       [telegramId,id]

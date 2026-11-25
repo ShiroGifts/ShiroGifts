@@ -139,6 +139,7 @@ async function migrate() {
     CREATE INDEX IF NOT EXISTS crash_rounds_status_idx ON crash_rounds(status, id DESC);
     ALTER TABLE crash_bets ADD COLUMN IF NOT EXISTS source_inventory_id BIGINT REFERENCES inventory(id);
     ALTER TABLE crash_bets ADD COLUMN IF NOT EXISTS cashout_inventory_id BIGINT REFERENCES inventory(id);
+    ALTER TABLE crash_bets ADD COLUMN IF NOT EXISTS wager_currency TEXT NOT NULL DEFAULT 'STARS';
     CREATE INDEX IF NOT EXISTS crash_bets_round_idx ON crash_bets(round_id, created_at DESC);
 
     CREATE TABLE IF NOT EXISTS promo_codes (

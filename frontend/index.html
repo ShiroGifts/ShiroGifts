@@ -3540,6 +3540,14 @@ function feedCheckEmpty() {
 }
 
 // Имена — через textContent (никакого innerHTML с данными игроков: защита от XSS)
+function crashGiftImageUrl(art) {
+  if (typeof art !== 'string') return '';
+  const direct = art.match(/^https?:\/\/[^\s"'<>]+/i);
+  if (direct) return direct[0];
+  const embedded = art.match(/<img\b[^>]*\bsrc\s*=\s*["']([^"']+)["']/i);
+  return embedded && /^https?:\/\//i.test(embedded[1]) ? embedded[1] : '';
+}
+
 function addFeedRow({ betId, name, avatar, bet, giftKey, giftEmoji, cashoutGiftKey, isYou }) {
   const feed = document.getElementById('crashFeed');
   const row = document.createElement('div');
@@ -3551,9 +3559,10 @@ function addFeedRow({ betId, name, avatar, bet, giftKey, giftEmoji, cashoutGiftK
   if (giftKey) {
     const gift = GIFTS[giftKey] || {};
     const art = gift.img || giftEmoji || '🎁';
-    if (typeof art === 'string' && /^https?:\/\//i.test(art)) {
-      const img = document.createElement('img'); img.src = art; img.alt = gift.name || 'NFT'; img.className = 'crash-feed-gift'; wager.appendChild(img);
-    } else { wager.textContent = art; wager.title = gift.name || 'NFT'; }
+    const imageUrl = crashGiftImageUrl(art);
+    if (imageUrl) {
+      const img = document.createElement('img'); img.src = imageUrl; img.alt = gift.name || 'NFT'; img.className = 'crash-feed-gift'; img.loading = 'lazy'; wager.appendChild(img);
+    } else { wager.textContent = giftEmoji || '🎁'; wager.title = gift.name || 'NFT'; }
     wager.classList.add('is-nft');
     wager.dataset.giftKey = giftKey;
   } else wager.textContent = money(bet);
@@ -3586,9 +3595,10 @@ function setFeedGiftResult(betId, giftKey) {
   const art = gift.img || gift.emoji || '🎁';
   res.className = 'f-result';
   res.textContent = '';
-  if (typeof art === 'string' && /^https?:\/\//i.test(art)) {
-    const img = document.createElement('img'); img.src = art; img.alt = gift.name || 'NFT'; img.className = 'crash-feed-gift'; res.appendChild(img);
-  } else res.textContent = art;
+  const imageUrl = crashGiftImageUrl(art);
+  if (imageUrl) {
+    const img = document.createElement('img'); img.src = imageUrl; img.alt = gift.name || 'NFT'; img.className = 'crash-feed-gift'; img.loading = 'lazy'; res.appendChild(img);
+  } else res.textContent = gift.emoji || '🎁';
   res.title = gift.name || 'NFT';
 }
 function updateFeedYou(mult, win, crashed) {

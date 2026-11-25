@@ -1708,7 +1708,7 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
       <div class="wheel" id="wheel">
         <div class="wheel-segments" id="wheelSegments"></div>
       </div>
-      <div class="wheel-center" data-ic="star"></div>
+      <div class="wheel-center" id="wheelCenter" aria-hidden="true"></div>
     </div>
     <div class="chance" id="chanceVal">—</div>
     <button class="btn-big" id="upgradeBtn" onclick="doUpgrade()" disabled>Выберите предметы</button>
@@ -1728,7 +1728,7 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
     <div class="crash-history" id="crashHistory"></div>
     <div class="crash-controls">
       <select class="crash-input" id="crashWagerMode" onchange="setCrashWagerMode(this.value)"><option value="stars">Ставка Stars</option><option value="gift">NFT / подарок из инвентаря</option></select>
-      <input class="crash-input" id="crashBet" type="number" value="50" min="1">
+      <div class="crash-bet-wrap"><input class="crash-input" id="crashBet" type="number" value="50" min="1" step="1" aria-label="Размер ставки"><span class="crash-bet-currency" id="crashBetCurrency">Stars</span></div>
       <button class="crash-gift-select-btn" id="crashGiftSelectButton" type="button" onclick="openCrashGiftPicker()">🎁 Выбрать подарок из инвентаря</button><select class="crash-input" id="crashGiftSelect" style="display:none;min-width:0"></select>
       <button class="btn-cashout" id="crashBtn" onclick="crashAction()">Взлететь</button>
     </div>
@@ -1752,14 +1752,12 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
   <div class="upgrade-picker-sheet" onclick="event.stopPropagation()">
     <div class="upgrade-picker-head"><b id="upgradePickerTitle">Выберите предмет</b><button type="button" onclick="closeUpgradePicker()">✕</button></div>
     <div class="upgrade-chance-control" id="upgradeChanceControl" style="display:none">
-      <div class="upgrade-chance-label"><span>Желаемый шанс</span><b id="upgradeDesiredChanceLabel">30%</b></div>
       <div class="upgrade-chance-presets" role="group" aria-label="Желаемый шанс апгрейда">
         <button type="button" data-chance="10" onclick="setUpgradeDesiredChance(10)">10%</button>
         <button type="button" data-chance="30" class="active" onclick="setUpgradeDesiredChance(30)">30%</button>
         <button type="button" data-chance="50" onclick="setUpgradeDesiredChance(50)">50%</button>
         <button type="button" data-chance="80" onclick="setUpgradeDesiredChance(80)">80%</button>
       </div>
-      <div class="upgrade-chance-hint" id="upgradeChanceHint">Подберём ближайший подходящий NFT или подарок</div>
     </div>
     <div class="picker-list" id="pickerList"></div>
   </div>
@@ -1796,8 +1794,9 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
   </div>
 </div>
 <div class="case-preview-overlay" id="casePreview">
-  <div class="case-preview-top"><button class="case-back" onclick="closeCasePreview()">←</button><div class="case-preview-title" id="previewTitle">Кейс</div><div style="width:42px"></div></div>
+  <div class="case-preview-top"><button class="case-back" onclick="closeCasePreview()" aria-label="Назад"><svg viewBox="0 0 24 24" width="23" height="23" aria-hidden="true"><path d="M19 12H5m7-7-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
   <div class="case-preview-main">
+    <div class="case-preview-title" id="previewTitle">Кейс</div>
     <div class="case-preview-art" id="previewArt">🎁</div>
     <div class="case-preview-price" id="previewPrice">★ 50</div>
     <div class="case-quantity" id="caseQuantity" aria-label="Количество кейсов"><button type="button" class="active" data-count="1" onclick="selectCaseCount(1)">1</button><button type="button" data-count="2" onclick="selectCaseCount(2)">2</button><button type="button" data-count="3" onclick="selectCaseCount(3)">3</button><button type="button" data-count="4" onclick="selectCaseCount(4)">4</button><button type="button" data-count="5" onclick="selectCaseCount(5)">5</button></div>
@@ -2004,6 +2003,24 @@ const GIFTS = {
   swiss_watch: { name: 'Swiss Watch NFT', price: 6940, img: tgNft('swiss_watch','Swiss Watch NFT'), rarity: 'NFT · Средний' },
   perfume_bottle: { name: 'Perfume Bottle NFT', price: 9050, img: tgNft('perfume_bottle','Perfume Bottle NFT'), rarity: 'NFT · Средний' },
 };
+function rarityTierByPrice(price) {
+  const value = Number(price) || 0;
+  if (value < 50) return 'Обычный';
+  if (value < 150) return 'Редкий';
+  if (value < 1000) return 'Эпический';
+  if (value < 5000) return 'Легендарный';
+  return 'Мифический';
+}
+Object.values(GIFTS).forEach(gift => {
+  const current = String(gift.rarity || '').trim();
+  if (!current || /^NFT(?:\\s*[·-]\\s*Средний)?$/i.test(current)) {
+    const tier = rarityTierByPrice(gift.price);
+    gift.rarity = current.toUpperCase().includes('NFT') ? 'NFT · ' + tier : tier;
+  } else if (/^NFT\\s*[·-]\\s*ДЖЕКПОТ$/i.test(current)) {
+    gift.rarity = 'NFT · Мифический · Джекпот';
+  }
+});
+
 
 const CASES = [
   { id: 'farm', name: 'Фарм', price: 1, icon: chest('#14534f','#36b99d'), drops: ['random_nft','nothing'] },
@@ -2062,6 +2079,16 @@ function toggleCurrency() {
 function updateCurrencyCopy() {
   const button = document.getElementById('currencyToggle');
   if (button) button.textContent = currencyMode === 'TON' ? '⭐' : 'TON';
+  const crashBetCurrency = document.getElementById('crashBetCurrency');
+  const crashBetInput = document.getElementById('crashBet');
+  const crashStarsOption = document.querySelector('#crashWagerMode option[value="stars"]');
+  if (crashBetCurrency) crashBetCurrency.textContent = currencyMode === 'TON' ? 'TON' : 'Stars';
+  if (crashStarsOption) crashStarsOption.textContent = 'Ставка ' + (currencyMode === 'TON' ? 'TON' : 'Stars');
+  if (crashBetInput) {
+    crashBetInput.step = currencyMode === 'TON' ? '0.01' : '1';
+    crashBetInput.min = currencyMode === 'TON' ? '0.01' : '1';
+    crashBetInput.setAttribute('aria-label', 'Размер ставки в ' + (currencyMode === 'TON' ? 'TON' : 'Stars'));
+  }
   const promo = document.getElementById('profilePromoBadge');
   if (promo) promo.textContent = '+ ' + money(10) + ' / 24 ч';
   const dailyTitle = document.querySelector('#page-inventory .promo-heading');
@@ -2910,6 +2937,7 @@ document.getElementById('modalConfirm').addEventListener('click', () => {
 function isOwnerDemoBoostActive() {
   return isOwnerDemoActive() && !!document.getElementById('demoBoostEnabled')?.checked;
 }
+const MIN_UPGRADE_CHANCE = 0.005; // 0.5%, enforced by both client and server
 function calcChance(fromKey, toKey) {
   const from = GIFTS[fromKey];
   const to = GIFTS[toKey];
@@ -2955,7 +2983,7 @@ function openUpgradePicker(which) {
   if (chanceControl) chanceControl.style.display = which === 'to' ? 'block' : 'none';
   if (which === 'to') {
     const fromItem = upgradeFromUid ? inventory.find(i => i.uid === upgradeFromUid) : null;
-    if (fromItem && upgradeToKey && calcChance(fromItem.gift, upgradeToKey) >= 0.000001) {
+    if (fromItem && upgradeToKey && calcChance(fromItem.gift, upgradeToKey) >= MIN_UPGRADE_CHANCE) {
       upgradeDesiredChance = calcChance(fromItem.gift, upgradeToKey) * 100;
     }
     updateUpgradeChanceLabel();
@@ -3017,7 +3045,7 @@ function eligibleUpgradeTargetKeys(fromItem) {
   return Object.keys(GIFTS).filter(key =>
     key !== 'random_nft' &&
     GIFTS[key].price > GIFTS[fromItem.gift].price &&
-    calcChance(fromItem.gift, key) >= 0.000001
+    calcChance(fromItem.gift, key) >= MIN_UPGRADE_CHANCE
   );
 }
 function nearestUpgradeTarget(fromItem, desiredPercent) {
@@ -3108,7 +3136,7 @@ function selectFrom(uid) {
   closeUpgradePicker();
   haptic();
   const fromItem = inventory.find(i => i.uid === uid);
-  if (!upgradeToKey || GIFTS[upgradeToKey].price <= GIFTS[fromItem.gift].price || (!isOwnerDemoBoostActive() && calcChance(fromItem.gift, upgradeToKey) < 0.000001)) upgradeToKey = null;
+  if (!upgradeToKey || GIFTS[upgradeToKey].price <= GIFTS[fromItem.gift].price || calcChance(fromItem.gift, upgradeToKey) < MIN_UPGRADE_CHANCE) upgradeToKey = null;
   renderUpgrade();
 }
 
@@ -3119,7 +3147,7 @@ function selectTo(key) {
     haptic('error');
     return toast('Цель должна быть дороже выбранного предмета.', true);
   }
-  if (!isOwnerDemoBoostActive() && calcChance(fromItem.gift, key) < 0.000001) {
+  if (calcChance(fromItem.gift, key) < MIN_UPGRADE_CHANCE) {
     haptic('error');
     return toast('Шанс апгрейда слишком мал.', true);
   }
@@ -3176,7 +3204,7 @@ function renderWheel() {
 function updateUpgradeButton() {
   const btn = document.getElementById('upgradeBtn');
   const fromItem = upgradeFromUid ? inventory.find(i => i.uid === upgradeFromUid) : null;
-  const ready = !!(fromItem && GIFTS[fromItem.gift] && upgradeToKey && GIFTS[upgradeToKey] && (calcChance(fromItem.gift, upgradeToKey) >= 0.000001 || isOwnerDemoBoostActive()));
+  const ready = !!(fromItem && GIFTS[fromItem.gift] && upgradeToKey && GIFTS[upgradeToKey] && (calcChance(fromItem.gift, upgradeToKey) >= MIN_UPGRADE_CHANCE || isOwnerDemoBoostActive()));
   btn.disabled = !ready || upgradeBusy;
   btn.textContent = ready ? 'Крутить колесо' : 'Выберите предметы';
 }
@@ -3190,7 +3218,7 @@ async function doUpgrade() {
   const fromGift = GIFTS[fromItem.gift];
   const toGift = GIFTS[upgradeToKey];
   if (!fromGift || !toGift || toGift.price <= fromGift.price) return toast('Некорректная пара', true);
-  if (!isOwnerDemoBoostActive() && calcChance(fromItem.gift, upgradeToKey) < 0.000001) return toast('Нельзя апгрейдить на этот предмет: шанс ниже 1%.', true);
+  if calcChance(fromItem.gift, upgradeToKey) < MIN_UPGRADE_CHANCE return toast('Нельзя апгрейдить на этот предмет: шанс ниже 1%.', true);
 
   upgradeBusy = true;
   const upgradeButton = document.getElementById('upgradeBtn');
@@ -3219,6 +3247,8 @@ async function doUpgrade() {
     }
     const chance = Number(result.chance);
     const success = !!result.success;
+    const wheelCenter = document.getElementById('wheelCenter');
+    if (wheelCenter) { wheelCenter.innerHTML = toGift.img; wheelCenter.classList.add('has-gift'); }
     const pointer = document.getElementById('wheelPointer');
     const wheel = document.getElementById('wheel');
     const chanceEl = document.getElementById('chanceVal');
@@ -3230,6 +3260,7 @@ async function doUpgrade() {
     wheel.style.transition = `transform ${spin.ms}ms ${spin.ease}`;
     wheel.style.transform = `rotate(${finalRotation}deg)`;
     await new Promise(resolve => setTimeout(resolve, spin.ms + 100));
+    if (wheelCenter) { wheelCenter.replaceChildren(); wheelCenter.classList.remove('has-gift'); }
 
     pointer.classList.toggle('fail', !success);
     chanceEl.classList.toggle('fail', !success);
@@ -3253,6 +3284,8 @@ async function doUpgrade() {
       await new Promise(resolve => setTimeout(resolve, 1500));
       wheel.style.transition='none'; wheel.style.transform='rotate(0deg)'; void wheel.offsetWidth;
       wheel.style.transition='transform 5.5s cubic-bezier(.12,.62,.22,1)';
+      upgradeFromUid = null;
+      upgradeToKey = null;
       upgradeBusy=false; renderInventory(); renderUpgrade(); return;
     }
     // Clear selection before refreshing inventory: a failed upgrade may have removed the source item.
@@ -3277,6 +3310,8 @@ async function doUpgrade() {
     if (error.message !== 'upgrade_failed') pendingUpgradeRequestId = null;
     if (error.message === 'inventory_item_not_found') await loadAccount();
   } finally {
+    const wheelCenter = document.getElementById('wheelCenter');
+    if (wheelCenter) { wheelCenter.replaceChildren(); wheelCenter.classList.remove('has-gift'); }
     upgradeBusy = false;
     document.body.classList.remove('upgrade-spinning');
     renderUpgrade();
@@ -4320,4 +4355,34 @@ body{padding-bottom:calc(112px + env(safe-area-inset-bottom))!important;overflow
   #casePreview .preview-drop .drop-name{font-size:8px!important}
   #page-upgrade .wheel-wrap{width:clamp(190px,61vw,230px)!important;height:clamp(190px,61vw,230px)!important}
 }
+</style>
+
+<style>
+body{padding-top:calc(51px + env(safe-area-inset-top))!important;padding-bottom:calc(126px + env(safe-area-inset-bottom))!important;overflow-x:hidden!important;background:linear-gradient(145deg,#4c70ef 0%,#8060eb 55%,#c45ee0 100%) fixed!important}
+.header{position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;z-index:145!important;padding:calc(env(safe-area-inset-top) + 6px) 12px 7px!important;background:rgba(83,111,225,.52)!important;-webkit-backdrop-filter:blur(28px) saturate(180%)!important;backdrop-filter:blur(28px) saturate(180%)!important}
+.age-gate{z-index:170!important}.nav{z-index:150!important}.page{padding-bottom:calc(126px + env(safe-area-inset-bottom))!important}
+#casePreview{z-index:90!important;padding:calc(104px + env(safe-area-inset-top)) 12px calc(170px + env(safe-area-inset-bottom))!important;overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior:contain!important}
+#casePreview .case-preview-top{position:fixed!important;top:calc(54px + env(safe-area-inset-top))!important;left:12px!important;z-index:155!important;width:42px!important;height:42px!important;min-height:42px!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;backdrop-filter:none!important}
+#casePreview .case-back{display:flex!important;align-items:center!important;justify-content:center!important;width:42px!important;height:42px!important;padding:0!important;border-radius:14px!important;color:#fff!important;border:1px solid rgba(255,255,255,.25)!important;background:linear-gradient(145deg,rgba(255,255,255,.2),rgba(255,255,255,.07))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 5px 16px rgba(15,35,90,.18)!important}
+#casePreview .case-preview-main{padding:0 0 42px!important;max-width:520px!important}
+#casePreview .case-preview-title{display:block!important;width:100%!important;margin:0 auto 5px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;text-align:center!important;font-size:17px!important;line-height:1.25!important;text-shadow:0 2px 12px rgba(20,35,90,.18)!important}
+#casePreview .case-preview-art{height:clamp(112px,23vh,156px)!important;margin:0 auto!important}#casePreview .case-preview-art img{width:clamp(112px,31vw,150px)!important;height:clamp(112px,31vw,150px)!important}
+#casePreview .case-preview-price{margin:0 auto 8px!important}#casePreview .case-preview-drops-title{margin:8px 0!important}
+#casePreview .case-preview-drops{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important;padding-bottom:calc(170px + env(safe-area-inset-bottom))!important}#casePreview .preview-drop{min-height:100px!important}
+#page-upgrade .upgrade-box{padding:8px 10px 10px!important}#page-upgrade .upgrade-box:before{margin-bottom:6px!important;font-size:9px!important;letter-spacing:2px!important}
+#page-upgrade .upgrade-row{gap:7px!important;margin-bottom:7px!important}#page-upgrade .upgrade-slot{min-height:92px!important;height:92px!important;padding:7px 5px!important}
+#page-upgrade .upgrade-slot .gift-img img,#page-upgrade .upgrade-slot .gift-img svg{max-width:46px!important;max-height:46px!important}#page-upgrade .upgrade-slot .label{font-size:10px!important;line-height:1.15!important}
+#page-upgrade .upgrade-spin-modes{margin:0 0 6px!important;gap:6px!important}#page-upgrade .upgrade-spin-modes button{min-height:34px!important;padding:7px 4px!important;font-size:10px!important}
+#page-upgrade .wheel-wrap{width:clamp(170px,49vw,215px)!important;height:clamp(170px,49vw,215px)!important;margin:0 auto 1px!important}#page-upgrade .wheel{width:100%!important;height:100%!important}
+#page-upgrade .chance{font-size:27px!important;line-height:1.05!important;margin:0!important}#page-upgrade #upgradeBtn{min-height:44px!important;margin-top:3px!important;padding:10px 12px!important}
+#upgradeChanceControl{width:calc(100% + 28px)!important;max-width:none!important;margin:0 -14px 12px!important;padding:0 14px!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+#upgradeChanceControl .upgrade-chance-presets{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;width:100%!important;margin:0!important}
+#upgradeChanceControl .upgrade-chance-presets button{width:100%!important;min-width:0!important;min-height:48px!important;padding:9px 3px!important;border-radius:14px!important;font-size:15px!important;font-weight:900!important}
+#page-upgrade .wheel-center{display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;border-radius:50%!important}
+#page-upgrade .wheel-center.has-gift{background:radial-gradient(circle at 35% 25%,rgba(255,255,255,.98),rgba(198,216,255,.82) 62%,rgba(113,142,221,.8))!important;border-color:rgba(255,255,255,.8)!important;box-shadow:0 0 22px rgba(180,205,255,.45),inset 0 1px 5px rgba(255,255,255,.8)!important}
+#page-upgrade .wheel-center img,#page-upgrade .wheel-center svg{width:40px!important;height:40px!important;max-width:78%!important;max-height:78%!important;object-fit:contain!important}
+.crash-bet-wrap{position:relative;width:100%;min-width:0}.crash-bet-wrap .crash-input{width:100%!important;padding-right:66px!important}
+.crash-bet-currency{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.8);font-size:11px;font-weight:900;pointer-events:none}
+@media(max-height:700px){#page-upgrade .upgrade-box{padding:6px 9px 8px!important}#page-upgrade .upgrade-box:before{margin-bottom:4px!important}#page-upgrade .upgrade-slot{min-height:78px!important;height:78px!important}#page-upgrade .wheel-wrap{width:clamp(156px,43vw,185px)!important;height:clamp(156px,43vw,185px)!important}#page-upgrade .chance{font-size:24px!important}#page-upgrade #upgradeBtn{min-height:42px!important}}
+@media(max-width:360px){#casePreview{padding-left:9px!important;padding-right:9px!important}#casePreview .case-preview-title{font-size:15px!important}#casePreview .case-preview-drops{gap:5px!important}#page-upgrade .upgrade-slot .label{font-size:9px!important}#upgradeChanceControl .upgrade-chance-presets{gap:5px!important}}
 </style>

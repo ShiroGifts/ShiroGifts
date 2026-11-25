@@ -1317,6 +1317,7 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
 .pepe-easter-egg{position:absolute;z-index:30;object-fit:contain;pointer-events:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55));animation:pepePop .28s ease-out}
 .pepe-easter-egg.pepe-on-balance{width:25px;height:25px;right:29px;top:-21px;transform:rotate(-5deg)}
 .pepe-easter-egg.pepe-on-panel{width:28px;height:28px;right:10px;top:-19px;transform:rotate(5deg)}
+.pepe-easter-egg.pepe-on-upgrade{width:30px;height:30px;right:12px;top:2px;transform:rotate(5deg)}
 @keyframes pepePop{from{opacity:0;transform:translateY(5px) scale(.82)}to{opacity:1;transform:translateY(0) scale(1)}}
 </style>
 </head>
@@ -2089,7 +2090,7 @@ function refreshPepeEasterEggs(pageName) {
     ['.balance', 'balance'],
     ['#page-cases .hero-panel', 'panel'],
     ['#page-inventory .profile-hero', 'panel'],
-    ['#page-upgrade .upgrade-box', 'panel']
+    ['#page-upgrade .upgrade-box', 'upgrade']
   ];
   const candidates = selectors
     .map(([selector, kind]) => ({ anchor: document.querySelector(selector), kind }))

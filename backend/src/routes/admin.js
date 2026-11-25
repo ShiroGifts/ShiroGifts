@@ -46,7 +46,7 @@ router.post('/admin/stars/grant', async (req, res) => {
   const targetId = String(req.body && req.body.telegramId || '').trim();
   const amount = Number(req.body && req.body.amount);
   const note = String(req.body && req.body.note || '').trim().slice(0, 200);
-  if (!/^\\d{5,20}$/.test(targetId)) return res.status(400).json({ ok:false,error:'invalid_telegram_id' });
+  if (!/^\d{5,20}$/.test(targetId)) return res.status(400).json({ ok:false,error:'invalid_telegram_id' });
   if (!Number.isSafeInteger(amount) || amount < 1 || amount > 1000000) return res.status(400).json({ok:false,error:'invalid_star_amount'});
   const reference = 'admin_topup:' + require('node:crypto').randomUUID();
   const client = await pool.connect();

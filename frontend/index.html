@@ -2033,8 +2033,12 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
 .mines-nav-icon svg{display:block;width:18px;height:18px}
 .mines-currency-icon{display:block;width:32px;height:32px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.2))}
 .mines-currency-icon.ton{width:34px;height:34px}
+.mines-ton-glow{position:relative;display:grid;place-items:center;width:42px;height:42px;flex:0 0 42px;border-radius:50%;background:radial-gradient(circle,rgba(0,152,225,.32) 0%,rgba(0,152,225,.16) 42%,rgba(0,152,225,0) 74%)}
+.mines-ton-glow .currency-logo{position:relative;z-index:1;width:34px;height:34px;filter:drop-shadow(0 0 5px rgba(0,152,225,.55))}
 .mines-cell.safe-open .mines-currency-icon{width:34px;height:34px}
 .mines-cell.safe-open .mines-currency-icon.ton{width:36px;height:36px}
+.mines-cell.safe-open .mines-ton-glow{width:44px;height:44px;flex-basis:44px}
+.mines-cell.safe-open .mines-ton-glow .currency-logo{width:36px;height:36px}
 .mines-action-cashout{background:linear-gradient(135deg,#4fd6a4,#2caa91)!important;color:#092b2b!important;box-shadow:0 7px 18px rgba(43,190,154,.2)!important}
 .mines-start:disabled{opacity:.42}
 .wheel-x2-marker{width:33px!important;height:33px!important;font-size:12px!important}
@@ -3856,7 +3860,7 @@ function renderMinesCurrency(){
   if(label)label.textContent=currencyMode==='TON'?'TON':'Stars';
 }
 function minesCurrencySvg(){
-  if(currencyMode==='TON')return '<img class="mines-currency-icon ton" src="https://cdn.simpleicons.org/ton/0098EA" alt="TON" loading="eager" style="filter:brightness(0) invert(1) drop-shadow(0 2px 6px rgba(0,0,0,.2))">';
+  if(currencyMode==='TON')return '<span class="mines-ton-glow" aria-label="TON">'+IC.ton+'</span>';
   return '<svg class="mines-currency-icon stars" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 3.5 29.8 17l14.7 1.2-11.2 9.6 3.4 14.4L24 34.6 11.3 42.2l3.4-14.4L3.5 18.2 18.2 17 24 3.5Z" fill="#ffd45c" stroke="#fff0a5" stroke-width="1.5" stroke-linejoin="round"/><path d="m24 10 3.7 9 9.4.8-7.1 6.1 2.2 9.1-8.2-4.9-8.1 4.9 2.2-9.1-7.1-6.1 9.4-.8L24 10Z" fill="#fff0a5" opacity=".3"/></svg>';
 }
 function minesBombSvg(){

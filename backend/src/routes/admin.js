@@ -79,6 +79,36 @@ router.get('/admin/settings/gift-notifications', async (req, res) => {
   }
 });
 
+router.post('/admin/settings/gift-notifications/test', async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ ok: false, error: 'admin_only' });
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return res.status(503).json({ ok: false, error: 'telegram_bot_not_configured' });
+  try {
+    const response = await fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: String(req.telegramUser.id),
+        text: '🔔 Тест уведомлений ShiroGifts\n\nБот может отправлять тебе сообщения. Уведомления о подарках игроков работают.'
+      }),
+      signal: AbortSignal.timeout(10000)
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) {
+      const description = String(data.description || '');
+      console.error('[GIFT NOTIFY TEST FAILED]', data.error_code || '', description);
+      if (data.error_code === 403 || /chat not found|bot was blocked|user is deactivated/i.test(description)) {
+        return res.status(409).json({ ok: false, error: 'telegram_chat_not_started' });
+      }
+      return res.status(502).json({ ok: false, error: 'telegram_test_failed' });
+    }
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('[GIFT NOTIFY TEST ERROR]', error.name || error.message);
+    res.status(502).json({ ok: false, error: 'telegram_test_failed' });
+  }
+});
+
 router.post('/admin/settings/gift-notifications', async (req, res) => {
   if (!isAdmin(req)) return res.status(403).json({ ok: false, error: 'admin_only' });
   if (!req.body || typeof req.body.enabled !== 'boolean') return res.status(400).json({ ok: false, error: 'invalid_setting' });

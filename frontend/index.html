@@ -3204,7 +3204,7 @@ function renderWheel() {
 function updateUpgradeButton() {
   const btn = document.getElementById('upgradeBtn');
   const fromItem = upgradeFromUid ? inventory.find(i => i.uid === upgradeFromUid) : null;
-  const ready = !!(fromItem && GIFTS[fromItem.gift] && upgradeToKey && GIFTS[upgradeToKey] && (calcChance(fromItem.gift, upgradeToKey) >= MIN_UPGRADE_CHANCE || isOwnerDemoBoostActive()));
+  const ready = !!(fromItem && GIFTS[fromItem.gift] && upgradeToKey && GIFTS[upgradeToKey] && calcChance(fromItem.gift, upgradeToKey) >= MIN_UPGRADE_CHANCE);
   btn.disabled = !ready || upgradeBusy;
   btn.textContent = ready ? 'Крутить колесо' : 'Выберите предметы';
 }
@@ -3218,7 +3218,7 @@ async function doUpgrade() {
   const fromGift = GIFTS[fromItem.gift];
   const toGift = GIFTS[upgradeToKey];
   if (!fromGift || !toGift || toGift.price <= fromGift.price) return toast('Некорректная пара', true);
-  if calcChance(fromItem.gift, upgradeToKey) < MIN_UPGRADE_CHANCE return toast('Нельзя апгрейдить на этот предмет: шанс ниже 1%.', true);
+  if (calcChance(fromItem.gift, upgradeToKey) < MIN_UPGRADE_CHANCE) return toast('Нельзя апгрейдить: шанс ниже 0,5%.', true);
 
   upgradeBusy = true;
   const upgradeButton = document.getElementById('upgradeBtn');
@@ -3304,7 +3304,7 @@ async function doUpgrade() {
       inventory_item_not_found:'Предмет уже использован или не принадлежит вам.',
       invalid_upgrade_pair:'Выберите предмет с меньшей стоимостью.',
       invalid_upgrade_target:'Эта цель недоступна для апгрейда.',
-      upgrade_chance_below_minimum:'Нельзя апгрейдить на этот предмет: шанс ниже 1%.'
+      upgrade_chance_below_minimum:'Нельзя апгрейдить на этот предмет: шанс ниже 0,5%.'
     };
     toast(messages[error.message] || 'Не удалось выполнить апгрейд: ' + error.message, true);
     if (error.message !== 'upgrade_failed') pendingUpgradeRequestId = null;

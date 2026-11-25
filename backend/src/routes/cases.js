@@ -224,4 +224,39 @@ router.post('/cases/open', async (req, res) => {
   } finally { client.release(); }
 });
 
+
+router.post('/cases/open-multiple', async (req,res)=>{
+  const caseId=String(req.body&&req.body.caseId||''),requestIds=req.body&&req.body.requestIds,selectedCase=getCase(caseId);
+  if(!selectedCase)return res.status(404).json({ok:false,error:'case_not_found'});
+  const validId=id=>/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(id));
+  if(!Array.isArray(requestIds)||requestIds.length<2||requestIds.length>5||requestIds.some(id=>!validId(id))||new Set(requestIds).size!==requestIds.length)return res.status(400).json({ok:false,error:'invalid_request_ids'});
+  const telegramId=String(req.telegramUser.id),client=await pool.connect();
+  try{
+    await client.query('BEGIN');await client.query('SELECT telegram_id FROM users WHERE telegram_id=$1 FOR UPDATE',[telegramId]);
+    const previous=await client.query('SELECT request_id,case_id,reward_type,reward_key,reward_stars,inventory_id FROM case_openings WHERE telegram_id=$1 AND request_id=ANY($2::uuid[])',[telegramId,requestIds]);
+    if(previous.rowCount){
+      if(previous.rowCount!==requestIds.length||previous.rows.some(row=>row.case_id!==caseId)){await client.query('ROLLBACK');return res.status(409).json({ok:false,error:'partial_duplicate_batch'});}
+      const byId=new Map(previous.rows.map(row=>[row.request_id,row]));
+      const rewards=requestIds.map(id=>{const p=byId.get(id);return p.reward_type==='stars'?{type:'stars',amount:Number(p.reward_stars)}:p.reward_type==='nothing'?{type:'nothing'}:{type:'gift',key:p.reward_key,inventoryId:p.inventory_id?String(p.inventory_id):null};});
+      const wallet=await client.query('SELECT COALESCE(SUM(amount_stars),0)::bigint AS balance FROM wallet_ledger WHERE telegram_id=$1',[telegramId]);await client.query('COMMIT');
+      return res.json({ok:true,duplicate:true,balance:Number(wallet.rows[0].balance),rewards});
+    }
+    const wallet=await client.query('SELECT COALESCE(SUM(amount_stars),0)::bigint AS balance FROM wallet_ledger WHERE telegram_id=$1',[telegramId]);
+    const total=selectedCase.price*requestIds.length;if(Number(wallet.rows[0].balance)<total){await client.query('ROLLBACK');return res.status(400).json({ok:false,error:'insufficient_balance',balance:Number(wallet.rows[0].balance)});}
+    const rewards=[],notify=[];
+    for(const requestId of requestIds){
+      const drop=pickDrop(selectedCase.drops);await client.query("INSERT INTO wallet_ledger (telegram_id,amount_stars,entry_type,reference_id) VALUES ($1,$2,'case_spend',$3)",[telegramId,-selectedCase.price,'case:'+requestId+':spend']);
+      let reward,inventoryId=null;
+      if(drop.type==='stars'){await client.query("INSERT INTO wallet_ledger (telegram_id,amount_stars,entry_type,reference_id) VALUES ($1,$2,'case_reward',$3)",[telegramId,drop.amount,'case:'+requestId+':reward']);reward={type:'stars',amount:drop.amount};}
+      else if(drop.type==='gift'){const gift=GIFT_DATA[drop.key];if(!gift)throw new Error('Unknown gift in case catalog');const ins=await client.query("INSERT INTO inventory (telegram_id,item_key,name,emoji,rarity,value_stars,source_type,source_ref) VALUES ($1,$2,$3,$4,$5,$6,'case',$7) RETURNING id",[telegramId,drop.key,gift.name,gift.emoji,gift.rarity,gift.value,selectedCase.id]);inventoryId=String(ins.rows[0].id);reward={type:'gift',key:drop.key,inventoryId};notify.push({key:drop.key,inventoryId});}
+      else if(drop.type==='nothing')reward={type:'nothing'};else throw new Error('Unknown reward type');
+      await client.query("INSERT INTO case_openings (request_id,telegram_id,case_id,case_price,reward_type,reward_key,reward_stars,inventory_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)",[requestId,telegramId,selectedCase.id,selectedCase.price,drop.type,drop.type==='gift'?drop.key:null,drop.type==='stars'?drop.amount:null,inventoryId]);rewards.push(reward);
+    }
+    const updated=await client.query('SELECT COALESCE(SUM(amount_stars),0)::bigint AS balance FROM wallet_ledger WHERE telegram_id=$1',[telegramId]);await client.query('COMMIT');
+    for(const gift of notify)notifyAdminGift({telegramId,username:req.telegramUser.username,firstName:req.telegramUser.first_name,itemName:GIFT_DATA[gift.key]?.name||gift.key,source:'Выигрыш в кейсе «'+selectedCase.name+'»',inventoryId:gift.inventoryId}).catch(()=>{});
+    res.json({ok:true,balance:Number(updated.rows[0].balance),rewards});
+  }catch(error){await client.query('ROLLBACK').catch(()=>{});console.error('[MULTI CASE OPEN ERROR]',error.code||error.message);res.status(500).json({ok:false,error:'case_open_failed'});}
+  finally{client.release();}
+});
+
 module.exports = router;

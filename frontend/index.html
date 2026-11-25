@@ -2308,7 +2308,7 @@ function dropMeta(key) {
   if (key === 'nothing') return { img: '<span class="empty-reward">∅</span>', name: 'Ничего', type: 'nothing' };
   if (key.startsWith('stars_')) {
     const amount = Number(key.slice(6));
-    return { img: IC.star, name: `+${money(amount)}`, amount, type: 'stars' };
+    return { img: currencyMode === 'TON' ? '<span style="font-size:22px">💎</span>' : IC.star, name: `+${money(amount)}`, amount, type: 'stars' };
   }
   const gift = GIFTS[key];
   return gift ? { img: gift.img, name: gift.name, price: gift.price, type: 'gift' } : { img: '🎁', name: 'Подарок', type: 'gift' };

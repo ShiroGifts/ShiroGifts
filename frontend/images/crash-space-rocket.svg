@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+ <linearGradient id="body" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#46566a"/><stop offset=".18" stop-color="#e7f2ff"/><stop offset=".38" stop-color="#8298ad"/><stop offset=".62" stop-color="#f8fcff"/><stop offset=".82" stop-color="#71869c"/><stop offset="1" stop-color="#293b50"/></linearGradient>
+ <linearGradient id="nose" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff"/><stop offset=".5" stop-color="#9eb4c9"/><stop offset="1" stop-color="#42566d"/></linearGradient>
+ <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d8fbff"/><stop offset=".35" stop-color="#4db9ef"/><stop offset=".72" stop-color="#12619c"/><stop offset="1" stop-color="#071e42"/></linearGradient>
+ <linearGradient id="fire" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff9c9"/><stop offset=".25" stop-color="#ffc84b"/><stop offset=".7" stop-color="#ff762f"/><stop offset="1" stop-color="#e83d29" stop-opacity="0"/></linearGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<!-- exhaust -->
+<path d="M225 335 Q256 390 244 466 Q256 447 267 466 Q256 390 287 335Z" fill="#ff8b38" opacity=".8" filter="url(#glow)"/>
+<path d="M237 326 Q244 385 256 430 Q268 385 275 326Z" fill="url(#fire)" opacity=".95"/>
+<path d="M247 326 Q252 369 256 392 Q260 369 265 326Z" fill="#fff5c5"/>
+<!-- fins -->
+<path d="M216 273 L156 331 Q147 341 160 343 L224 321Z" fill="#52677f" stroke="#d4e5f4" stroke-width="7"/>
+<path d="M296 273 L356 331 Q365 341 352 343 L288 321Z" fill="#52677f" stroke="#d4e5f4" stroke-width="7"/>
+<!-- body -->
+<path d="M256 49 C210 93 178 165 184 249 L202 322 Q256 350 310 322 L328 249 C334 165 302 93 256 49Z" fill="url(#body)" stroke="#d7e8f7" stroke-width="8"/>
+<path d="M256 55 C228 100 207 159 207 229 L215 305 L256 321Z" fill="#fff" opacity=".18"/>
+<path d="M256 55 C284 100 305 159 305 229 L297 305 L256 321Z" fill="#142b44" opacity=".25"/>
+<!-- nose cap -->
+<path d="M256 48 C235 69 221 95 212 123 Q256 108 300 123 C291 95 277 69 256 48Z" fill="url(#nose)" stroke="#f4fbff" stroke-width="5"/>
+<!-- cockpit -->
+<path d="M218 161 Q256 129 294 161 L287 214 Q256 239 225 214Z" fill="#233d57" stroke="#dceeff" stroke-width="8"/>
+<path d="M226 164 Q256 143 286 164 L280 204 Q256 223 232 204Z" fill="url(#glass)"/>
+<path d="M236 164 Q251 153 266 157 L246 204 Q233 197 232 185Z" fill="#e9fcff" opacity=".48"/>
+<!-- side panels -->
+<path d="M194 235 Q207 226 218 239 L218 282 Q204 291 194 278Z" fill="#345a7a" stroke="#dceafa" stroke-width="4"/>
+<path d="M318 235 Q305 226 294 239 L294 282 Q308 291 318 278Z" fill="#345a7a" stroke="#dceafa" stroke-width="4"/>
+<path d="M229 252 H283" stroke="#e9f4ff" stroke-width="5" opacity=".8"/>
+<path d="M229 267 H283" stroke="#607f9c" stroke-width="5"/>
+<!-- lower nozzle -->
+<path d="M224 311 Q256 333 288 311 L280 344 Q256 357 232 344Z" fill="#34495f" stroke="#d9e8f5" stroke-width="6"/>
+<path d="M239 337 Q256 346 273 337" fill="none" stroke="#ffcf68" stroke-width="7"/>
+<!-- bolts and shine -->
+<g fill="#f4fbff"><circle cx="199" cy="219" r="4"/><circle cx="313" cy="219" r="4"/><circle cx="205" cy="291" r="4"/><circle cx="307" cy="291" r="4"/></g>
+<path d="M190 177 Q192 124 220 91" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".55"/>
+<!-- floating luminous fragments / credits -->
+<g fill="#9dff9c" stroke="#d8ffd2" stroke-width="3">
+ <path d="M104 208 l20 -8 12 13 -7 21 -22 3 -12 -13Z"/><path d="M378 166 l18 -8 14 13 -5 22 -21 3 -13 -14Z"/>
+ <path d="M133 306 l15 -8 13 9 -3 19 -18 5 -12 -12Z"/><path d="M360 286 l17 -7 12 12 -5 18 -19 2 -10 -12Z"/>
+</g>
+<g fill="#257d54" font-family="Arial,sans-serif" font-size="17" font-weight="bold"><text x="112" y="225">$</text><text x="385" y="184">$</text><text x="140" y="318">$</text><text x="368" y="302">$</text></g>
+<g fill="#b9ffd0" opacity=".9"><circle cx="87" cy="151" r="4"/><circle cx="416" cy="244" r="5"/><circle cx="145" cy="119" r="3"/><circle cx="340" cy="110" r="4"/></g>
+</svg>

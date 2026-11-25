@@ -2,6 +2,7 @@ const express = require('express');
 const { randomBytes, createHash, createHmac } = require('node:crypto');
 const { pool } = require('../db/pool');
 const { requireTelegramUser, requireAgeConfirmed } = require('../telegram/auth');
+const { GIFT_DATA } = require('../game/cases');
 
 const router = express.Router();
 router.use(requireTelegramUser, requireAgeConfirmed);
@@ -58,6 +59,7 @@ async function engineTick() {
         );
       }
     } else if (r.status === 'crashed') {
+      await pool.query(`UPDATE inventory i SET status='burned' FROM crash_bets b WHERE b.round_id=$1 AND b.source_inventory_id=i.id AND b.cashout_multiplier IS NULL AND i.status='crash_locked'`, [r.id]);
       if (now - new Date(r.ended_at).getTime() >= RESULT_PAUSE_MS) {
         await pool.query(`UPDATE crash_rounds SET status='settled' WHERE id=$1 AND status='crashed'`, [r.id]);
         await createScheduledRound();
@@ -126,19 +128,30 @@ router.get('/crash/state', async (req, res) => {
 });
 
 router.post('/crash/bet', async (req,res) => {
+  const inventoryId = String(req.body && req.body.inventoryId || '');
+  const itemMode = /^\\d+$/.test(inventoryId);
   const amount=Number(req.body&&req.body.amount);
-  if(!Number.isSafeInteger(amount)||amount<1||amount>10000) return res.status(400).json({ok:false,error:'invalid_bet_amount'});
+  if(!itemMode && (!Number.isSafeInteger(amount)||amount<1||amount>10000)) return res.status(400).json({ok:false,error:'invalid_bet_amount'});
   const telegramId=String(req.telegramUser.id), client=await pool.connect();
   try {
     await client.query('BEGIN');
     const round=await client.query(`SELECT id,status,starts_at FROM crash_rounds WHERE status='scheduled' ORDER BY id DESC LIMIT 1 FOR UPDATE`);
     if(!round.rowCount||new Date(round.rows[0].starts_at).getTime()<=Date.now()){await client.query('ROLLBACK');return res.status(409).json({ok:false,error:'betting_closed'});}
     await client.query('SELECT telegram_id FROM users WHERE telegram_id=$1 FOR UPDATE',[telegramId]);
-    const balance=await client.query('SELECT COALESCE(SUM(amount_stars),0)::bigint AS balance FROM wallet_ledger WHERE telegram_id=$1',[telegramId]);
-    if(Number(balance.rows[0].balance)<amount){await client.query('ROLLBACK');return res.status(400).json({ok:false,error:'insufficient_balance'});}
-    const ref='crash:'+round.rows[0].id+':bet:'+telegramId;
-    await client.query(`INSERT INTO wallet_ledger(telegram_id,amount_stars,entry_type,reference_id) VALUES($1,$2,'crash_bet',$3)`,[telegramId,-amount,ref]);
-    await client.query('INSERT INTO crash_bets(round_id,telegram_id,stake_stars) VALUES($1,$2,$3)',[round.rows[0].id,telegramId,amount]);
+    let sourceInventoryId = null, stake = amount;
+    if (itemMode) {
+      const item = await client.query("SELECT id,value_stars FROM inventory WHERE id=$1 AND telegram_id=$2 AND status='owned' FOR UPDATE",[inventoryId,telegramId]);
+      if (!item.rowCount) { await client.query('ROLLBACK'); return res.status(404).json({ok:false,error:'crash_item_not_found'}); }
+      sourceInventoryId = item.rows[0].id; stake = Number(item.rows[0].value_stars);
+      if (!Number.isSafeInteger(stake) || stake < 1) { await client.query('ROLLBACK'); return res.status(400).json({ok:false,error:'invalid_crash_item'}); }
+      await client.query("UPDATE inventory SET status='crash_locked' WHERE id=$1",[sourceInventoryId]);
+    } else {
+      const balance=await client.query('SELECT COALESCE(SUM(amount_stars),0)::bigint AS balance FROM wallet_ledger WHERE telegram_id=$1',[telegramId]);
+      if(Number(balance.rows[0].balance)<amount){await client.query('ROLLBACK');return res.status(400).json({ok:false,error:'insufficient_balance'});}
+      const ref='crash:'+round.rows[0].id+':bet:'+telegramId;
+      await client.query(`INSERT INTO wallet_ledger(telegram_id,amount_stars,entry_type,reference_id) VALUES($1,$2,'crash_bet',$3)`,[telegramId,-amount,ref]);
+    }
+    await client.query('INSERT INTO crash_bets(round_id,telegram_id,stake_stars,source_inventory_id) VALUES($1,$2,$3,$4)',[round.rows[0].id,telegramId,stake,sourceInventoryId]);
     await client.query('COMMIT');
     res.json({ok:true,amount,roundId:String(round.rows[0].id)});
   } catch(error){await client.query('ROLLBACK').catch(()=>{});console.error('[CRASH BET]',error.code||error.message);res.status(error.code==='23505'?409:500).json({ok:false,error:error.code==='23505'?'bet_already_placed':'crash_bet_failed'});}
@@ -151,15 +164,28 @@ router.post('/crash/cashout', async(req,res)=>{
     await client.query('BEGIN');
     const round=await client.query(`SELECT id,status,started_at,crash_multiplier FROM crash_rounds WHERE status='running' ORDER BY id DESC LIMIT 1 FOR UPDATE`);
     if(!round.rowCount){await client.query('ROLLBACK');return res.status(409).json({ok:false,error:'round_not_flying'});}
-    const r=round.rows[0],bet=await client.query('SELECT id,stake_stars,cashout_multiplier FROM crash_bets WHERE round_id=$1 AND telegram_id=$2 FOR UPDATE',[r.id,telegramId]);
+    const r=round.rows[0],bet=await client.query('SELECT id,stake_stars,cashout_multiplier,source_inventory_id FROM crash_bets WHERE round_id=$1 AND telegram_id=$2 FOR UPDATE',[r.id,telegramId]);
     if(!bet.rowCount||bet.rows[0].cashout_multiplier!==null){await client.query('ROLLBACK');return res.status(409).json({ok:false,error:'bet_not_active'});}
     const elapsed=Date.now()-new Date(r.started_at).getTime(),mult=Math.floor(multiplierAt(elapsed)*10000)/10000;
     if(mult>=Number(r.crash_multiplier)){await client.query('ROLLBACK');return res.status(409).json({ok:false,error:'round_already_crashed'});}
     const payout=Math.floor(Number(bet.rows[0].stake_stars)*mult);
-    await client.query('UPDATE crash_bets SET cashout_multiplier=$2,payout_stars=$3 WHERE id=$1',[bet.rows[0].id,mult,payout]);
-    await client.query(`INSERT INTO wallet_ledger(telegram_id,amount_stars,entry_type,reference_id) VALUES($1,$2,'crash_payout',$3)`,[telegramId,payout,'crash:'+r.id+':payout:'+telegramId]);
+    let upgradedGift = null, createdInventoryId = null;
+    if (bet.rows[0].source_inventory_id) {
+      const source = await client.query('SELECT item_key FROM inventory WHERE id=$1 AND telegram_id=$2 FOR UPDATE',[bet.rows[0].source_inventory_id,telegramId]);
+      const sourceGift = GIFT_DATA[source.rows[0]?.item_key];
+      const target = Object.entries(GIFT_DATA).filter(([key,g]) => key !== 'random_nft' && Number(g.value) > Number(bet.rows[0].stake_stars) && Number(g.value) <= Number(bet.rows[0].stake_stars)*mult).sort((a,b)=>Number(b[1].value)-Number(a[1].value))[0];
+      if (!sourceGift || !target) { await client.query('ROLLBACK'); return res.status(409).json({ok:false,error:'no_upgrade_at_multiplier'}); }
+      const [key,gift] = target;
+      await client.query("UPDATE inventory SET status='upgraded' WHERE id=$1",[bet.rows[0].source_inventory_id]);
+      const created = await client.query(`INSERT INTO inventory(telegram_id,item_key,name,emoji,rarity,value_stars,source_type,source_ref) VALUES($1,$2,$3,$4,$5,$6,'crash',$7) RETURNING id`,[telegramId,key,gift.name,gift.emoji,gift.rarity,gift.value,'crash:'+r.id]);
+      createdInventoryId = String(created.rows[0].id); upgradedGift = {key,name:gift.name,emoji:gift.emoji,value:Number(gift.value)};
+      await client.query('UPDATE crash_bets SET cashout_multiplier=$2,payout_stars=$3,cashout_inventory_id=$4 WHERE id=$1',[bet.rows[0].id,mult,payout,createdInventoryId]);
+    } else {
+      await client.query('UPDATE crash_bets SET cashout_multiplier=$2,payout_stars=$3 WHERE id=$1',[bet.rows[0].id,mult,payout]);
+      await client.query(`INSERT INTO wallet_ledger(telegram_id,amount_stars,entry_type,reference_id) VALUES($1,$2,'crash_payout',$3)`,[telegramId,payout,'crash:'+r.id+':payout:'+telegramId]);
+    }
     await client.query('COMMIT');
-    res.json({ok:true,multiplier:mult,payout});
+    res.json({ok:true,multiplier:mult,payout,upgradedGift,inventoryId:createdInventoryId});
   }catch(error){await client.query('ROLLBACK').catch(()=>{});console.error('[CRASH CASHOUT]',error.code||error.message);res.status(500).json({ok:false,error:'crash_cashout_failed'});}
   finally{client.release();}
 });

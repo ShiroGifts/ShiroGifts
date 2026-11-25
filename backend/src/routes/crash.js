@@ -80,9 +80,7 @@ async function acquireCrashEngine() {
       return false;
     }
     engineClient = client;
-    // A process restart during flight ends that round immediately; no client can cash out against a stale process.
-    await pool.query(`UPDATE crash_rounds SET status='crashed', server_seed_revealed=server_seed, ended_at=NOW()
-      WHERE status='running'`);
+    // Resume the persisted round after a restart; its server-side start time and crash point remain authoritative.
     await engineTick();
     if (retryTimer) { clearInterval(retryTimer); retryTimer = null; }
     engineTimer = setInterval(engineTick, 250);
@@ -155,7 +153,7 @@ router.post('/crash/cashout', async(req,res)=>{
     if(!round.rowCount){await client.query('ROLLBACK');return res.status(409).json({ok:false,error:'round_not_flying'});}
     const r=round.rows[0],bet=await client.query('SELECT id,stake_stars,cashout_multiplier FROM crash_bets WHERE round_id=$1 AND telegram_id=$2 FOR UPDATE',[r.id,telegramId]);
     if(!bet.rowCount||bet.rows[0].cashout_multiplier!==null){await client.query('ROLLBACK');return res.status(409).json({ok:false,error:'bet_not_active'});}
-    const elapsed=Date.now()-new Date(r.started_at).getTime(),mult=multiplierAt(elapsed);
+    const elapsed=Date.now()-new Date(r.started_at).getTime(),mult=Math.floor(multiplierAt(elapsed)*10000)/10000;
     if(mult>=Number(r.crash_multiplier)){await client.query('ROLLBACK');return res.status(409).json({ok:false,error:'round_already_crashed'});}
     const payout=Math.floor(Number(bet.rows[0].stake_stars)*mult);
     await client.query('UPDATE crash_bets SET cashout_multiplier=$2,payout_stars=$3 WHERE id=$1',[bet.rows[0].id,mult,payout]);

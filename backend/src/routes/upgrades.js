@@ -42,8 +42,12 @@ router.post('/upgrade', async (req, res) => {
       return res.status(404).json({ ok: false, error: 'inventory_item_not_found' });
     }
     const from = source.rows[0];
-    const fromValue = Number(from.value_stars);
-    if (!Number.isSafeInteger(fromValue) || fromValue < 1 || target.value <= fromValue) {
+    // Inventory rows may contain an older cached valuation from before the
+    // gift catalogue was repriced. Use the current canonical catalogue value
+    // for known gifts so the picker and server apply the same upgrade rule.
+    const catalogueSource = GIFT_DATA[from.item_key];
+    const fromValue = catalogueSource ? Number(catalogueSource.value) : Number(from.value_stars);
+    if (!Number.isSafeInteger(fromValue) || fromValue < 1 || !Number.isSafeInteger(Number(target.value)) || Number(target.value) <= fromValue) {
       await client.query('ROLLBACK');
       return res.status(400).json({ ok: false, error: 'invalid_upgrade_pair' });
     }

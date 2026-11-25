@@ -1483,6 +1483,14 @@ body:has(#page-crash.active){overflow-y:auto!important;overflow-x:hidden!importa
 @media(max-height:740px){#page-crash #crashFeed{flex-basis:60px!important;height:60px!important;max-height:60px!important}}
 @media(max-height:660px){#page-crash #crashFeed{flex-basis:48px!important;height:48px!important;max-height:48px!important}}
 
+/* Crash: compact selected NFT thumbnail and a separate scrollable bets area. */
+#page-crash .crash-gift-flight{position:absolute!important;left:10px!important;right:10px!important;bottom:9px!important;top:auto!important;z-index:3;display:flex;align-items:center;justify-content:center;gap:7px;max-width:calc(100% - 20px);min-height:28px;padding:4px 8px!important;box-sizing:border-box;overflow:hidden;border-radius:10px;background:rgba(5,12,28,.78);font-size:10px!important;line-height:1.15!important}
+#page-crash .crash-flight-art{width:25px!important;height:25px!important;min-width:25px!important;flex:0 0 25px!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;font-size:19px!important}
+#page-crash .crash-flight-art img,#page-crash .crash-flight-art svg{display:block!important;width:auto!important;height:auto!important;max-width:25px!important;max-height:25px!important;object-fit:contain!important}
+#page-crash .crash-flight-copy{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#page-crash #crashFeed{flex:0 0 auto!important;min-height:0!important;max-height:115px!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain;scrollbar-width:thin}
+#page-crash .crash-box{overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain}
+#page-crash .crash-canvas-wrap{flex:0 0 auto!important}
 </style>
 </head>
 <body>
@@ -3217,6 +3225,9 @@ const crashRocketImage = new Image();
 crashRocketImage.crossOrigin = 'anonymous';
 crashRocketImage.src = 'https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/gift_5170564780938756245.webp';
 crashRocketImage.onload = () => { if (document.getElementById('page-crash')?.classList.contains('active')) drawCrash(); };
+const crashRocketImage = new Image();
+crashRocketImage.crossOrigin = 'anonymous';
+crashRocketImage.src = 'https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/gift_5170564780938756245.webp';
 function drawRocket(ctx,u,flame){
   ctx.save();
   if(flame){

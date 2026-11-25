@@ -190,13 +190,19 @@ router.post('/inventory/withdraw', async (req, res) => {
 
 router.get('/admin/withdrawals', async (req, res) => {
   if (!isAdmin(req)) return res.status(403).json({ ok: false, error: 'admin_only' });
-  const rows = await pool.query(
-    `SELECT wr.id, wr.telegram_id, wr.withdrawal_type, wr.status, wr.admin_note, wr.created_at,
-            i.item_key, i.name, i.value_stars
-     FROM withdrawal_requests wr LEFT JOIN inventory i ON i.id = wr.inventory_id
-     WHERE wr.status IN ('pending','approved') OR (wr.status = 'processing' AND wr.created_at < NOW() - INTERVAL '10 minutes') ORDER BY wr.created_at ASC LIMIT 100`
-  );
-  res.json({ ok: true, requests: rows.rows });
+  try {
+    const rows = await pool.query(
+      `SELECT wr.id, wr.telegram_id, wr.withdrawal_type, wr.status, wr.admin_note, wr.created_at,
+              i.item_key, i.name, i.value_stars
+       FROM withdrawal_requests wr LEFT JOIN inventory i ON i.id = wr.inventory_id
+       WHERE wr.status IN ('pending','approved') OR (wr.status = 'processing' AND wr.created_at < NOW() - INTERVAL '10 minutes')
+       ORDER BY wr.created_at ASC LIMIT 100`
+    );
+    res.json({ ok: true, requests: rows.rows });
+  } catch (error) {
+    console.error('[ADMIN WITHDRAWALS LIST ERROR]', error.code || error.message);
+    res.status(500).json({ ok: false, error: 'withdrawals_list_failed' });
+  }
 });
 
 router.post('/admin/withdrawals/:id/resolve', async (req, res) => {

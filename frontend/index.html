@@ -3316,7 +3316,7 @@ function drawCrash() {
   // частицы (выхлоп/взрыв) в экранных координатах
   crashParticles.forEach(p => { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * k, 0, 7); ctx.fill(); });
   ctx.globalAlpha = 1;
-  if (!crashed) {
+  {
     const th = crashHeading(t), bob = crashState === 'flying' ? Math.sin(performance.now() / 160) * 2 * k : 0;
     ctx.save(); ctx.translate(cx,cy+bob);ctx.rotate(th+Math.PI/2);drawRocket(ctx,23*k,crashState==='flying');ctx.restore();
   }

@@ -1918,6 +1918,7 @@ function updateDemoBoostUI() {
   const button = document.getElementById('disableDemoBoostBtn');
   if (status) status.textContent = enabled ? 'Подкрутка включена: используются заданные тестовые проценты.' : 'Подкрутка выключена: используются обычные шансы.';
   if (button) button.disabled = !enabled;
+  if (document.getElementById('upgradeBtn')) renderUpgrade();
 }
 function disableDemoBoost() {
   if (String(tg?.initDataUnsafe?.user?.id || '') !== '8159031701') return;

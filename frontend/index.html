@@ -3836,7 +3836,6 @@ async function doUpgrade() {
         removeDemoInventoryItem(fromItem.uid);
         toast('🎬 ДЕМО: предмет сгорел только в записи. Исходный инвентарь восстановится при выключении режима.', true, 5000);
       }
-      await new Promise(resolve => setTimeout(resolve, 1500));
       wheel.style.transition='none'; wheel.style.transform='rotate(0deg)'; void wheel.offsetWidth;
       wheel.style.transition='transform 5.5s cubic-bezier(.12,.62,.22,1)';
       upgradeFromUid = null;

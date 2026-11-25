@@ -364,6 +364,14 @@
   .preview-drop .drop-img svg{width:40px;height:40px}
   .preview-drop .drop-name{font-size:11px;font-weight:800;line-height:1.25;color:var(--text-dim)}
   .case-preview-open:disabled{opacity:.55;cursor:wait}
+  .case-fast-toggle{width:min(100%,380px);margin:-10px auto 18px;display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 14px;border:1px solid rgba(130,158,220,.24);border-radius:13px;background:rgba(61,123,255,.09);color:var(--text-dim);font-size:12px;font-weight:800;cursor:pointer;box-sizing:border-box}
+  .case-fast-toggle input{appearance:none;width:36px;height:21px;flex:0 0 36px;border-radius:99px;background:#3b4359;position:relative;margin:0;transition:background .18s}
+  .case-fast-toggle input:before{content:'';position:absolute;width:15px;height:15px;left:3px;top:3px;border-radius:50%;background:#fff;transition:transform .18s}
+  .case-fast-toggle input:checked{background:var(--accent)}
+  .case-fast-toggle input:checked:before{transform:translateX(15px)}
+  .crash-box{background:linear-gradient(155deg,rgba(33,48,79,.98),rgba(20,27,44,.99))!important;border:1px solid rgba(105,151,231,.28)!important;box-shadow:0 16px 42px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.045)}
+  .crash-canvas-wrap{height:260px;border:1px solid rgba(119,163,245,.22);background:radial-gradient(ellipse at 50% 72%,rgba(59,123,255,.23),transparent 65%),linear-gradient(180deg,#172a4c,#0b1428)!important;box-shadow:inset 0 0 35px rgba(4,10,24,.42),0 8px 22px rgba(0,0,0,.18)}
+  .crash-mult{font-size:clamp(38px,11vw,52px);font-weight:900;letter-spacing:-1.8px;text-shadow:0 0 26px rgba(74,222,128,.38),0 3px 10px rgba(0,0,0,.4)}
   .tier-ruby{background:linear-gradient(160deg,#ff6f99,#b92058)}.tier-diamond{background:linear-gradient(160deg,#8ceeff,#279bbd)}.tier-cosmic{background:linear-gradient(160deg,#a57bff,#4930a8)}
   .case-open-overlay {
     position:fixed; inset:0; background:rgba(0,0,0,.88);
@@ -1662,6 +1670,7 @@ body.upgrade-spinning #page-upgrade #upgradeBtn{
     <div class="case-preview-art" id="previewArt">🎁</div>
     <div class="case-preview-price" id="previewPrice">★ 50</div>
     <div class="case-quantity" id="caseQuantity" aria-label="Количество кейсов"><button type="button" class="active" data-count="1" onclick="selectCaseCount(1)">1</button><button type="button" data-count="2" onclick="selectCaseCount(2)">2</button><button type="button" data-count="3" onclick="selectCaseCount(3)">3</button><button type="button" data-count="4" onclick="selectCaseCount(4)">4</button><button type="button" data-count="5" onclick="selectCaseCount(5)">5</button></div>
+    <label class="case-fast-toggle"><input id="caseFastOpenToggle" type="checkbox" onchange="setCaseFastOpen(this.checked)"><span>Быстрое открытие · без рулетки</span></label>
     <button class="btn-big case-preview-open" id="previewOpenBtn" onclick="confirmOpenCase()">Открыть за ★ 50</button>
     <div class="case-preview-drops-title">Что может выпасть</div>
     <div class="case-preview-drops" id="previewDrops"></div>
@@ -1818,7 +1827,7 @@ const GIFTS = {
   diamond_ring: { name: 'Diamond Ring NFT', price: 2305, img: tgNft('diamond_ring','Diamond Ring NFT'), rarity: 'NFT' },
   durovs_glasses: { name: 'Durov’s Glasses NFT', price: 11022, img: tgNft('durovs_glasses','Durov’s Glasses NFT'), rarity: 'NFT' },
   durovs_cap: { name: 'Durov’s Cap NFT', price: 28590, img: tgNft('durovs_cap','Durov’s Cap NFT'), rarity: 'NFT' },
-  resistance_dog: { name: 'Resistance Dog NFT', price: 35000, img: tgNft('durovs_cap','Resistance Dog NFT'), rarity: 'NFT' },
+  resistance_dog: { name: 'Resistance Dog NFT', price: 35000, img: tgNft('resistance_dog','Resistance Dog NFT'), rarity: 'NFT' },
   precious_peach: { name: 'Precious Peach NFT', price: 19572, img: tgNft('precious_peach','Precious Peach NFT'), rarity: 'NFT' },
   scared_cat: { name: 'Scared Cat NFT', price: 19099, img: tgNft('scared_cat','Scared Cat NFT'), rarity: 'NFT' },
   heroic_helmet: { name: 'Heroic Helmet NFT', price: 14629, img: tgNft('heroic_helmet','Heroic Helmet NFT'), rarity: 'NFT' },
@@ -2462,6 +2471,13 @@ function pickWeighted(drops) {
 let selectedCaseId = null;
 let selectedCaseCount = 1;
 let pendingCaseRequest = null;
+let caseFastOpen = false;
+try { caseFastOpen = localStorage.getItem('shiro_fast_case_open') === 'on'; } catch(e) {}
+function setCaseFastOpen(enabled) {
+  caseFastOpen = !!enabled;
+  try { localStorage.setItem('shiro_fast_case_open', caseFastOpen ? 'on' : 'off'); } catch(e) {}
+  haptic('light');
+}
 function dropMeta(key) {
   if (key === 'nothing') return { img: '<span class="empty-reward">∅</span>', name: 'Ничего', type: 'nothing' };
   if (key.startsWith('stars_')) {
@@ -2493,6 +2509,8 @@ function openCase(caseId) {
   previewArt.className = 'case-preview-art tier-' + c.id;
   previewArt.innerHTML = imageAsset(CHEST_ART, 'Сундук ' + c.name);
   document.getElementById('previewPrice').textContent = money(c.price);
+  const fastToggle = document.getElementById('caseFastOpenToggle');
+  if (fastToggle) fastToggle.checked = caseFastOpen;
   const btn = document.getElementById('previewOpenBtn');
   btn.textContent = 'Открыть за ' + money(c.price);
   btn.disabled = false;
@@ -2552,7 +2570,7 @@ async function confirmOpenCase() {
       const winnerKeys=Array.from({length:count},()=>c.id==='starter'&&!boostEnabled?pickWeighted(starterWeights):pool[Math.floor(Math.random()*pool.length)]);
       pendingCaseRequest=null;
       document.getElementById('casePreview').classList.remove('show');
-      showCaseOverlay(c,winnerKeys,false,true);
+      showCaseOverlay(c,winnerKeys,false,true,caseFastOpen);
       return;
     }
     const requestIds = Array.from({length:count},(_,i)=>i===0?pendingCaseRequest:crypto.randomUUID());
@@ -2563,7 +2581,7 @@ async function confirmOpenCase() {
     const rewards = count === 1 ? [data.reward] : data.rewards;
     const winnerKeys = rewards.map(reward=>reward.type==='stars'?'stars_'+reward.amount:reward.type==='nothing'?'nothing':reward.key);
     pendingCaseRequest=null; document.getElementById('casePreview').classList.remove('show');
-    showCaseOverlay(c,winnerKeys);
+    showCaseOverlay(c,winnerKeys,false,false,caseFastOpen);
   } catch (error) {
     btn.disabled = false;
     btn.textContent = 'Открыть за ' + money(c.price);
@@ -2571,9 +2589,27 @@ async function confirmOpenCase() {
     if (error.message === 'insufficient_balance') loadAccount();
   }
 }
-function showCaseOverlay(c, winnerKeys, free = false, demo = false) {
+function showCaseOverlay(c, winnerKeys, free = false, demo = false, skipAnimation = false) {
   const overlay=document.getElementById('caseOverlay'),result=document.getElementById('caseResult'),multi=document.getElementById('rouletteMulti');
-  const winners=Array.isArray(winnerKeys)?winnerKeys:[winnerKeys];result.classList.remove('show');multi.classList.remove('is-finished');
+  const winners=Array.isArray(winnerKeys)?winnerKeys:[winnerKeys];
+  result.classList.remove('show');multi.classList.remove('is-finished');
+  const revealRewards=()=>{
+    haptic('success');playUiSound('win');
+    const rewardGrid=document.getElementById('multiRewards');
+    rewardGrid.style.setProperty('--reward-count',winners.length);
+    rewardGrid.innerHTML=winners.map((key,index)=>{
+      const item=dropMeta(key);if(demo&&item.type==='gift')addDemoInventoryGift(key);
+      const caption=demo?(item.type==='gift'?'Демо-инвентарь':item.type==='stars'?'Демо Stars':'Демо · пусто'):(item.type==='stars'?'Зачислено Stars':item.type==='nothing'?'Пусто':'В инвентаре');
+      return '<div class="multi-reward"><div class="big-img">'+item.img+'</div><strong>'+(index+1)+'. '+item.name+'</strong><small>'+caption+'</small></div>';
+    }).join('');
+    multi.classList.add('is-finished');result.classList.add('show');if(!demo)loadAccount();
+  };
+  if(skipAnimation){
+    multi.innerHTML='';document.getElementById('multiRewards').innerHTML='';
+    overlay.classList.add('show');multi.classList.add('is-finished');
+    revealRewards();
+    return;
+  }
   multi.innerHTML=winners.map((winnerKey,rowIndex)=>{
     const winnerIndex=15,items=[];for(let i=0;i<23;i++)items.push(c.drops[Math.floor(Math.random()*c.drops.length)]);items[winnerIndex]=winnerKey;
     return '<div class="roulette-strip-wrap"><div class="roulette-strip" data-row="'+rowIndex+'">'+items.map((key,i)=>{const item=dropMeta(key);return '<div class="roulette-item '+(i===winnerIndex?'winner':'')+'"><span class="gift-img">'+item.img+'</span><span>'+item.name+'</span></div>';}).join('')+'</div><div class="roulette-pointer"></div></div>';
@@ -2584,17 +2620,7 @@ function showCaseOverlay(c, winnerKeys, free = false, demo = false) {
     strip.style.transition='none';strip.style.transform='translate3d(0,0,0)';void strip.offsetWidth;
     strip.style.transition='transform '+(4.2+index*.1)+'s cubic-bezier(.12,.62,.22,1)';strip.style.transform='translate3d(-'+offset+'px,0,0)';
   }));
-  setTimeout(()=>{
-    haptic('success');playUiSound('win');
-    const rewardGrid=document.getElementById('multiRewards');
-    rewardGrid.style.setProperty('--reward-count',winners.length);
-    rewardGrid.innerHTML=winners.map((key,index)=>{
-      const item=dropMeta(key);if(demo&&item.type==='gift')addDemoInventoryGift(key);
-      const caption=demo?(item.type==='gift'?'Демо-инвентарь':item.type==='stars'?'Демо Stars':'Демо · пусто'):(item.type==='stars'?'Зачислено Stars':item.type==='nothing'?'Пусто':'В инвентаре');
-      return '<div class="multi-reward"><div class="big-img">'+item.img+'</div><strong>'+(index+1)+'. '+item.name+'</strong><small>'+caption+'</small></div>';
-    }).join('');
-    multi.classList.add('is-finished');result.classList.add('show');if(!demo)loadAccount();
-  },4700);
+  setTimeout(revealRewards,4700);
 }
 
 function closeCaseOverlay() {
@@ -3116,8 +3142,25 @@ function initCrashCanvas() {
 
 function crashHeading(t) { return Math.atan2(-15 * Math.sqrt(Math.max(t, 0.01)), 30 + 2.4 * t); }
 
+const crashRocketNFT = new Image();
+crashRocketNFT.crossOrigin = 'anonymous';
+crashRocketNFT.src = 'https://nft.fragment.com/gift/stellarrocket-126045.medium.jpg';
 function drawRocket(ctx, u, flame) {
   ctx.save();
+  if (crashRocketNFT.complete && crashRocketNFT.naturalWidth > 0) {
+    if (flame) {
+      const pulse=1+Math.random()*.38;
+      const fire=ctx.createLinearGradient(0,.75*u,0,(1.75+pulse)*u);
+      fire.addColorStop(0,'#fff7d5');fire.addColorStop(.25,'#ffd16a');fire.addColorStop(.65,'#ff7545');fire.addColorStop(1,'rgba(73,151,255,0)');
+      ctx.beginPath();ctx.moveTo(-.38*u,.78*u);ctx.quadraticCurveTo(-.55*u,1.2*u,0,(1.85+pulse)*u);ctx.quadraticCurveTo(.55*u,1.2*u,.38*u,.78*u);ctx.closePath();ctx.fillStyle=fire;ctx.fill();
+    }
+    ctx.shadowColor='rgba(94,164,255,.85)';ctx.shadowBlur=18*u;
+    ctx.beginPath();ctx.roundRect(-1.22*u,-1.22*u,2.44*u,2.44*u,.34*u);ctx.fillStyle='#17243d';ctx.fill();
+    ctx.save();ctx.beginPath();ctx.roundRect(-1.13*u,-1.13*u,2.26*u,2.26*u,.27*u);ctx.clip();
+    ctx.drawImage(crashRocketNFT,-1.13*u,-1.13*u,2.26*u,2.26*u);ctx.restore();
+    ctx.shadowBlur=0;ctx.lineWidth=.11*u;ctx.strokeStyle='#f4d28b';ctx.beginPath();ctx.roundRect(-1.22*u,-1.22*u,2.44*u,2.44*u,.34*u);ctx.stroke();
+    ctx.restore();return;
+  }
   ctx.lineJoin='round'; ctx.lineCap='round';
   const path=(points,fill,stroke='#17243a',width=.09)=>{
     ctx.beginPath(); points.forEach((p,i)=>i?ctx.lineTo(p[0]*u,p[1]*u):ctx.moveTo(p[0]*u,p[1]*u));

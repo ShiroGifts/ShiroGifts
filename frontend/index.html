@@ -3368,7 +3368,7 @@ function drawCrash() {
       if (progress > 0) {
         // Направление вычисляется по фактическому вектору движения к центру.
         const angle = Math.atan2(cy-ry,cx-rx);
-        ctx.save(); ctx.translate(rx,ry); ctx.rotate(angle + Math.PI/2);
+        ctx.save(); ctx.translate(rx,ry); ctx.rotate(angle + Math.PI/4);
         drawRocket(ctx,rocketSize); ctx.restore();
       }
     }
@@ -3522,11 +3522,12 @@ function crashFrame() {
     const eased = progress * progress * (3 - 2 * progress);
     const sx = 28 * k, sy = cw.clientHeight - 30 * k, cx = cw.clientWidth / 2, cy = cw.clientHeight * 0.52;
     const rx = sx + (cx - sx) * eased, ry = sy + (cy - sy) * eased;
-    const approach = Math.atan2(cy - sy, cx - sx), launchAngle = crashHeading(0);
-    const turn = Math.max(0, Math.min(1, (progress - .68) / .32)), smoothTurn = turn * turn * (3 - 2 * turn);
-    const angle = approach + (launchAngle - approach) * smoothTurn;
-    const tx = rx - Math.cos(angle) * 24 * k, ty = ry - Math.sin(angle) * 24 * k;
-    for (let i = 0; i < 1; i++) crashParticles.push({ x: tx, y: ty, vx: -Math.cos(angle) * 1.4 + (Math.random() - .5) * .8, vy: -Math.sin(angle) * 1.4 + (Math.random() - .5) * .8, r: Math.random() * 2.2 + 1.5, life: .65, color: Math.random() < .5 ? '#ffc42e' : '#ff6a2b' });
+    if (progress > 0) {
+      // Выхлоп появляется одновременно с ракетой и строго позади её носа.
+      const angle = Math.atan2(cy - sy, cx - sx);
+      const tx = rx - Math.cos(angle) * 24 * k, ty = ry - Math.sin(angle) * 24 * k;
+      crashParticles.push({ x: tx, y: ty, vx: -Math.cos(angle) * 1.4 + (Math.random() - .5) * .8, vy: -Math.sin(angle) * 1.4 + (Math.random() - .5) * .8, r: Math.random() * 2.2 + 1.5, life: .65, color: Math.random() < .5 ? '#ffc42e' : '#ff6a2b' });
+    }
   } else { multEl.classList.remove('wait'); multEl.textContent = crashMult.toFixed(2) + 'x'; }
   const countdown = document.getElementById('crashCountdown');
   if (countdown) {

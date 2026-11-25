@@ -1607,9 +1607,12 @@ body.upgrade-spinning #page-upgrade #upgradeBtn{
     <div class="crash-feed-title">Последние полёты</div>
     <div class="crash-history" id="crashHistory"></div>
     <div class="crash-controls">
+      <select class="crash-input" id="crashWagerMode" onchange="setCrashWagerMode(this.value)"><option value="stars">Ставка Stars</option><option value="gift">Подарок из инвентаря</option></select>
       <input class="crash-input" id="crashBet" type="number" value="50" min="1">
+      <select class="crash-input" id="crashGiftSelect" style="display:none;min-width:0"></select>
       <button class="btn-cashout" id="crashBtn" onclick="crashAction()">Взлететь</button>
     </div>
+    <div id="crashGiftStatus" class="crash-feed-title" style="text-align:center">Выберите подарок для полёта: при выводе он улучшится по текущему множителю.</div>
     <div class="crash-feed-title">Ставки игроков</div>
     <div class="crash-feed" id="crashFeed"></div>
   </div>
@@ -2008,6 +2011,7 @@ async function loadAccount() {
     updateBalanceUI();
     renderInventory();
     renderUpgrade();
+    renderCrashGiftPicker();
     if (ageConfirmed) loadFreeCaseStatus();
     loadDailyNameRewardStatus();
     if (ageConfirmed) checkPendingTonPayment();
@@ -3313,25 +3317,51 @@ function renderCrashUI() {
   inp.disabled = !(round.phase === 'betting' && !myBet);
 }
 
+function setCrashWagerMode(mode) {
+  const giftMode = mode === 'gift';
+  document.getElementById('crashBet').style.display = giftMode ? 'none' : '';
+  document.getElementById('crashGiftSelect').style.display = giftMode ? '' : 'none';
+  document.getElementById('crashGiftStatus').textContent = giftMode ? 'Подарок блокируется на время полёта. Выводите на множителе — получите самый дорогой доступный подарок.' : 'Выберите подарок для полёта: при выводе он улучшится по текущему множителю.';
+}
+function renderCrashGiftPicker() {
+  const select = document.getElementById('crashGiftSelect'); if (!select) return;
+  const current = select.value;
+  const items = inventory.filter(i => i.status === 'owned' && !i.demo);
+  select.innerHTML = '<option value="">Выберите подарок из инвентаря</option>' + items.map(i => {
+    const g = GIFTS[i.gift] || {}; return `<option value="${i.uid}">${g.name || i.name || 'Подарок'} · ${money(Number(i.price)||Number(g.price)||0)}</option>`;
+  }).join('');
+  if (items.some(i => i.uid === current)) select.value = current;
+}
+
 async function crashAction() {
   if (!ageConfirmed) return toast('Сначала подтвердите возраст 18+.', true);
   try {
     if (round.phase === 'betting' && !myBet) {
+      if (document.getElementById('crashWagerMode').value === 'gift') {
+        const inventoryId = document.getElementById('crashGiftSelect').value;
+        if (!inventoryId) return toast('Сначала выберите подарок из инвентаря.', true);
+        await apiRequest('/api/crash/bet', { method:'POST', body:JSON.stringify({ inventoryId }) });
+        haptic('light'); toast('Подарок отправлен в полёт!');
+      } else {
       const enteredAmount = Number(String(document.getElementById('crashBet').value).replace(',', '.'));
       const amount = currencyMode === 'TON' ? Math.round(enteredAmount * STARS_PER_TON) : Number.parseInt(document.getElementById('crashBet').value, 10);
       if (!Number.isFinite(enteredAmount) || !Number.isSafeInteger(amount) || amount < 1 || amount > 10000 || (currencyMode === 'TON' && Math.abs(enteredAmount - amount / STARS_PER_TON) > 0.000001)) return toast('Ставка минимум 1 Star (0,01 TON).', true);
       await apiRequest('/api/crash/bet', { method:'POST', body:JSON.stringify({ amount }) });
       haptic('light'); toast('Ставка принята');
+      }
     } else if (round.phase === 'flying' && myBet && myBet.cashed === null) {
       const result = await apiRequest('/api/crash/cashout', { method:'POST', body:'{}' });
       haptic('success');
-      toast(`Забрано ${money(result.payout)} на ${Number(result.multiplier).toFixed(2)}x`);
+      toast(result.upgradedGift ? `Улучшено до ${result.upgradedGift.name}!` : `Забрано ${money(result.payout)} на ${Number(result.multiplier).toFixed(2)}x`);
     }
     await loadAccount();
     await syncCrashState();
   } catch (error) {
     const messages = {
       invalid_bet_amount:'Ставка должна быть от 1 до 10000 Stars.',
+      crash_item_not_found:'Подарок уже недоступен в инвентаре.',
+      invalid_crash_item:'Этот подарок нельзя отправить в полёт.',
+      no_upgrade_at_multiplier:'Множитель пока слишком мал для следующего подарка.',
       insufficient_balance:'Недостаточно средств на балансе.',
       betting_closed:'Приём ставок на этот раунд уже закрыт.',
       bet_already_placed:'В этом раунде ставка уже сделана.',

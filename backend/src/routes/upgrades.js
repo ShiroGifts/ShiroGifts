@@ -23,13 +23,13 @@ router.post('/upgrade', async (req, res) => {
   try {
     await client.query('BEGIN');
     const previous = await client.query(
-      'SELECT success, chance, created_inventory_id FROM upgrade_events WHERE request_id = $1 AND telegram_id = $2',
+      'SELECT success, chance, created_inventory_id, double_reward, second_created_inventory_id FROM upgrade_events WHERE request_id = $1 AND telegram_id = $2',
       [requestId, telegramId]
     );
     if (previous.rowCount) {
       await client.query('COMMIT');
       const p = previous.rows[0];
-      return res.json({ ok: true, duplicate: true, success: p.success, chance: Number(p.chance), inventoryId: p.created_inventory_id ? String(p.created_inventory_id) : null });
+      return res.json({ ok: true, duplicate: true, success: p.success, chance: Number(p.chance), inventoryId: p.created_inventory_id ? String(p.created_inventory_id) : null, doubleReward: !!p.double_reward, secondInventoryId: p.second_created_inventory_id ? String(p.second_created_inventory_id) : null, x2Available: !!p.double_reward, x2Chance: 0 });
     }
 
     const source = await client.query(
@@ -58,7 +58,15 @@ router.post('/upgrade', async (req, res) => {
       return res.status(400).json({ ok: false, error: 'upgrade_chance_below_minimum', minimumChance: MIN_UPGRADE_CHANCE });
     }
     const success = randomInt(0, 1000000) < Math.round(chance * 1000000);
+    // The secret x2 marker appears rarely, with appearance probability inversely proportional to the base win chance.
+    // It occupies 8% of the winning sector; the server decides whether the spin lands on it.
+    const x2SectorShare = 0.08;
+    const x2AppearanceChance = Math.min(0.005, 0.00005 / chance);
+    const x2Available = randomInt(0, 1000000) < Math.round(x2AppearanceChance * 1000000);
+    const doubleReward = success && x2Available && randomInt(0, 1000000) < Math.round(x2SectorShare * 1000000);
+    const x2Chance = chance * x2AppearanceChance * x2SectorShare;
     let createdInventoryId = null;
+    let secondCreatedInventoryId = null;
     if (success) {
       await client.query("UPDATE inventory SET status = 'upgraded' WHERE id = $1", [inventoryId]);
       const created = await client.query(
@@ -67,19 +75,27 @@ router.post('/upgrade', async (req, res) => {
         [telegramId, targetKey, target.name, target.emoji, target.rarity, target.value, requestId]
       );
       createdInventoryId = String(created.rows[0].id);
+      if (doubleReward) {
+        const second = await client.query(
+          `INSERT INTO inventory (telegram_id, item_key, name, emoji, rarity, value_stars, source_type, source_ref)
+           VALUES ($1, $2, $3, $4, $5, $6, 'upgrade_x2', $7) RETURNING id`,
+          [telegramId, targetKey, target.name, target.emoji, target.rarity, target.value, requestId + ':x2']
+        );
+        secondCreatedInventoryId = String(second.rows[0].id);
+      }
     } else {
       await client.query("UPDATE inventory SET status = 'burned' WHERE id = $1", [inventoryId]);
     }
     await client.query(
-      `INSERT INTO upgrade_events (request_id, telegram_id, source_inventory_id, target_key, chance, success, created_inventory_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [requestId, telegramId, inventoryId, targetKey, chance, success, createdInventoryId]
+      `INSERT INTO upgrade_events (request_id, telegram_id, source_inventory_id, target_key, chance, success, created_inventory_id, double_reward, second_created_inventory_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [requestId, telegramId, inventoryId, targetKey, chance, success, createdInventoryId, doubleReward, secondCreatedInventoryId]
     );
     await client.query('COMMIT');
     if (success) {
-      notifyAdminGift({ telegramId, username: req.telegramUser.username, firstName: req.telegramUser.first_name, itemName: target.name, source: 'Успешный апгрейд', inventoryId: createdInventoryId }).catch(() => {});
+      notifyAdminGift({ telegramId, username: req.telegramUser.username, firstName: req.telegramUser.first_name, itemName: target.name + (doubleReward ? ' ×2' : ''), source: 'Успешный апгрейд', inventoryId: createdInventoryId }).catch(() => {});
     }
-    res.json({ ok: true, success, chance, inventoryId: createdInventoryId });
+    res.json({ ok: true, success, chance, inventoryId: createdInventoryId, doubleReward, secondInventoryId: secondCreatedInventoryId, x2Available, x2Chance });
   } catch (error) {
     await client.query('ROLLBACK').catch(() => {});
     console.error('[UPGRADE ERROR]', error.code || error.message);

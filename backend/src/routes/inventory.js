@@ -80,7 +80,7 @@ async function deliverTelegramGift(telegramId, itemKey, caption) {
 
 router.post('/inventory/withdraw', async (req, res) => {
   const id = String(req.body && req.body.inventoryId || '');
-  if (!/^\\d+$/.test(id)) return res.status(400).json({ ok: false, error: 'invalid_inventory_id' });
+  if (!/^\d+$/.test(id)) return res.status(400).json({ ok: false, error: 'invalid_inventory_id' });
   const telegramId = String(req.telegramUser.id);
   const client = await pool.connect();
   try {

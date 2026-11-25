@@ -2058,16 +2058,30 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
 #page-upgrade .chance{font-size:29px!important}
 #page-upgrade .chance small{font-size:10px!important}
 
+.avatar-inventory-hint{position:absolute;top:calc(100% + 5px);left:18px;z-index:140;max-width:220px;padding:7px 10px;border:1px solid rgba(151,177,255,.25);border-radius:10px;background:#202d49;color:#e8efff;font-size:10px;font-weight:750;line-height:1.3;box-shadow:0 5px 16px #0004;pointer-events:none;animation:avatarHintIn .25s ease}
+@keyframes avatarHintIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.vibration-setting{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;padding:13px 14px;border:1px solid rgba(255,255,255,.12);border-radius:15px;background:linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.035))}
+.vibration-setting-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.vibration-setting-copy b{font-size:13px;font-weight:850}
+.vibration-setting-copy span{font-size:10px;line-height:1.35;color:var(--text-dim)}
+.vibration-switch{position:relative;display:block;flex:0 0 44px;width:44px;height:26px}
+.vibration-switch input{position:absolute;width:1px;height:1px;opacity:0}
+.vibration-switch span{position:absolute;inset:0;border-radius:99px;background:#41495b;transition:background .18s}
+.vibration-switch span:after{content:'';position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 4px #0004;transition:transform .18s}
+.vibration-switch input:checked+span{background:var(--accent)}
+.vibration-switch input:checked+span:after{transform:translateX(18px)}
+.vibration-switch input:focus-visible+span{outline:2px solid #fff;outline-offset:3px}
 </style>
 
 </head>
 <body>
 
 <div class="header">
-  <button class="header-profile" type="button" onclick="switchPage('inventory')" aria-label="Открыть инвентарь">
+  <button class="header-profile" type="button" onclick="openInventoryFromAvatar()" aria-label="Открыть инвентарь">
     <span class="header-avatar" id="headerAvatar">S</span>
     <span class="header-name" id="headerName">Игрок</span>
   </button>
+  <div class="avatar-inventory-hint" id="avatarInventoryHint">Нажми на аватарку — откроется инвентарь</div>
   <div class="header-right">
     <span id="onlineCount" hidden>—</span>
     <div class="balance"><span class="star" id="balanceCurrencyIcon">⭐</span> <span id="balanceVal">0</span><button id="topupBtn" onclick="topUp()" aria-label="Пополнить баланс" style="margin-left:6px;border:0;border-radius:50%;width:24px;height:24px;background:var(--accent);color:#fff;font-size:19px;font-weight:900;line-height:1;cursor:pointer">+</button></div>
@@ -2099,6 +2113,13 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
       <div class="profile-id" id="profileTelegramId"></div>
     </div>
     <button id="currencyToggle" class="profile-currency-toggle" type="button" onclick="toggleCurrency()" aria-label="Сменить валюту">TON</button>
+  </div>
+  <div class="vibration-setting">
+    <div class="vibration-setting-copy"><b>Вибрация</b><span>Тактильный отклик при действиях в игре</span></div>
+    <label class="vibration-switch" aria-label="Включить или выключить вибрацию">
+      <input id="vibrationToggle" type="checkbox" checked onchange="toggleVibration()">
+      <span></span>
+    </label>
   </div>
   <div class="promo-panel profile-reward-panel" id="dailyNameRewardPanel">
     <div class="promo-heading">🎁 Награда за ник · 10 ★</div>
@@ -2352,8 +2373,23 @@ if (tg) {
   if (tg.setHeaderColor) tg.setHeaderColor('#12141a');
 }
 
+let vibrationEnabled = true;
+try { vibrationEnabled = localStorage.getItem('shiro_vibration') !== 'off'; } catch(e) {}
+function syncVibrationToggle() {
+  const toggle = document.getElementById('vibrationToggle');
+  if (toggle) toggle.checked = vibrationEnabled;
+}
+function toggleVibration() {
+  vibrationEnabled = !!document.getElementById('vibrationToggle')?.checked;
+  try { localStorage.setItem('shiro_vibration', vibrationEnabled ? 'on' : 'off'); } catch(e) {}
+}
+function openInventoryFromAvatar() {
+  try { localStorage.setItem('shiro_avatar_hint_seen', '1'); } catch(e) {}
+  document.getElementById('avatarInventoryHint')?.remove();
+  switchPage('inventory');
+}
 function haptic(type) {
-  if (!tg?.HapticFeedback) return;
+  if (!vibrationEnabled || !tg?.HapticFeedback) return;
   try {
     if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
     else if (type === 'error') tg.HapticFeedback.notificationOccurred('error');
@@ -4779,6 +4815,8 @@ function copyRefLink() {
 }
 
 /* ===== INIT ===== */
+syncVibrationToggle();
+try { if (localStorage.getItem('shiro_avatar_hint_seen') === '1') document.getElementById('avatarInventoryHint')?.remove(); } catch(e) {}
 renderAdminGiftOptions();
 // The upgrade picker is authored directly under <body>, outside animated .page containers.
 document.querySelectorAll('[data-ic]').forEach(e => e.innerHTML = IC[e.dataset.ic]);

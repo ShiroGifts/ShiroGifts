@@ -3219,6 +3219,7 @@ function prepareCrashRocket(){
   }catch(e){crashRocketCutout=null;console.warn('Rocket cutout unavailable',e)}
 }
 crashRocketNFT.onload=prepareCrashRocket;
+if(crashRocketNFT.complete)prepareCrashRocket();
 function drawRocket(ctx,u,flame){
   ctx.save();
   if(flame){

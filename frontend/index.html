@@ -3096,6 +3096,11 @@ function togglePromoMode() {
   if (limit) limit.style.display = mode === 'activations' ? 'block' : 'none';
   if (expiry) expiry.style.display = mode === 'duration' ? 'block' : 'none';
 }
+function escapeHtmlText(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, char => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  })[char]);
+}
 async function loadAdminWithdrawals() {
   const box = document.getElementById('adminWithdrawalList');
   if (!box) return;
@@ -3103,13 +3108,20 @@ async function loadAdminWithdrawals() {
   try {
     const data = await apiRequest('/api/admin/withdrawals');
     if (!data.requests.length) { box.textContent = 'Ожидающих заявок нет.'; return; }
-    box.innerHTML = data.requests.map(r => `<div class="promo-description" style="padding:10px 0;border-bottom:1px solid var(--border)">
-      <b>#${r.id} · ${r.name || r.item_key || 'Подарок'}</b><br>
-      Telegram ID: ${r.telegram_id}<br>
-      Тип: ${r.withdrawal_type} · ${new Date(r.created_at).toLocaleString('ru-RU')}<br>
-      <button class="btn btn-sell" onclick="resolveWithdrawal(${r.id},'rejected')">Отклонить</button>
-      <button class="btn btn-withdraw" onclick="resolveWithdrawal(${r.id},'sent')">Отметить отправленным</button>
-    </div>`).join('');
+    box.innerHTML = data.requests.map(r => {
+      const id = Number(r.id);
+      const status = r.status === 'processing' ? 'Автоотправка зависла — проверьте вручную' : r.status === 'approved' ? 'Одобрено' : 'Ожидает решения';
+      const note = r.admin_note ? `<div style="margin:6px 0;color:var(--text-dim)">${escapeHtmlText(r.admin_note)}</div>` : '';
+      return `<div class="promo-description" style="padding:10px 0;border-bottom:1px solid var(--border)">
+        <b>#${id} · ${escapeHtmlText(r.name || r.item_key || 'Подарок')}</b><br>
+        Telegram ID: ${escapeHtmlText(r.telegram_id)}<br>
+        Статус: ${status}<br>
+        Тип: ${escapeHtmlText(r.withdrawal_type)} · ${new Date(r.created_at).toLocaleString('ru-RU')}
+        ${note}
+        <button class="btn btn-sell" onclick="resolveWithdrawal(${id},'rejected')">Отклонить</button>
+        <button class="btn btn-withdraw" onclick="resolveWithdrawal(${id},'sent')">Отметить отправленным</button>
+      </div>`;
+    }).join('');
   } catch(error) { box.textContent = error.message; }
 }
 async function resolveWithdrawal(id, action) {

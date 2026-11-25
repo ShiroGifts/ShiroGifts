@@ -87,7 +87,8 @@ router.post('/ton/verify', async (req, res) => {
     const match = data.result.find(tx => {
       const msg = tx && tx.in_msg;
       return msg &&
-        String(msg.source || '').toLowerCase() === String(intent.sender_address).toLowerCase() &&
+        normalizeTonAddress(msg.source) === normalizeTonAddress(intent.sender_address) &&
+        normalizeTonAddress(msg.destination) === normalizeTonAddress(WALLET_ADDRESS) &&
         String(msg.value || '') === expected &&
         Number(tx.utime || 0) >= minTime &&
         tx.transaction_id && tx.transaction_id.hash;

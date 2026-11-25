@@ -3430,7 +3430,12 @@ function drawCrash() {
   // частицы (выхлоп/взрыв) в экранных координатах
   crashParticles.forEach(p => { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * k, 0, 7); ctx.fill(); });
   ctx.globalAlpha = 1;
-  // The rocket itself is rendered as a 3D model on the transparent WebGL canvas.
+  // WebGL fallback: keep the rocket visible and correctly aligned if 3D is unavailable.
+  if (!crash3D) {
+    const th = crashHeading(t);
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(th + Math.PI/2);
+    drawRocket(ctx,23*k,crashState==='flying'); ctx.restore();
+  }
 }
 
 function spawnParticles(x, y, crashed) {

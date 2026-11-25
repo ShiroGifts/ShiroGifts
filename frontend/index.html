@@ -1165,7 +1165,7 @@ body{
   #upgradePickerBackdrop *{scroll-behavior:auto!important;transition:none!important}
 }
 
-/* Keep case-card glow static while scrolling. */
+/* Static colored halo behind each chest: no animation, blur layer or scroll work. */
 .case-card:after{
   animation:none!important;filter:none!important;transform:none!important;
   opacity:.18!important;
@@ -1173,6 +1173,35 @@ body{
   left:8%!important;right:8%!important;top:10px!important;height:105px!important;
   will-change:auto!important;
 }
+.case-card .gift-img{
+  position:relative!important;isolation:isolate;overflow:visible!important;
+}
+.case-card .gift-img:before{
+  content:"";position:absolute;z-index:-1;left:50%;top:50%;
+  width:82px;height:68px;transform:translate(-50%,-50%);
+  border-radius:50%;
+  background:radial-gradient(ellipse,var(--case-glow,#9aaeff) 0%,transparent 72%);
+  opacity:.72;pointer-events:none;
+}
+.case-card .gift-img img{
+  position:relative;z-index:1;transform:translateZ(0)!important;
+  transition:filter .18s ease!important;
+  will-change:auto!important;
+  filter:drop-shadow(0 8px 9px rgba(0,0,0,.42))!important;
+}
+/* Each case gets its own clear chest color while retaining the same artwork. */
+.case-card.tier-farm .gift-img img{filter:hue-rotate(105deg) saturate(1.25) drop-shadow(0 8px 9px rgba(0,0,0,.42))!important}
+.case-card.tier-starter .gift-img img{filter:hue-rotate(345deg) saturate(1.12) drop-shadow(0 8px 9px rgba(0,0,0,.42))!important}
+.case-card.tier-mini .gift-img img{filter:hue-rotate(22deg) saturate(1.35) drop-shadow(0 8px 9px rgba(0,0,0,.42))!important}
+.case-card.tier-bronze .gift-img img{filter:hue-rotate(8deg) saturate(1.65) brightness(1.04) drop-shadow(0 8px 9px rgba(0,0,0,.42))!important}
+.case-card.tier-silver .gift-img img{filter:grayscale(.72) brightness(1.22) saturate(.45) drop-shadow(0 8px 9px rgba(0,0,0,.42))!important}
+.case-card.tier-gold .gift-img img{filter:sepia(.72) saturate(1.8) hue-rotate(2deg) brightness(1.12) drop-shadow(0 8px 9px rgba(0,0,0,.42))!important}
+.case-card.tier-legend .gift-img img{filter:hue-rotate(245deg) saturate(1.55) brightness(1.08) drop-shadow(0 8px 9px rgba(0,0,0,.42))!important}
+.case-card.tier-ruby .gift-img img{filter:hue-rotate(300deg) saturate(1.8) brightness(1.05) drop-shadow(0 8px 9px rgba(0,0,0,.42))!important}
+.case-card.tier-diamond .gift-img img{filter:hue-rotate(155deg) saturate(1.3) brightness(1.16) drop-shadow(0 8px 9px rgba(0,0,0,.42))!important}
+.case-card.tier-cosmic .gift-img img{filter:hue-rotate(215deg) saturate(1.7) brightness(1.12) drop-shadow(0 8px 9px rgba(0,0,0,.42))!important}
+.case-card.tier-nft .gift-img img{filter:sepia(.38) saturate(1.65) hue-rotate(8deg) brightness(1.18) drop-shadow(0 8px 9px rgba(0,0,0,.42))!important}
+.case-card.tier-free .gift-img img,.case-card.tier-lock .gift-img img{filter:hue-rotate(135deg) saturate(.8) brightness(1.05) drop-shadow(0 8px 9px rgba(0,0,0,.42))!important}
 
 
 /* Modal is portaled to body: isolate it above every page and let the grid use the full viewport. */

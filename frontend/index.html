@@ -3753,6 +3753,27 @@ async function resolveWithdrawal(id, action) {
   } catch(error) { toast(error.message, true); }
 }
 
+async function grantReferralCredit() {
+  const telegramId = document.getElementById('adminReferralTelegramId').value.trim();
+  const result = document.getElementById('adminReferralResult');
+  try {
+    const data = await apiRequest('/api/admin/referrals/grant', {
+      method: 'POST', body: JSON.stringify({ telegramId })
+    });
+    result.textContent = 'Игрок ' + data.telegramId + ': выдано ' + data.referralsCount + '/' + data.required + ' рефералов. Вывод NFT открыт.';
+    haptic('success');
+    toast('Игроку выдано 5/5 рефералов');
+  } catch (error) {
+    const messages = {
+      invalid_telegram_id: 'Проверь Telegram ID игрока.',
+      admin_only: 'Нет прав администратора.',
+      referral_grant_failed: 'Не удалось выдать рефералы.'
+    };
+    result.textContent = messages[error.message] || 'Не удалось выдать 5/5 рефералов.';
+    toast(result.textContent, true);
+  }
+}
+
 async function grantStars() {
   const telegramId = document.getElementById('adminStarsTelegramId').value.trim();
   const amount = Number(document.getElementById('adminStarsAmount').value);

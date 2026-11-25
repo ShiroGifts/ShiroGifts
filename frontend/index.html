@@ -2028,6 +2028,19 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
 .mines-fairness{margin:8px 2px 0;text-align:center;color:rgba(214,225,247,.47);font-size:8px;line-height:1.4;overflow-wrap:anywhere}
 @media(max-width:360px){.mines-panel{padding:12px 10px}.mines-board{gap:5px;padding:7px}.mines-cell{border-radius:9px}.mines-stats{gap:4px}.mines-stats b{font-size:10px}}
 
+
+/* Mines currency silhouettes and one-position action control */
+.mines-nav-icon svg{display:block;width:22px;height:22px}
+.mines-currency-icon{display:block;width:32px;height:32px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.2))}
+.mines-currency-icon.ton{width:34px;height:34px}
+.mines-cell.safe-open .mines-currency-icon{width:34px;height:34px}
+.mines-cell.safe-open .mines-currency-icon.ton{width:36px;height:36px}
+.mines-action-cashout{background:linear-gradient(135deg,#4fd6a4,#2caa91)!important;color:#092b2b!important;box-shadow:0 7px 18px rgba(43,190,154,.2)!important}
+.mines-start:disabled{opacity:.42}
+.wheel-x2-marker{width:33px!important;height:33px!important;font-size:12px!important}
+#page-upgrade .chance{font-size:29px!important}
+#page-upgrade .chance small{font-size:10px!important}
+
 </style>
 
 </head>
@@ -2233,10 +2246,9 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
       <div class="mines-field"><label for="minesBetInput">Ставка</label><div class="mines-bet-wrap"><input id="minesBetInput" class="mines-input" type="number" value="50" min="1" step="1" inputmode="decimal"><span id="minesCurrencyLabel">Stars</span></div></div>
       <div class="mines-field"><label for="minesCountSelect">Количество мин</label><select id="minesCountSelect" class="mines-input"><option value="3">3 мины</option><option value="4">4 мины</option><option value="5" selected>5 мин</option><option value="6">6 мин</option><option value="7">7 мин</option><option value="8">8 мин</option><option value="9">9 мин</option><option value="10">10 мин</option></select></div>
     </div>
-    <button class="btn-big mines-start" id="minesStartBtn" type="button" onclick="startMinesGame()">Начать игру</button>
+    <button class="btn-big mines-start" id="minesActionBtn" type="button" onclick="minesGame?.status==='active'?cashoutMines():startMinesGame()">Начать игру</button>
     <div class="mines-stats"><div><small>Мин</small><b id="minesMineCount">—</b></div><div><small>Открыто</small><b id="minesSafeCount">0</b></div><div><small>Множитель</small><b id="minesMultiplier">x1.00</b></div><div><small>К выводу</small><b id="minesPayout">0 Stars</b></div></div>
     <div class="mines-board" id="minesBoard" aria-label="Игровое поле 5 на 5"></div>
-    <button class="btn-big mines-cashout" id="minesCashoutBtn" type="button" onclick="cashoutMines()" disabled>Забрать выигрыш</button>
     <div class="mines-status" id="minesStatus" aria-live="polite">Выбери ставку и количество мин, чтобы начать.</div>
     <div class="mines-fairness" id="minesFairness">Мины генерируются сервером до начала игры и не меняют положение после нажатий.</div>
   </div>
@@ -2245,7 +2257,7 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
 <div class="nav">
   <div class="nav-item active" data-page="cases" onclick="switchPage('cases')"><span class="icon" data-ic="chestN"></span>Кейсы</div>
   <div class="nav-item" data-page="crash" onclick="switchPage('crash')"><span class="icon" data-ic="rocket"></span>Краш</div>
-  <div class="nav-item" data-page="mines" onclick="switchPage('mines')"><span class="icon">◆</span>Мины</div>
+  <div class="nav-item" data-page="mines" onclick="switchPage('mines')"><span class="icon mines-nav-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M25 5c4-4 9-3 12 0-4 1-6 4-6 8" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/><path d="M33 5l5 1-2 5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 13c-10 0-18 8-18 18a18 18 0 0 0 36 0c0-10-8-18-18-18Z" fill="currentColor"/><path d="M15 25c3-5 8-7 14-6" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="3" stroke-linecap="round"/><circle cx="18" cy="31" r="2" fill="rgba(8,15,37,.55)"/></svg></span>Мины</div>
   <div class="nav-item" data-page="promo" onclick="switchPage('promo')"><span class="icon" data-ic="promo"></span>Промокод</div>
   <div class="nav-item" data-page="upgrade" onclick="switchPage('upgrade')"><span class="icon" data-ic="up"></span>Апгрейд</div>
 </div>
@@ -3705,8 +3717,7 @@ function renderWheel(){
   if(!fromItem||!GIFTS[fromItem.gift]||!GIFTS[upgradeToKey]){seg.style.background='var(--surface-2)';seg.innerHTML='';chanceEl.textContent='—';chanceEl.classList.remove('fail');return;}
   const chance=calcChance(fromItem.gift,upgradeToKey),pct=(chance*100).toFixed(2);
   renderUpgradeWheelSecret(chance,false);
-  const x2AppearanceChance=Math.min(0.005,0.00005/chance),x2HitChance=chance*x2AppearanceChance*0.08;
-  chanceEl.innerHTML=`${pct}%<small>шанс успеха · x2 ${(x2HitChance*100).toFixed(5)}%</small>`;
+  chanceEl.innerHTML=`${pct}%<small>шанс успеха</small>`;
   chanceEl.classList.remove('fail');
 }
 
@@ -3842,6 +3853,10 @@ function renderMinesCurrency(){
   if(input){input.step=currencyMode==='TON'?'0.01':'1';input.min=currencyMode==='TON'?'0.01':'1';if(!input.dataset.currencyReady){input.value=currencyMode==='TON'?'0.50':'50';input.dataset.currencyReady='1';}}
   if(label)label.textContent=currencyMode==='TON'?'TON':'Stars';
 }
+function minesCurrencySvg(){
+  if(currencyMode==='TON')return '<svg class="mines-currency-icon ton" viewBox="0 0 48 48" aria-hidden="true"><path d="M10 8h28l-14 32L10 8Z" fill="#70c8ff"/><path d="M10 8h28L24 22 10 8Z" fill="#b9e8ff"/><path d="M24 22v18" stroke="#e8f8ff" stroke-width="2" stroke-linecap="round"/></svg>';
+  return '<svg class="mines-currency-icon stars" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 3.5 29.8 17l14.7 1.2-11.2 9.6 3.4 14.4L24 34.6 11.3 42.2l3.4-14.4L3.5 18.2 18.2 17 24 3.5Z" fill="#ffd45c" stroke="#fff0a5" stroke-width="1.5" stroke-linejoin="round"/><path d="m24 10 3.7 9 9.4.8-7.1 6.1 2.2 9.1-8.2-4.9-8.1 4.9 2.2-9.1-7.1-6.1 9.4-.8L24 10Z" fill="#fff0a5" opacity=".3"/></svg>';
+}
 function minesBombSvg(){
   return '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M28 7c4-5 9-4 12-1-3 1-5 4-5 7" fill="none" stroke="#ffd36c" stroke-width="3.5" stroke-linecap="round"/><path d="M34 4l5 1-2 5" fill="none" stroke="#fff0a8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="23" cy="27" r="15" fill="#263650" stroke="#8da7d2" stroke-width="2.5"/><path d="M13 21c4-7 14-9 21-3" fill="none" stroke="#a9c2ed" stroke-width="2" stroke-linecap="round"/><path d="M18 27h.1M28 27h.1" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/><path d="M18 34c3 2 7 2 10 0" fill="none" stroke="#ff8792" stroke-width="2" stroke-linecap="round"/></svg>';
 }
@@ -3860,15 +3875,14 @@ function renderMinesUI(){
     const isPicked=picked.has(cell),isMine=mines.has(cell),revealMine=game&&game.status!=='active'&&isMine;
     let cls='mines-cell',content='<span class="mines-cell-question">✦</span>';
     if(isPicked&&isMine){cls+=' mine-hit';content=minesBombSvg();}
-    else if(isPicked){cls+=' safe-open';content='<span class="mines-gem">◆</span>';}
+    else if(isPicked){cls+=' safe-open';content=minesCurrencySvg();}
     else if(revealMine){cls+=' mine-reveal';content=minesBombSvg();}
     const disabled=!active||isPicked;
     return '<button type="button" class="'+cls+'" '+(disabled?'disabled':'')+' onclick="pickMinesCell('+cell+')" aria-label="Клетка '+(cell+1)+'">'+content+'</button>';
   }).join('');
-  const start=document.getElementById('minesStartBtn'),cash=document.getElementById('minesCashoutBtn');
+  const action=document.getElementById('minesActionBtn');
   const betInput=document.getElementById('minesBetInput'),countInput=document.getElementById('minesCountSelect');
-  if(start){start.disabled=active||minesBusy;start.textContent=active?'Игра идёт':'Начать игру';}
-  if(cash){cash.disabled=!active||safeCount<1||minesBusy;cash.textContent=safeCount?('Забрать '+money(Math.floor(Number(game?.betStars||0)*Number(game?.multiplier||1)))):'Забрать выигрыш';}
+  if(action){action.disabled=minesBusy||(active&&safeCount<1);action.textContent=active?('Забрать '+money(Math.floor(Number(game?.betStars||0)*Number(game?.multiplier||1)))):'Начать игру';action.classList.toggle('mines-action-cashout',active);}
   if(betInput)betInput.disabled=active||minesBusy;
   if(countInput)countInput.disabled=active||minesBusy;
   const status=document.getElementById('minesStatus'),fair=document.getElementById('minesFairness');

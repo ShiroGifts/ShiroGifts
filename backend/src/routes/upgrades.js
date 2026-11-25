@@ -23,13 +23,13 @@ router.post('/upgrade', async (req, res) => {
   try {
     await client.query('BEGIN');
     const previous = await client.query(
-      'SELECT success, chance, created_inventory_id, double_reward, second_created_inventory_id FROM upgrade_events WHERE request_id = $1 AND telegram_id = $2',
+      'SELECT success, chance, created_inventory_id, double_reward, second_created_inventory_id, x2_available, x2_chance FROM upgrade_events WHERE request_id = $1 AND telegram_id = $2',
       [requestId, telegramId]
     );
     if (previous.rowCount) {
       await client.query('COMMIT');
       const p = previous.rows[0];
-      return res.json({ ok: true, duplicate: true, success: p.success, chance: Number(p.chance), inventoryId: p.created_inventory_id ? String(p.created_inventory_id) : null, doubleReward: !!p.double_reward, secondInventoryId: p.second_created_inventory_id ? String(p.second_created_inventory_id) : null, x2Available: !!p.double_reward, x2Chance: 0 });
+      return res.json({ ok: true, duplicate: true, success: p.success, chance: Number(p.chance), inventoryId: p.created_inventory_id ? String(p.created_inventory_id) : null, doubleReward: !!p.double_reward, secondInventoryId: p.second_created_inventory_id ? String(p.second_created_inventory_id) : null, x2Available: !!p.x2_available, x2Chance: Number(p.x2_chance) || 0 });
     }
 
     const source = await client.query(
@@ -87,9 +87,9 @@ router.post('/upgrade', async (req, res) => {
       await client.query("UPDATE inventory SET status = 'burned' WHERE id = $1", [inventoryId]);
     }
     await client.query(
-      `INSERT INTO upgrade_events (request_id, telegram_id, source_inventory_id, target_key, chance, success, created_inventory_id, double_reward, second_created_inventory_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-      [requestId, telegramId, inventoryId, targetKey, chance, success, createdInventoryId, doubleReward, secondCreatedInventoryId]
+      `INSERT INTO upgrade_events (request_id, telegram_id, source_inventory_id, target_key, chance, success, created_inventory_id, double_reward, second_created_inventory_id, x2_available, x2_chance)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [requestId, telegramId, inventoryId, targetKey, chance, success, createdInventoryId, doubleReward, secondCreatedInventoryId, x2Available, x2Chance]
     );
     await client.query('COMMIT');
     if (success) {

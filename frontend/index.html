@@ -3282,44 +3282,8 @@ function updateCrashGiftProgress() {
 }
 
 let crash3D = null;
-function initCrash3D() {
- const wrap=document.querySelector('.crash-canvas-wrap');if(!wrap||!window.THREE)return;
- if(crash3D){crash3D.renderer.setSize(wrap.clientWidth,wrap.clientHeight,false);crash3D.camera.aspect=wrap.clientWidth/Math.max(1,wrap.clientHeight);crash3D.camera.updateProjectionMatrix();return;}
- const THREE=window.THREE;let renderer;try{renderer=new THREE.WebGLRenderer({alpha:true,antialias:true});}catch(e){console.warn('[CRASH 3D] WebGL unavailable; using 2D fallback.',e);return;}
- renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.setSize(wrap.clientWidth,wrap.clientHeight,false);renderer.setClearColor(0,0);renderer.domElement.className='crash-3d-canvas';wrap.appendChild(renderer.domElement);
- const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(38,wrap.clientWidth/Math.max(1,wrap.clientHeight),.1,100);camera.position.set(0,0,8.5);
- scene.add(new THREE.AmbientLight(0xdceaff,1.25));const key=new THREE.DirectionalLight(0xffffff,1.45);key.position.set(-3,4,6);scene.add(key);
- const fill=new THREE.DirectionalLight(0x78aaff,.72);fill.position.set(3,-1,4);scene.add(fill);const rim=new THREE.PointLight(0x548cff,1.05,12);rim.position.set(2,-1,3);scene.add(rim);
- const rocket=new THREE.Group();rocket.scale.setScalar(.78);scene.add(rocket);
- const shell=new THREE.MeshPhysicalMaterial({color:0xe9f3ff,metalness:.02,roughness:.4,clearcoat:.32,clearcoatRoughness:.28}),orange=new THREE.MeshPhysicalMaterial({color:0xff7048,metalness:0,roughness:.38,clearcoat:.3}),coral=new THREE.MeshPhysicalMaterial({color:0xff985b,metalness:0,roughness:.4,clearcoat:.25}),blue=new THREE.MeshPhysicalMaterial({color:0x398fe8,metalness:.02,roughness:.34,clearcoat:.4}),violet=new THREE.MeshPhysicalMaterial({color:0x7763d9,metalness:0,roughness:.4,clearcoat:.3}),navy=new THREE.MeshPhysicalMaterial({color:0x102d59,metalness:.03,roughness:.25,clearcoat:.65}),glass=new THREE.MeshPhysicalMaterial({color:0x48b9f4,metalness:0,roughness:.2,clearcoat:.8,emissive:0x0b5790,emissiveIntensity:.2}),pearl=new THREE.MeshBasicMaterial({color:0xf5fbff,transparent:true,opacity:.75});
- const profile=[new THREE.Vector2(0,-.91),new THREE.Vector2(.16,-.87),new THREE.Vector2(.27,-.76),new THREE.Vector2(.34,-.53),new THREE.Vector2(.365,-.2),new THREE.Vector2(.35,.25),new THREE.Vector2(.30,.57),new THREE.Vector2(.20,.82),new THREE.Vector2(.095,.99),new THREE.Vector2(0,1.04)];
- const body=new THREE.Mesh(new THREE.LatheGeometry(profile,56),shell);body.position.y=.02;rocket.add(body);
- const nose=new THREE.Mesh(new THREE.SphereGeometry(1,32,24),orange);nose.scale.set(.145,.19,.145);nose.position.set(0,.91,0);rocket.add(nose);
- const noseTip=new THREE.Mesh(new THREE.ConeGeometry(.115,.23,40),coral);noseTip.position.y=1.075;rocket.add(noseTip);
- const nozzle=new THREE.Mesh(new THREE.TorusGeometry(.205,.055,16,48),blue);nozzle.position.y=-.79;nozzle.rotation.x=Math.PI/2;rocket.add(nozzle);
- const nozzleCore=new THREE.Mesh(new THREE.CylinderGeometry(.13,.16,.12,40),navy);nozzleCore.position.y=-.88;rocket.add(nozzleCore);
- const windowFrame=new THREE.Mesh(new THREE.SphereGeometry(1,40,28),blue);windowFrame.scale.set(.235,.285,.105);windowFrame.position.set(0,.31,.305);rocket.add(windowFrame);
- const windowGlass=new THREE.Mesh(new THREE.SphereGeometry(1,40,28),glass);windowGlass.scale.set(.195,.245,.105);windowGlass.position.set(0,.325,.385);rocket.add(windowGlass);
- const shine=new THREE.Mesh(new THREE.SphereGeometry(1,20,16),pearl);shine.scale.set(.045,.105,.018);shine.position.set(-.075,.405,.48);rocket.add(shine);
- const finColors=[orange,violet,blue,coral];for(let n=0;n<4;n++){const shape=new THREE.Shape();shape.moveTo(-.22,-.43);shape.quadraticCurveTo(-.42,-.57,-.55,-.84);shape.quadraticCurveTo(-.57,-.94,-.46,-.91);shape.lineTo(-.18,-.69);shape.quadraticCurveTo(-.13,-.57,-.22,-.43);shape.closePath();const fin=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.085,bevelEnabled:true,bevelSegments:4,steps:1,bevelSize:.045,bevelThickness:.045}),finColors[n]);fin.rotation.y=n*Math.PI/2;fin.position.z=-.035;rocket.add(fin);}
- const starShape=new THREE.Shape();for(let i=0;i<10;i++){const an=-Math.PI/2+i*Math.PI/5,rr=i%2===0?.105:.047,x=Math.cos(an)*rr,y=Math.sin(an)*rr;if(!i)starShape.moveTo(x,y);else starShape.lineTo(x,y);}starShape.closePath();const star=new THREE.Mesh(new THREE.ShapeGeometry(starShape),violet);star.position.set(.19,-.25,.285);star.rotation.z=.18;rocket.add(star);
- const collar=new THREE.Mesh(new THREE.TorusGeometry(.335,.027,12,48),coral);collar.rotation.x=Math.PI/2;collar.position.y=-.51;rocket.add(collar);
- const flame=new THREE.Mesh(new THREE.ConeGeometry(.205,.78,32),new THREE.MeshBasicMaterial({color:0xff743e,transparent:true,opacity:.9}));flame.rotation.z=Math.PI;flame.position.y=-1.34;rocket.add(flame);
- const core=new THREE.Mesh(new THREE.ConeGeometry(.105,.53,28),new THREE.MeshBasicMaterial({color:0xffdf8b,transparent:true,opacity:.96}));core.rotation.z=Math.PI;core.position.y=-1.28;rocket.add(core);
- const flight=new THREE.Group();flight.add(rocket);scene.add(flight);crash3D={renderer,scene,camera,flight,rocket,flame,core};
-}
-function updateCrash3D(t, flying) {
-  if (!crash3D) return;
-  const now = performance.now();
-  // Local +Y is the rocket nose. This angle makes it tangent to the existing flight curve.
-  crash3D.flight.rotation.z = -crashHeading(t) - Math.PI/2;
-  // Roll around the rocket's own longitudinal axis, with a gentle idle spin before launch.
-  crash3D.rocket.rotation.y = now * (flying ? .0028 : .00065);
-  const pulse = flying ? 1 + Math.sin(now/72)*.12 : .88;
-  crash3D.flame.scale.set(1,pulse,1);
-  crash3D.core.scale.set(1,1+Math.sin(now/58)*.1,1);
-  crash3D.renderer.render(crash3D.scene,crash3D.camera);
-}
+function initCrash3D() {}
+function updateCrash3D() {}
 
 function initCrashCanvas() {
   const c = document.getElementById('crashCanvas');
@@ -3339,7 +3303,7 @@ function crashHeading(t) { const x = 30 + 2.4 * Math.max(0,t); const y = -15 * M
 const crashRocketImage = new Image();
 crashRocketImage.crossOrigin = 'anonymous';
 crashRocketImage.decoding = 'async';
-crashRocketImage.src = '/images/crash-space-rocket.svg';
+crashRocketImage.src = '/images/crash-space-rocket.svg?v=spacebot-2_504';
 crashRocketImage.onload = () => { if (document.getElementById('crashCanvas')) drawCrash(); };
 function drawRocket(ctx,u,flame){
   ctx.save();
@@ -3392,7 +3356,7 @@ function drawCrash() {
   // WebGL fallback: keep the rocket visible and correctly aligned if 3D is unavailable.
   if (!crash3D) {
     const th = crashHeading(t);
-    ctx.save(); ctx.translate(cx,cy); ctx.rotate(th + Math.PI/2);
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(th + 0.94);
     drawRocket(ctx,23*k,crashState==='flying'); ctx.restore();
   }
 }
@@ -4027,7 +3991,7 @@ window.addEventListener('resize', () => {
   if (document.getElementById('page-crash').classList.contains('active')) initCrashCanvas();
 });
 </script>
-<script src="/crash-rocket-3d.js"></script>
+
 </body>
 </html>
 

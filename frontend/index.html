@@ -1921,6 +1921,7 @@ function getTonConnectUI() {
 }
 async function connectTonWallet() {
   const ui = getTonConnectUI();
+  await ui.connectionRestored;
   if (ui.wallet) return ui.wallet;
   return new Promise((resolve, reject) => {
     let unsubscribe = () => {};
@@ -1947,7 +1948,7 @@ async function topUpTon() {
       method: 'POST',
       body: JSON.stringify({ amountStars, senderAddress: wallet.account.address })
     });
-    toast('Подтверди перевод в кошельке…', false, 5000);
+    toast('К отправке: ' + (Number(intent.amountNanotons) / 1e9).toFixed(9) + ' TON. Подтверди перевод в кошельке.', false, 6000);
     await getTonConnectUI().sendTransaction({
       validUntil: Math.floor(Date.now() / 1000) + 300,
       network: '-239',

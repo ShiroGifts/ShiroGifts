@@ -1776,6 +1776,13 @@ function money(n) {
 function toggleCurrency() {
   currencyMode = currencyMode === 'TON' ? 'STARS' : 'TON';
   try { localStorage.setItem('shiro_currency', currencyMode); } catch (_) {}
+  const crashInput = document.getElementById('crashBet');
+  if (crashInput && crashInput.value) {
+    const oldValue = Number(String(crashInput.value).replace(',', '.'));
+    if (Number.isFinite(oldValue)) crashInput.value = currencyMode === 'TON'
+      ? (oldValue / STARS_PER_TON).toFixed(2)
+      : String(Math.round(oldValue * STARS_PER_TON));
+  }
   updateBalanceUI();
   renderCases(); renderInventory(); renderUpgrade();
   if (selectedCaseId) openCase(selectedCaseId);
@@ -1790,6 +1797,8 @@ function updateCurrencyCopy() {
   if (dailyTitle) dailyTitle.textContent = '🎁 Награда за ник · ' + money(25);
   const dailyBtn = document.getElementById('dailyNameRewardBtn');
   if (dailyBtn && !dailyBtn.disabled) dailyBtn.textContent = 'Проверить и забрать ' + money(25);
+  const dailyText = document.getElementById('dailyNameRewardText');
+  if (dailyText) dailyText.textContent = 'Добавь @ShiroGiftsBot в отображаемое имя Telegram и забирай ' + money(25) + ' раз в 24 часа.';
 }
 function updateBalanceUI() {
   const icon = document.getElementById('balanceCurrencyIcon');
@@ -2168,12 +2177,12 @@ async function loadDailyNameRewardStatus() {
     } else if (!data.canClaim) {
       text.textContent = 'Упоминание бота найдено! Следующая награда доступна через 24 часа после прошлого получения.';
       button.disabled = true;
-      button.textContent = '25 ★ уже получены';
+      button.textContent = money(25) + ' уже получены';
       status.textContent = dailyNameRewardNextAt ? 'Следующая награда: ' + new Date(dailyNameRewardNextAt).toLocaleString('ru-RU') : '';
     } else {
-      text.textContent = 'Упоминание @ShiroGiftsBot найдено в имени. Забирай 25 Stars!';
+      text.textContent = 'Упоминание @ShiroGiftsBot найдено в имени. Забирай ' + money(25) + '!';
       button.disabled = false;
-      button.textContent = 'Забрать 25 ★';
+      button.textContent = 'Забрать ' + money(25);
       status.textContent = '';
     }
   } catch (_) {}
@@ -2190,7 +2199,7 @@ async function claimDailyNameReward() {
     updateBalanceUI();
     dailyNameRewardNextAt = data.nextClaimAt ? new Date(data.nextClaimAt).getTime() : Date.now() + 86400000;
     haptic('success');
-    toast('Начислено 25 ★!');
+    toast('Начислено ' + money(25) + '!');
     await loadDailyNameRewardStatus();
   } catch (error) {
     if (error.message === 'daily_name_tag_required') {
@@ -2359,7 +2368,7 @@ async function confirmOpenCase() {
   if (!c) return;
   const ownerDemoEnabled = String(tg?.initDataUnsafe?.user?.id || '') === '8159031701'
     && !!document.getElementById('demoModeEnabled')?.checked;
-  if (!ownerDemoEnabled && balance < c.price) { haptic('error'); return toast('Недостаточно ${currencyMode === 'TON' ? 'TON' : 'Stars'} для открытия кейса.', true); }
+  if (!ownerDemoEnabled && balance < c.price) { haptic('error'); return toast('Недостаточно ' + (currencyMode === 'TON' ? 'TON' : 'Stars') + ' для открытия кейса.', true); }
   const btn = document.getElementById('previewOpenBtn');
   const count = selectedCaseCount;
   if (!ownerDemoEnabled && balance < c.price * count) { haptic('error'); return toast('Недостаточно ' + (currencyMode === 'TON' ? 'TON' : 'Stars') + ' для открытия ' + count + ' кейсов.', true); }
@@ -2986,8 +2995,9 @@ async function crashAction() {
   if (!ageConfirmed) return toast('Сначала подтвердите возраст 18+.', true);
   try {
     if (round.phase === 'betting' && !myBet) {
-      const amount = Number.parseInt(document.getElementById('crashBet').value, 10);
-      if (!Number.isSafeInteger(amount) || amount < 1) return toast('Ставка минимум 1 ★', true);
+      const enteredAmount = Number(String(document.getElementById('crashBet').value).replace(',', '.'));
+      const amount = currencyMode === 'TON' ? Math.round(enteredAmount * STARS_PER_TON) : Number.parseInt(document.getElementById('crashBet').value, 10);
+      if (!Number.isFinite(enteredAmount) || !Number.isSafeInteger(amount) || amount < 1 || amount > 10000 || (currencyMode === 'TON' && Math.abs(enteredAmount - amount / STARS_PER_TON) > 0.000001)) return toast('Ставка минимум 1 Star (0,01 TON).', true);
       await apiRequest('/api/crash/bet', { method:'POST', body:JSON.stringify({ amount }) });
       haptic('light'); toast('Ставка принята');
     } else if (round.phase === 'flying' && myBet && myBet.cashed === null) {
@@ -2999,8 +3009,8 @@ async function crashAction() {
     await syncCrashState();
   } catch (error) {
     const messages = {
-      invalid_bet_amount:'Ставка должна быть от 1 до 10000 ★.',
-      insufficient_balance:'Недостаточно Stars на балансе.',
+      invalid_bet_amount:'Ставка должна быть от 1 до 10000 Stars.',
+      insufficient_balance:'Недостаточно средств на балансе.',
       betting_closed:'Приём ставок на этот раунд уже закрыт.',
       bet_already_placed:'В этом раунде ставка уже сделана.',
       round_not_flying:'Раунд ещё не начался или уже завершился.',

@@ -3364,14 +3364,13 @@ function drawCrash() {
       const eased = progress*progress*(3-2*progress);
       const sx = 28*k, sy = H-30*k;
       const rx = sx+(cx-sx)*eased, ry = sy+(cy-sy)*eased;
-      // Blend the approach angle into the exact initial flight angle, so there is no snap at launch.
-      const approach = Math.atan2(cy-sy,cx-sx);
-      const launchAngle = crashHeading(0);
-      const turn = Math.max(0,Math.min(1,(progress-.68)/.32));
-      const smoothTurn = turn*turn*(3-2*turn);
-      const angle = approach+(launchAngle-approach)*smoothTurn;
-      ctx.save(); ctx.translate(rx,ry); ctx.rotate(angle + Math.PI/2);
-      drawRocket(ctx,rocketSize,true); ctx.restore();
+      // До начала подлёта ракету не показываем.
+      if (progress > 0) {
+        // Направление вычисляется по фактическому вектору движения к центру.
+        const angle = Math.atan2(cy-ry,cx-rx);
+        ctx.save(); ctx.translate(rx,ry); ctx.rotate(angle + Math.PI/2);
+        drawRocket(ctx,rocketSize); ctx.restore();
+      }
     }
   }
 }

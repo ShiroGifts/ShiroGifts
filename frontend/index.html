@@ -2084,7 +2084,7 @@ async function claimDailyNameReward() {
 function refreshPepeEasterEggs(pageName) {
   document.querySelectorAll('.pepe-easter-egg').forEach(node => node.remove());
   // One tiny, uncommon easter egg at a time. It sits on a panel edge and never intercepts taps.
-  if (Math.random() > 0.14) return;
+  if (Math.random() > 0.10) return;
   const selectors = [
     ['.balance', 'balance'],
     ['#page-cases .hero-panel', 'panel'],

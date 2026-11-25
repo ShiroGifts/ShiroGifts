@@ -82,7 +82,26 @@ const CASES = [
     { type: 'gift', key: 'chill_flame', weight: 68000 },
     { type: 'gift', key: 'mirage_lamp', weight: 68000 },
     { type: 'gift', key: 'snoop_dogg', weight: 68000 },
-    { type: 'nothing', weight: 455000 }
+    { type: 'gift', key: 'bday_candle', weight: 2500 },
+    { type: 'gift', key: 'desk_calendar', weight: 2500 },
+    { type: 'gift', key: 'jelly_bunny', weight: 2500 },
+    { type: 'gift', key: 'eternal_rose', weight: 2500 },
+    { type: 'gift', key: 'genie_lamp', weight: 2500 },
+    { type: 'gift', key: 'heart_locket', weight: 2500 },
+    { type: 'gift', key: 'ion_gem', weight: 2500 },
+    { type: 'gift', key: 'jack_in_the_box', weight: 2500 },
+    { type: 'gift', key: 'jester_hat', weight: 2500 },
+    { type: 'gift', key: 'joyful_bundle', weight: 2500 },
+    { type: 'gift', key: 'kissed_frog', weight: 2500 },
+    { type: 'gift', key: 'love_candle', weight: 2500 },
+    { type: 'gift', key: 'magic_potion', weight: 2500 },
+    { type: 'gift', key: 'mahjong_tile', weight: 2500 },
+    { type: 'gift', key: 'mini_oscar', weight: 2500 },
+    { type: 'gift', key: 'nail_bracelet', weight: 2500 },
+    { type: 'gift', key: 'party_sparkler', weight: 2500 },
+    { type: 'gift', key: 'perfume_bottle', weight: 2500 },
+    { type: 'gift', key: 'pet_snake', weight: 2500 },
+    { type: 'nothing', weight: 407500 }
   ]}
 ];
 
@@ -117,6 +136,25 @@ const GIFT_DATA = {
   chill_flame: { name: 'Chill Flame NFT', emoji: '🔥', rarity: 'NFT', value: 900 },
   mirage_lamp: { name: 'Mirage Lamp NFT', emoji: '🪔', rarity: 'NFT', value: 950 },
   snoop_dogg: { name: 'Snoop Dogg NFT', emoji: '🐶', rarity: 'NFT', value: 1000 }
+  bday_candle: { name: 'B-Day Candle NFT', emoji: '🕯️', rarity: 'NFT · Средний', value: 1150 },
+  desk_calendar: { name: 'Desk Calendar NFT', emoji: '🗓️', rarity: 'NFT · Средний', value: 1250 },
+  jelly_bunny: { name: 'Jelly Bunny NFT', emoji: '🐰', rarity: 'NFT · Средний', value: 1350 },
+  eternal_rose: { name: 'Eternal Rose NFT', emoji: '🌹', rarity: 'NFT · Средний', value: 1450 },
+  genie_lamp: { name: 'Genie Lamp NFT', emoji: '🪔', rarity: 'NFT · Средний', value: 1550 },
+  heart_locket: { name: 'Heart Locket NFT', emoji: '💗', rarity: 'NFT · Средний', value: 1650 },
+  ion_gem: { name: 'Ion Gem NFT', emoji: '💠', rarity: 'NFT · Средний', value: 1750 },
+  jack_in_the_box: { name: 'Jack-in-the-Box NFT', emoji: '🎁', rarity: 'NFT · Средний', value: 1850 },
+  jester_hat: { name: 'Jester Hat NFT', emoji: '🤡', rarity: 'NFT · Средний', value: 1950 },
+  joyful_bundle: { name: 'Joyful Bundle NFT', emoji: '🎀', rarity: 'NFT · Средний', value: 2050 },
+  kissed_frog: { name: 'Kissed Frog NFT', emoji: '🐸', rarity: 'NFT · Средний', value: 2150 },
+  love_candle: { name: 'Love Candle NFT', emoji: '🕯️', rarity: 'NFT · Средний', value: 2250 },
+  magic_potion: { name: 'Magic Potion NFT', emoji: '🧪', rarity: 'NFT · Средний', value: 2350 },
+  mahjong_tile: { name: 'Mahjong Tile NFT', emoji: '🀄', rarity: 'NFT · Средний', value: 2450 },
+  mini_oscar: { name: 'Mini Oscar NFT', emoji: '🏆', rarity: 'NFT · Средний', value: 2550 },
+  nail_bracelet: { name: 'Nail Bracelet NFT', emoji: '📿', rarity: 'NFT · Средний', value: 2650 },
+  party_sparkler: { name: 'Party Sparkler NFT', emoji: '🎇', rarity: 'NFT · Средний', value: 2750 },
+  perfume_bottle: { name: 'Perfume Bottle NFT', emoji: '🧴', rarity: 'NFT · Средний', value: 2850 },
+  pet_snake: { name: 'Pet Snake NFT', emoji: '🐍', rarity: 'NFT · Средний', value: 2950 },
 };
 
 function getCase(id) { return CASES.find(item => item.id === id); }

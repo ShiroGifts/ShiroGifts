@@ -12,6 +12,7 @@ const telegramWebhookRoutes = require('./routes/telegramWebhook');
 const tonPaymentRoutes = require('./routes/tonPayments');
 const subscriptionRoutes = require('./routes/subscription');
 const { router: crashRoutes, startCrashEngine } = require('./routes/crash');
+const minesRoutes = require('./routes/mines');
 const { migrate } = require('./db/migrate');
 
 const app = express();
@@ -30,6 +31,7 @@ app.use('/api', upgradeRoutes);
 app.use('/api', inventoryRoutes);
 app.use('/api', subscriptionRoutes);
 app.use('/api', crashRoutes);
+app.use('/api', minesRoutes);
 app.use('/api', (_req, res) => res.status(404).json({ ok: false, error: 'api_route_not_found' }));
 
 app.use(express.static(path.join(__dirname, '../../frontend')));

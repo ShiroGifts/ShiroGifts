@@ -16,7 +16,7 @@ function validRawAddress(value) {
 }
 function normalizeTonAddress(value) {
   const address = String(value || '').trim();
-  if (/^-?\\d:[0-9a-f]{64}$/i.test(address)) return address.toLowerCase();
+  if (/^-?\d:[0-9a-f]{64}$/i.test(address)) return address.toLowerCase();
   try {
     const bytes = Buffer.from(address.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
     if (bytes.length === 36) return bytes.readInt8(1) + ':' + bytes.subarray(2, 34).toString('hex');

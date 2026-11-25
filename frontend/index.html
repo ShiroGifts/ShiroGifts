@@ -3483,7 +3483,7 @@ async function crashAction() {
 function crashFrame() {
   const multEl = document.getElementById('crashMult');
   if (round.phase === 'flying') {
-    crashMult = Math.max(1, Number(round.currentMult) || 1);
+    crashMult = Math.max(1, multAt((serverNow() - round.startedAt) / 1000));
     multEl.classList.remove('wait'); multEl.textContent = crashMult.toFixed(2) + 'x';
     updateCrashGiftProgress();
     const cw = document.getElementById('crashCanvas').parentElement, k = Math.min(cw.clientWidth, cw.clientHeight) / 250;
@@ -3540,18 +3540,26 @@ function feedCheckEmpty() {
 }
 
 // Имена — через textContent (никакого innerHTML с данными игроков: защита от XSS)
-function addFeedRow({ betId, name, avatar, betLabel, wagerType, isYou }) {
+function addFeedRow({ betId, name, avatar, bet, giftKey, giftEmoji, cashoutGiftKey, isYou }) {
   const feed = document.getElementById('crashFeed');
   const row = document.createElement('div');
   row.className = 'feed-row';
   const mk = (cls, text) => { const e = document.createElement('span'); e.className = cls; e.textContent = text; return e; };
-  const kind = wagerType === 'NFT' ? '🎁 NFT' : wagerType === 'TON' ? '💎 TON' : '⭐ Stars';
   row.append(mk('f-avatar', isYou ? '👤' : (avatar || '👤')),
-             mk('f-name', name || 'Аноним'),
-             mk('f-bet', betLabel || '—'),
-             mk('f-kind', kind),
-             mk('f-result', 'в игре...'));
+             mk('f-name', name || 'Аноним'));
+  const wager = mk('f-bet', '');
+  if (giftKey) {
+    const gift = GIFTS[giftKey] || {};
+    const art = gift.img || giftEmoji || '🎁';
+    if (typeof art === 'string' && /^https?:\/\//i.test(art)) {
+      const img = document.createElement('img'); img.src = art; img.alt = gift.name || 'NFT'; img.className = 'crash-feed-gift'; wager.appendChild(img);
+    } else { wager.textContent = art; wager.title = gift.name || 'NFT'; }
+    wager.classList.add('is-nft');
+    wager.dataset.giftKey = giftKey;
+  } else wager.textContent = money(bet);
+  row.append(wager, mk('f-result', 'в игре...'));
   row.lastChild.style.color = 'var(--text-dim)';
+  if (cashoutGiftKey) row.dataset.cashoutGiftKey = cashoutGiftKey;
   feedRows[betId] = row;
   feed.insertBefore(row, feed.firstChild);
   while (feed.querySelectorAll('.feed-row').length > 12) {
@@ -3571,6 +3579,18 @@ function setFeedResult(betId, mult, win, crashed) {
   else { res.className = 'f-result win'; res.textContent = `+${money(win)} (${mult.toFixed(2)}x)`; }
 }
 
+function setFeedGiftResult(betId, giftKey) {
+  const row = feedRows[betId], res = row && row.querySelector('.f-result');
+  if (!res) return;
+  const gift = GIFTS[giftKey] || {};
+  const art = gift.img || gift.emoji || '🎁';
+  res.className = 'f-result';
+  res.textContent = '';
+  if (typeof art === 'string' && /^https?:\/\//i.test(art)) {
+    const img = document.createElement('img'); img.src = art; img.alt = gift.name || 'NFT'; img.className = 'crash-feed-gift'; res.appendChild(img);
+  } else res.textContent = art;
+  res.title = gift.name || 'NFT';
+}
 function updateFeedYou(mult, win, crashed) {
   if (!feedYouRowId) return;
   if (crashed) setFeedResult(feedYouRowId, crashMult, 0, true);
@@ -3601,15 +3621,14 @@ async function syncCrashState() {
     renderHistory();
     (data.bets || []).forEach(b => {
       const id = String(b.id), isYou = !!myBet && id === String(myBet.id);
-      if (!feedRows[id]) {
-        const wagerType = b.wagerType === 'NFT' ? 'NFT' : b.wagerType === 'TON' ? 'TON' : 'STARS';
-        const betLabel = wagerType === 'NFT' ? fmt(b.bet) + ' Stars' : wagerType === 'TON'
-          ? (Number(b.bet) / STARS_PER_TON).toLocaleString('ru-RU', { maximumFractionDigits: 2 }) + ' TON'
-          : fmt(b.bet) + ' Stars';
-        addFeedRow({betId:id,name:isYou?'Вы':b.name,betLabel,wagerType,isYou});
+      if (!feedRows[id]) addFeedRow({betId:id,name:isYou?'Вы':b.name,bet:b.bet,giftKey:b.giftKey,giftEmoji:b.giftEmoji,cashoutGiftKey:b.cashoutGiftKey,isYou});
+      if (b.mult !== null && b.mult !== undefined) {
+        if (b.cashoutGiftKey) setFeedGiftResult(id,b.cashoutGiftKey);
+        else setFeedResult(id,Number(b.mult),Number(b.win)||0,false);
+      } else if (b.crashed) {
+        if (b.giftKey) setFeedGiftResult(id,b.giftKey);
+        else setFeedResult(id,Number(incoming.crashMult)||1,0,true);
       }
-      if (b.mult !== null && b.mult !== undefined) setFeedResult(id,Number(b.mult),Number(b.win)||0,false);
-      else if (b.crashed) setFeedResult(id,Number(incoming.crashMult)||1,0,true);
       if (isYou) feedYouRowId = id;
     });
   } catch (error) {
@@ -3618,17 +3637,11 @@ async function syncCrashState() {
 }
 function startCrashPolling() {
   if (crashPollTimer) return;
-  const poll = async () => {
-    await syncCrashState();
-    if (crashPollTimer === null) return;
-    // During flight, use frequent server snapshots instead of predicting past the authoritative value.
-    crashPollTimer = setTimeout(poll, round.phase === 'flying' ? 200 : 700);
-  };
-  crashPollTimer = -1;
-  poll();
+  syncCrashState();
+  crashPollTimer = setInterval(syncCrashState, 700);
 }
 function stopCrashPolling() {
-  if (crashPollTimer !== null) clearTimeout(crashPollTimer);
+  if (crashPollTimer) clearInterval(crashPollTimer);
   crashPollTimer = null;
 }
 
@@ -3636,9 +3649,9 @@ function stopCrashPolling() {
 // ws.onmessage → ShiroLive.onBet / onResult / setOnline
 window.ShiroLive = {
   // { betId, name, avatar, bet }  — другой игрок поставил
-  onBet(e) { addFeedRow({ betId: e.betId, name: e.name, avatar: e.avatar, bet: e.bet, isYou: false }); },
+  onBet(e) { addFeedRow({ betId: e.betId, name: e.name, avatar: e.avatar, bet: e.bet, giftKey:e.giftKey, giftEmoji:e.giftEmoji, isYou: false }); },
   // { betId, mult, win, crashed } — игрок вывел (crashed=false) или взорвался (crashed=true)
-  onResult(e) { setFeedResult(e.betId, e.mult, e.win || 0, !!e.crashed); },
+  onResult(e) { if(e.giftKey) setFeedGiftResult(e.betId,e.giftKey); else setFeedResult(e.betId, e.mult, e.win || 0, !!e.crashed); },
   setOnline, onRound,
   setHistory(a) { flightHistory = a.slice(0, 12); renderHistory(); },
   setServerTime(ms) { serverOffset = ms - Date.now(); }
@@ -3959,7 +3972,6 @@ window.addEventListener('resize', () => {
 </html>
 
 <style>
-/* Crash wager type marker */
-#crashFeed .f-kind{flex:0 0 auto;padding:3px 6px;border-radius:7px;background:rgba(118,151,210,.14);border:1px solid rgba(135,170,230,.2);color:#c9dcff;font-size:9px;font-weight:900;letter-spacing:.2px;white-space:nowrap}
-#crashFeed .f-bet{white-space:nowrap}
+#crashFeed .f-bet.is-nft,#crashFeed .f-result{display:flex;align-items:center;justify-content:center;min-width:30px}
+#crashFeed .crash-feed-gift{width:30px;height:30px;object-fit:contain;display:block;filter:drop-shadow(0 1px 5px rgba(0,0,0,.25))}
 </style>

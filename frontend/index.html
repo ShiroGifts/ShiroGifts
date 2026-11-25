@@ -1979,7 +1979,7 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
 .wheel-x2-marker{position:absolute;z-index:4;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;box-sizing:border-box;color:#49300a;font-size:11px;font-weight:1000;letter-spacing:-.7px;background:radial-gradient(circle at 35% 25%,#fff5b0 0%,#ffd64e 44%,#e69b19 100%);border:2px solid #fff0a0;box-shadow:0 2px 8px rgba(255,191,48,.65),inset 0 1px 2px rgba(255,255,255,.75);pointer-events:none;text-shadow:0 1px 0 rgba(255,255,255,.3)}
 #upgradePickerBackdrop .upgrade-picker-sheet{background:linear-gradient(145deg,#172947,#101b31)!important;border:1px solid rgba(207,222,255,.18)!important}
 #upgradePickerBackdrop .upgrade-picker-head{margin-bottom:10px!important}
-#upgradePickerBackdrop .upgrade-chance-control{display:block!important;flex:0 0 auto!important;width:100%!important;margin:0 0 12px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+#upgradePickerBackdrop .upgrade-chance-control{flex:0 0 auto!important;width:100%!important;margin:0 0 12px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
 #upgradePickerBackdrop .upgrade-chance-presets{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;width:100%!important}
 #upgradePickerBackdrop .upgrade-chance-presets button{min-width:0!important;min-height:44px!important;padding:8px 3px!important;border:1px solid rgba(190,207,245,.22)!important;border-radius:12px!important;background:rgba(255,255,255,.075)!important;color:#e5edff!important;font-size:13px!important;font-weight:900!important}
 #upgradePickerBackdrop .upgrade-chance-presets button.active{background:rgba(126,154,255,.28)!important;border-color:rgba(166,189,255,.72)!important;color:#fff!important}
@@ -3691,9 +3691,9 @@ function renderUpgradeWheelSecret(chance,available){
   if(!seg||!marker||!wheel)return;
   const blueWidth=chance*360;
   if(!available||blueWidth<=0){seg.style.background=`conic-gradient(var(--accent) 0deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;marker.style.display='none';return;}
-  const secretWidth=blueWidth*0.08,secretStart=blueWidth-secretWidth;
-  seg.style.background=`conic-gradient(var(--accent) 0deg ${secretStart}deg,#f6c94b ${secretStart}deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;
-  const angle=(secretStart+blueWidth)/2*Math.PI/180,radius=Math.max(16,wheel.clientWidth/2-19);
+  const secretWidth=blueWidth*0.08,secretStart=(blueWidth-secretWidth)/2,secretEnd=secretStart+secretWidth;
+  seg.style.background=`conic-gradient(var(--accent) 0deg ${secretStart}deg,#f6c94b ${secretStart}deg ${secretEnd}deg,var(--accent) ${secretEnd}deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;
+  const angle=(secretStart+secretEnd)/2*Math.PI/180,radius=Math.max(16,wheel.clientWidth/2-19);
   marker.style.left=`calc(50% + ${Math.sin(angle)*radius}px)`;
   marker.style.top=`calc(50% - ${Math.cos(angle)*radius}px)`;marker.style.display='grid';
 }
@@ -3767,8 +3767,8 @@ async function doUpgrade() {
     renderUpgradeWheelSecret(chance,x2Available);
     const blueWidth=chance*360,secretWidth=blueWidth*0.08;
     let sectorCenter,sectorSize;
-    if(success&&x2Available&&doubleReward){sectorCenter=blueWidth-secretWidth/2;sectorSize=secretWidth;}
-    else if(success&&x2Available){sectorCenter=(blueWidth-secretWidth)/2;sectorSize=Math.max(0.05,blueWidth-secretWidth);}
+    if(success&&x2Available&&doubleReward){sectorCenter=blueWidth/2;sectorSize=secretWidth;}
+    else if(success&&x2Available){const secretStart=(blueWidth-secretWidth)/2,secretEnd=secretStart+secretWidth;if(Math.random()<0.5){sectorCenter=secretStart/2;sectorSize=secretStart;}else{sectorCenter=(secretEnd+blueWidth)/2;sectorSize=blueWidth-secretEnd;}}
     else if(success){sectorCenter=blueWidth/2;sectorSize=blueWidth;}
     else{sectorCenter=blueWidth+(360-blueWidth)/2;sectorSize=360-blueWidth;}
     const jitter=(Math.random()-0.5)*sectorSize*0.45;
@@ -4200,7 +4200,7 @@ async function cancelCrashPreorder(){
   try{
     await apiRequest('/api/crash/preorder/cancel',{method:'POST',body:'{}'});
     myPreorder=null;await loadAccount();await syncCrashState();haptic('light');toast('Ставка отменена');
-  }catch(error){toast(error.message==='preorder_not_found'?'Предзаказ уже не ожидает старта.':'Не удалось отменить ставку.',true);await syncCrashState().catch(()=>{});}
+  }catch(error){toast(error.message==='preorder_not_found'?'Ставка уже не ожидает старта.':'Не удалось отменить ставку.',true);await syncCrashState().catch(()=>{});}
 }
 async function crashAction() {
   if (!ageConfirmed) return toast('Сначала подтвердите возраст 18+.', true);

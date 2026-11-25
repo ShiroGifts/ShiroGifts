@@ -3621,6 +3621,7 @@ function setUpgradeDesiredChance(value) {
   }
   updateUpgradeChanceLabel();
   syncUpgradeChanceButtons();
+  closeUpgradePicker();
 }
 function renderToPicker() {
   const wrap = document.getElementById('pickerList');
@@ -3703,7 +3704,7 @@ function renderUpgradeWheelSecret(chance,available){
   if(!seg||!marker||!wheel)return;
   const blueWidth=chance*360;
   if(!available||blueWidth<=0){seg.style.background=`conic-gradient(var(--accent) 0deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;marker.style.display='none';return;}
-  const secretWidth=blueWidth*0.008,secretStart=(blueWidth-secretWidth)/2,secretEnd=secretStart+secretWidth;
+  const secretWidth=Math.min(18,blueWidth),secretStart=(blueWidth-secretWidth)/2,secretEnd=secretStart+secretWidth;
   seg.style.background=`conic-gradient(var(--accent) 0deg ${secretStart}deg,#f6c94b ${secretStart}deg ${secretEnd}deg,var(--accent) ${secretEnd}deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;
   const angle=(secretStart+secretEnd)/2*Math.PI/180,radius=Math.max(16,wheel.clientWidth/2-19);
   marker.style.left=`calc(50% + ${Math.sin(angle)*radius}px)`;
@@ -3758,8 +3759,8 @@ async function doUpgrade() {
       const demoChance = boostEnabled
         ? (Number.isFinite(configured) ? Math.max(0,Math.min(100,configured))/100 : 0.30)
         : actualChance;
-      const demoSuccess=Math.random()<demoChance,x2AppearanceChance=Math.min(0.05,0.0005/actualChance),x2Available=Math.random()<x2AppearanceChance,doubleReward=demoSuccess&&x2Available&&Math.random()<0.008;
-      result = { chance:actualChance,success:demoSuccess,doubleReward,x2Available,x2Chance:actualChance*x2AppearanceChance*0.008,demo:true };
+      const demoSuccess=Math.random()<demoChance,x2AppearanceChance=Math.min(1,0.05/actualChance),x2SectorShare=Math.min(1,0.05/actualChance),x2Available=Math.random()<x2AppearanceChance,doubleReward=demoSuccess&&x2Available&&Math.random()<x2SectorShare;
+      result = { chance:actualChance,success:demoSuccess,doubleReward,x2Available,x2Chance:actualChance*x2AppearanceChance*x2SectorShare,demo:true };
     } else {
       result = await apiRequest('/api/upgrade', {
         method:'POST',
@@ -3776,7 +3777,7 @@ async function doUpgrade() {
     const spin = ({fast:{ms:2500,turns:5,ease:'cubic-bezier(.2,.7,.25,1)'},classic:{ms:5500,turns:7,ease:'cubic-bezier(.12,.62,.22,1)'},gamble:{ms:8500,turns:12,ease:'cubic-bezier(.08,.72,.12,1)'}})[upgradeSpinMode];
     const x2Available=!!result.x2Available,doubleReward=!!result.doubleReward;
     renderUpgradeWheelSecret(chance,x2Available);
-    const blueWidth=chance*360,secretWidth=blueWidth*0.08;
+    const blueWidth=chance*360,secretWidth=Math.min(18,blueWidth);
     let sectorCenter,sectorSize;
     if(success&&x2Available&&doubleReward){sectorCenter=blueWidth/2;sectorSize=secretWidth;}
     else if(success&&x2Available){const secretStart=(blueWidth-secretWidth)/2,secretEnd=secretStart+secretWidth;if(Math.random()<0.5){sectorCenter=secretStart/2;sectorSize=secretStart;}else{sectorCenter=(secretEnd+blueWidth)/2;sectorSize=blueWidth-secretEnd;}}
@@ -3854,7 +3855,7 @@ function renderMinesCurrency(){
   if(label)label.textContent=currencyMode==='TON'?'TON':'Stars';
 }
 function minesCurrencySvg(){
-  if(currencyMode==='TON')return '<svg class="mines-currency-icon ton" viewBox="0 0 48 48" aria-hidden="true"><path d="M10 8h28l-14 32L10 8Z" fill="#70c8ff"/><path d="M10 8h28L24 22 10 8Z" fill="#b9e8ff"/><path d="M24 22v18" stroke="#e8f8ff" stroke-width="2" stroke-linecap="round"/></svg>';
+  if(currencyMode==='TON')return '<img class="mines-currency-icon ton" src="https://cdn.simpleicons.org/ton/0098EA" alt="TON" loading="eager" style="filter:brightness(0) invert(1) drop-shadow(0 2px 6px rgba(0,0,0,.2))">';
   return '<svg class="mines-currency-icon stars" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 3.5 29.8 17l14.7 1.2-11.2 9.6 3.4 14.4L24 34.6 11.3 42.2l3.4-14.4L3.5 18.2 18.2 17 24 3.5Z" fill="#ffd45c" stroke="#fff0a5" stroke-width="1.5" stroke-linejoin="round"/><path d="m24 10 3.7 9 9.4.8-7.1 6.1 2.2 9.1-8.2-4.9-8.1 4.9 2.2-9.1-7.1-6.1 9.4-.8L24 10Z" fill="#fff0a5" opacity=".3"/></svg>';
 }
 function minesBombSvg(){

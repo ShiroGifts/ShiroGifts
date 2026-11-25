@@ -8,11 +8,11 @@
   let renderer;try{renderer=new THREE.WebGLRenderer({alpha:true,antialias:true});}catch(e){console.warn('[Crash NFT rocket] WebGL fallback',e);return;}
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.setSize(wrap.clientWidth,wrap.clientHeight,false);renderer.setClearColor(0,0);renderer.domElement.className='crash-3d-canvas';wrap.appendChild(renderer.domElement);
   const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(38,wrap.clientWidth/Math.max(1,wrap.clientHeight),.1,100);camera.position.z=8.5;
-  scene.add(new THREE.AmbientLight(0xe9efff,1.08));
-  const key=new THREE.DirectionalLight(0xffedc4,1.35);key.position.set(-3,4,6);scene.add(key);
-  const fill=new THREE.DirectionalLight(0x71c8f2,.82);fill.position.set(3,-1,4);scene.add(fill);
-  const rim=new THREE.PointLight(0x5bb9ed,.9,12);rim.position.set(2,-1,3);scene.add(rim);
-  const rocket=new THREE.Group();rocket.scale.setScalar(.78);scene.add(rocket);
+  scene.add(new THREE.AmbientLight(0xe9efff,1.22));
+  const key=new THREE.DirectionalLight(0xffedc4,.72);key.position.set(-3,4,6);scene.add(key);
+  const fill=new THREE.DirectionalLight(0x71c8f2,.38);fill.position.set(3,-1,4);scene.add(fill);
+  const rim=new THREE.PointLight(0x5bb9ed,.28,12);rim.position.set(2,-1,3);scene.add(rim);
+  const rocket=new THREE.Group();rocket.scale.set(.68,.86,.78);scene.add(rocket);
   const profile=[new THREE.Vector2(0,-1.12),new THREE.Vector2(.16,-1.09),new THREE.Vector2(.30,-.94),new THREE.Vector2(.405,-.69),new THREE.Vector2(.465,-.34),new THREE.Vector2(.47,.12),new THREE.Vector2(.42,.52),new THREE.Vector2(.32,.84),new THREE.Vector2(.18,1.08),new THREE.Vector2(0,1.16)];
   const hullGeo=new THREE.LatheGeometry(profile,96),rgb=[],v=hullGeo.attributes.position;
   for(let i=0;i<v.count;i++){
@@ -24,11 +24,11 @@
    c.multiplyScalar(.78+front*.24);rgb.push(c.r,c.g,c.b);
   }
   hullGeo.setAttribute('color',new THREE.Float32BufferAttribute(rgb,3));
-  const hull=new THREE.Mesh(hullGeo,new THREE.MeshPhysicalMaterial({vertexColors:true,metalness:.12,roughness:.5,clearcoat:.22,clearcoatRoughness:.48}));rocket.add(hull);
-  const metal=new THREE.MeshStandardMaterial({color:0x25272d,metalness:.22,roughness:.46});
-  const blue=new THREE.MeshStandardMaterial({color:0x52617f,metalness:.18,roughness:.43});
-  const cyan=new THREE.MeshStandardMaterial({color:0x56b5d5,metalness:.12,roughness:.34,emissive:0x092b3c,emissiveIntensity:.2});
-  const green=new THREE.MeshStandardMaterial({color:0x75b83d,roughness:.42,emissive:0x284b0d,emissiveIntensity:.45});
+  const hull=new THREE.Mesh(hullGeo,new THREE.MeshToonMaterial({vertexColors:true}));rocket.add(hull);
+  const metal=new THREE.MeshToonMaterial({color:0x25272d});
+  const blue=new THREE.MeshToonMaterial({color:0x52617f});
+  const cyan=new THREE.MeshToonMaterial({color:0x56b5d5});
+  const green=new THREE.MeshToonMaterial({color:0x75b83d});
   // Dark central longitudinal inset and slim raised rails.
   function strip(points,material,z,bevel=.012){
    const curve=new THREE.CatmullRomCurve3(points.map(q=>new THREE.Vector3(q[0],q[1],z)));
@@ -45,20 +45,31 @@
   strip([[-.31,-.93],[-.39,-.63],[-.42,-.22]],metal,.25,.022);
   const collar=new THREE.Mesh(new THREE.TorusGeometry(.36,.022,10,64),metal);collar.rotation.x=Math.PI/2;collar.position.y=-.83;rocket.add(collar);
   const nozzleRing=new THREE.Mesh(new THREE.TorusGeometry(.27,.052,12,56),metal);nozzleRing.rotation.x=Math.PI/2;nozzleRing.position.y=-1.02;rocket.add(nozzleRing);
-  const nozzleInner=new THREE.Mesh(new THREE.CylinderGeometry(.16,.21,.14,48),new THREE.MeshStandardMaterial({color:0x11151c,metalness:.15,roughness:.55}));nozzleInner.position.y=-1.07;rocket.add(nozzleInner);
+  const nozzleInner=new THREE.Mesh(new THREE.CylinderGeometry(.16,.21,.14,48),new THREE.MeshToonMaterial({color:0x11151c}));nozzleInner.position.y=-1.07;rocket.add(nozzleInner);
   // Small panel bolts and rivets.
   for(let i=0;i<12;i++){const a=i/12*Math.PI*2;const bolt=new THREE.Mesh(new THREE.SphereGeometry(.014,8,6),i%3===0?cyan:metal);bolt.position.set(Math.cos(a)*.38,-.68+(i%4)*.36,Math.sin(a)*.20+.22);rocket.add(bolt);}
+  // Fine hand-drawn panel graphics: hatches, vents, ticks and tiny warning marks.
+  const ink=new THREE.MeshToonMaterial({color:0x343b43});
+  const paleInk=new THREE.MeshToonMaterial({color:0xb8c9c7});
+  function line2(x1,y1,x2,y2,z,mat=ink,r=.007){strip([[x1,y1],[x2,y2]],mat,z,r);}
+  for(let i=0;i<7;i++){const y=-.62+i*.17;line2(-.29,y,-.21,y+.045,.445,ink,.006);line2(.23,y+.035,.31,y,.39,ink,.005);}
+  // Small service hatch and engraved-looking inset details.
+  const hatch=new THREE.Mesh(new THREE.PlaneGeometry(.105,.16),blue);hatch.position.set(-.13,.53,.425);hatch.rotation.z=-.22;rocket.add(hatch);
+  for(let i=0;i<4;i++){const vent=new THREE.Mesh(new THREE.BoxGeometry(.075,.012,.008),ink);vent.position.set(.13+i*.026,-.48,.438);vent.rotation.z=-.28;rocket.add(vent);}
+  for(let i=0;i<5;i++){const tick=new THREE.Mesh(new THREE.BoxGeometry(.012,.045,.009),paleInk);tick.position.set(.27,-.32+i*.105,.40);tick.rotation.z=.24;rocket.add(tick);}
+  // A few tiny painted chips and edge marks break up the smooth toy-like surface.
+  for(let i=0;i<18;i++){const chip=new THREE.Mesh(new THREE.BoxGeometry(.018+(i%3)*.008,.009,.006),i%2?blue:paleInk);chip.position.set(Math.sin(i*8.3)*.31,-.82+(i%9)*.19,.43);chip.rotation.z=(i%4)*.31;rocket.add(chip);}
   // Green glowing shard fragments floating beside the rocket.
   const shards=[];
   for(let i=0;i<3;i++){const s=new THREE.Shape();s.moveTo(0,.12);s.lineTo(.055,.04);s.lineTo(.03,-.12);s.lineTo(-.035,-.065);s.closePath();const mesh=new THREE.Mesh(new THREE.ExtrudeGeometry(s,{depth:.035,bevelEnabled:true,bevelSegments:3,steps:1,bevelSize:.012,bevelThickness:.012}),green);mesh.position.set(i===0?-.64:i===1?.62:.47,i===0?.34:i===1?-.10:-.72,.12);mesh.rotation.z=i*.75-.25;rocket.add(mesh);shards.push({mesh,phase:i*2.1});const glow=new THREE.PointLight(0x8cdb43,.24,1.1);glow.position.copy(mesh.position);rocket.add(glow);}
   // Exhaust is built from rounded orange combustion lobes like the supplied NFT image.
   const puffs=[],fireCols=[0xff8500,0xffa000,0xffbd19,0xffd64b];
   for(let i=0;i<17;i++){const a=i*2.399,r=i<10?.17:.09,sx=.075+(i%4)*.02,sy=.085+(i%3)*.024;const m=new THREE.Mesh(new THREE.SphereGeometry(1,16,12),new THREE.MeshBasicMaterial({color:fireCols[i%4],transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false}));m.position.set(Math.cos(a)*r,-1.13-(i%6)*.045,.13+Math.sin(a)*.06);m.scale.set(sx,sy,sx*.82);rocket.add(m);puffs.push({m,sx,sy,phase:i*1.43});}
-  const flame=new THREE.Mesh(new THREE.ConeGeometry(.20,.72,32),new THREE.MeshBasicMaterial({color:0xff7910,transparent:true,opacity:.82,blending:THREE.AdditiveBlending,depthWrite:false}));flame.rotation.z=Math.PI;flame.position.set(0,-1.43,.10);rocket.add(flame);
-  const core=new THREE.Mesh(new THREE.ConeGeometry(.105,.50,28),new THREE.MeshBasicMaterial({color:0xffe6a0,transparent:true,opacity:.96,blending:THREE.AdditiveBlending,depthWrite:false}));core.rotation.z=Math.PI;core.position.set(0,-1.39,.14);rocket.add(core);
+  const flame=new THREE.Mesh(new THREE.ConeGeometry(.20,.72,32),new THREE.MeshBasicMaterial({color:0xff7910,transparent:true,opacity:.72,depthWrite:false}));flame.rotation.z=Math.PI;flame.position.set(0,-1.43,.10);rocket.add(flame);
+  const core=new THREE.Mesh(new THREE.ConeGeometry(.105,.50,28),new THREE.MeshBasicMaterial({color:0xffe6a0,transparent:true,opacity:.9,depthWrite:false}));core.rotation.z=Math.PI;core.position.set(0,-1.39,.14);rocket.add(core);
   // 112 individually animated embers of varied sizes, hues and trajectories.
-  const count=112,dummy=new THREE.Object3D(),data=[],colors=[0xff4a08,0xff7910,0xffaa1e,0xffd34b,0xffedaa].map(c=>new THREE.Color(c));
-  const sparks=new THREE.InstancedMesh(new THREE.SphereGeometry(.026,7,5),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.95,blending:THREE.AdditiveBlending,depthWrite:false}),count);
+  const count=148,dummy=new THREE.Object3D(),data=[],colors=[0xff4a08,0xff7910,0xffaa1e,0xffd34b,0xffedaa].map(c=>new THREE.Color(c));
+  const sparks=new THREE.InstancedMesh(new THREE.SphereGeometry(.026,7,5),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.82,depthWrite:false}),count);
   for(let i=0;i<count;i++){data.push({seed:i*12.9898,phase:(i*.61803398875)%1,speed:.7+(i%11)*.082,spread:.10+(i%13)*.023});if(sparks.setColorAt)sparks.setColorAt(i,colors[i%colors.length]);}
   sparks.instanceMatrix.setUsage(THREE.DynamicDrawUsage);rocket.add(sparks);
   const flight=new THREE.Group();flight.add(rocket);scene.add(flight);

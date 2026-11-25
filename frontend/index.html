@@ -4063,3 +4063,83 @@ window.addEventListener('resize', () => {
 @media(max-width:380px){.nav{width:calc(100% - 16px)!important;bottom:calc(7px + env(safe-area-inset-bottom))!important;padding:6px!important}.nav-item{font-size:8px!important;padding:7px 1px!important}.nav-item .icon{width:21px!important;height:20px!important}.nav-item .icon svg{width:19px!important;height:19px!important}}
 
 </style>
+
+
+<style>
+/* Liquid Glass — unified button system */
+button:not(.nav-item){
+  -webkit-appearance:none;appearance:none;
+  border:1px solid rgba(226,236,255,.19)!important;
+  border-radius:14px!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.135),rgba(255,255,255,.055) 55%,rgba(105,135,190,.07))!important;
+  color:var(--text)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 -1px 0 rgba(0,0,0,.12),0 5px 16px rgba(0,0,0,.17)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(155%);
+  backdrop-filter:blur(18px) saturate(155%);
+  transition:transform .16s ease,background .16s ease,border-color .16s ease,box-shadow .16s ease,opacity .16s ease!important;
+}
+button:not(.nav-item):active:not(:disabled){
+  transform:scale(.975)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 2px 7px rgba(0,0,0,.16)!important;
+}
+button:not(.nav-item):disabled{
+  opacity:.38!important;
+  filter:saturate(.55);
+  box-shadow:none!important;
+}
+button:not(.nav-item):focus-visible{
+  outline:2px solid rgba(151,190,255,.78)!important;
+  outline-offset:2px;
+}
+/* Primary actions: colored glass, not flat solid fills */
+.btn-big,.btn-withdraw,.btn-cashout,.hero-cta,.case-preview-open{
+  color:#f7f9ff!important;
+  border-color:rgba(166,194,255,.32)!important;
+  background:linear-gradient(145deg,rgba(115,157,255,.43),rgba(73,112,210,.25) 58%,rgba(255,255,255,.075))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 7px 20px rgba(49,91,180,.2)!important;
+}
+.btn-big.upgrade-select-btn{
+  background:linear-gradient(145deg,rgba(169,154,255,.36),rgba(103,91,205,.2) 60%,rgba(255,255,255,.07))!important;
+}
+.btn-sell{
+  color:#edf3ff!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.105),rgba(255,255,255,.035))!important;
+  border-color:rgba(218,231,255,.14)!important;
+}
+.btn-cashout{
+  background:linear-gradient(145deg,rgba(43,213,158,.38),rgba(15,139,112,.23) 60%,rgba(255,255,255,.07))!important;
+  border-color:rgba(135,255,211,.3)!important;
+}
+.btn-cashout.cashout-mode{
+  color:#fff8e8!important;
+  background:linear-gradient(145deg,rgba(255,218,125,.48),rgba(201,139,35,.28) 60%,rgba(255,255,255,.07))!important;
+  border-color:rgba(255,224,147,.42)!important;
+}
+.sell-all-bar{
+  color:#fff4dc!important;
+  background:linear-gradient(145deg,rgba(255,197,91,.38),rgba(170,111,35,.23) 60%,rgba(255,255,255,.06))!important;
+  border-color:rgba(255,211,133,.34)!important;
+}
+.case-quantity button.active,.upgrade-spin-modes button.active{
+  color:#f7f5ff!important;
+  background:linear-gradient(145deg,rgba(172,157,255,.42),rgba(105,92,214,.25) 62%,rgba(255,255,255,.08))!important;
+  border-color:rgba(193,181,255,.42)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 4px 13px rgba(107,91,213,.2)!important;
+}
+#topupBtn{
+  border-radius:50%!important;
+  color:#fff!important;
+  background:linear-gradient(145deg,rgba(137,176,255,.55),rgba(68,113,215,.3))!important;
+  border-color:rgba(202,220,255,.38)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 4px 12px rgba(56,102,205,.22)!important;
+}
+#currencyToggle,.case-back,#upgradePickerBackdrop .upgrade-picker-head button{
+  background:linear-gradient(145deg,rgba(255,255,255,.14),rgba(255,255,255,.045))!important;
+}
+@media(hover:hover){
+  button:not(.nav-item):hover:not(:disabled){
+    border-color:rgba(225,237,255,.32)!important;
+    background-color:rgba(255,255,255,.07)!important;
+  }
+}
+</style>

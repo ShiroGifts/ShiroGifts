@@ -1317,6 +1317,9 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
 .pepe-easter-egg:after{content:""}
 .pepe-seat-anchor.pepe-bottom .pepe-easter-egg{top:auto;bottom:-8px;right:8px;transform:rotate(-7deg)}
 @keyframes pepePop{from{opacity:0;transform:translateY(7px) scale(.7)}to{opacity:1;transform:translateY(0) scale(1)}}
+.pepe-seat{position:absolute;z-index:8;right:7px;bottom:5px;width:34px;height:5px;border-radius:5px;background:linear-gradient(180deg,#c89b62,#704a2d);box-shadow:0 2px 4px #0009;pointer-events:none}
+.pepe-seat .pepe-easter-egg{right:0;bottom:3px;top:auto;width:34px;height:34px;object-fit:contain;transform:rotate(4deg);filter:drop-shadow(0 3px 3px #0009)}
+.case-card .gift-img .pepe-seat{right:2px;bottom:1px}
 </style>
 </head>
 <body>
@@ -2072,6 +2075,43 @@ async function claimDailyNameReward() {
   }
 }
 
+function refreshPepeEasterEggs(pageName) {
+  document.querySelectorAll('.pepe-easter-egg,.pepe-seat').forEach(node => node.remove());
+  const active = document.getElementById('page-' + pageName);
+  if (!active || Math.random() > 0.72) return;
+  const selectors = {
+    cases: '.case-card .gift-img',
+    crash: '.crash-box',
+    upgrade: '.upgrade-box',
+    inventory: '.profile-hero,.ref-box,.profile-reward-panel',
+    promo: '.promo-panel'
+  };
+  const candidates = Array.from(active.querySelectorAll(selectors[pageName] || '.promo-panel'));
+  if (!candidates.length) return;
+  const chosen = [];
+  const count = Math.random() < 0.22 && candidates.length > 1 ? 2 : 1;
+  while (chosen.length < count && candidates.length) {
+    const index = Math.floor(Math.random() * candidates.length);
+    chosen.push(candidates.splice(index, 1)[0]);
+  }
+  const match = String(GIFTS?.plush_pepe?.img || '').match(/src=["']([^"']+)["']/i);
+  if (!match) return;
+  chosen.forEach((anchor, index) => {
+    anchor.classList.add('pepe-seat-anchor');
+    const seat = document.createElement('span');
+    seat.className = 'pepe-seat';
+    const pepe = document.createElement('img');
+    pepe.className = 'pepe-easter-egg';
+    pepe.src = match[1];
+    pepe.alt = 'Плюш Пепе';
+    pepe.loading = 'lazy';
+    pepe.onerror = () => { seat.remove(); pepe.remove(); };
+    seat.appendChild(pepe);
+    anchor.appendChild(seat);
+    if (index && Math.random() > .5) anchor.classList.add('pepe-bottom');
+  });
+}
+
 function switchPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
@@ -2084,6 +2124,7 @@ function switchPage(name) {
   if (name === 'inventory') { renderProfile(); renderInventory(); }
   if (name === 'upgrade') renderUpgrade();
   if (name === 'promo') { loadPromoAdminStatus(); togglePromoMode(); }
+  refreshPepeEasterEggs(name);
 }
 
 function renderCases() {
@@ -3210,6 +3251,7 @@ renderUpgrade();
 updateBalanceUI();
 loadAccount();
 loadPromoAdminStatus();
+refreshPepeEasterEggs('cases');
 
 
 

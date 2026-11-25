@@ -1430,6 +1430,15 @@ body.upgrade-spinning #page-upgrade #upgradeBtn{
   display:block!important;width:100%!important;max-width:100%!important;
   overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
 }
+
+/* Crash visual rebuild: deep space + Upgrade-style gift selector. */
+#page-crash .crash-canvas-wrap{height:290px!important;background:#070d20!important;border:1px solid rgba(125,160,255,.22);box-shadow:inset 0 0 55px rgba(54,92,190,.18),0 10px 28px rgba(0,0,0,.22)}
+#page-crash .crash-box{background:linear-gradient(155deg,#111d36 0%,#091326 100%)!important;border:1px solid rgba(128,157,224,.2)!important}
+#page-crash .crash-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}#page-crash #crashWagerMode,#page-crash #crashBet,#page-crash #crashGiftSelectButton{grid-column:1/-1;width:100%;min-width:0;box-sizing:border-box}
+.crash-gift-select-btn{display:none;min-height:68px;padding:9px 12px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2);color:var(--text);font:inherit;font-weight:800;text-align:left;align-items:center;gap:12px;cursor:pointer}
+.crash-selected-art{width:50px;height:50px;flex:0 0 50px;display:grid;place-items:center;overflow:hidden}.crash-selected-art img{max-width:100%;max-height:100%;object-fit:contain}.crash-selected-copy{display:flex;min-width:0;flex:1;flex-direction:column;gap:4px}.crash-selected-copy b{font-size:13px}.crash-selected-copy small{font-size:10px;color:var(--text-dim)}.crash-selected-change{font-size:11px;color:var(--accent)}
+#crashGiftPickerBackdrop{z-index:1001}#crashGiftPickerBackdrop .picker-list{grid-template-columns:repeat(2,minmax(0,1fr))}#crashGiftPickerBackdrop .picker-item{min-height:150px}
+@media(max-width:380px){#page-crash .crash-canvas-wrap{height:260px!important}}
 </style>
 </head>
 <body>
@@ -1611,7 +1620,7 @@ body.upgrade-spinning #page-upgrade #upgradeBtn{
     <div class="crash-controls">
       <select class="crash-input" id="crashWagerMode" onchange="setCrashWagerMode(this.value)"><option value="stars">Ставка Stars</option><option value="gift">Подарок из инвентаря</option></select>
       <input class="crash-input" id="crashBet" type="number" value="50" min="1">
-      <select class="crash-input" id="crashGiftSelect" style="display:none;min-width:0"></select>
+      <button class="crash-gift-select-btn" id="crashGiftSelectButton" type="button" onclick="openCrashGiftPicker()">🎁 Выбрать подарок из инвентаря</button><select class="crash-input" id="crashGiftSelect" style="display:none;min-width:0"></select>
       <button class="btn-cashout" id="crashBtn" onclick="crashAction()">Взлететь</button>
     </div>
     <div id="crashGiftStatus" class="crash-feed-title" style="text-align:center">Выберите подарок для полёта: при выводе он улучшится по текущему множителю.</div>
@@ -1640,6 +1649,7 @@ body.upgrade-spinning #page-upgrade #upgradeBtn{
   </div>
 </div>
 
+<div class="upgrade-picker-backdrop" id="crashGiftPickerBackdrop" onclick="closeCrashGiftPicker()"><div class="upgrade-picker-sheet" onclick="event.stopPropagation()"><div class="upgrade-picker-head"><b>Выберите подарок для полёта</b><button type="button" onclick="closeCrashGiftPicker()">✕</button></div><div class="picker-list" id="crashGiftPickerList"></div></div></div>
 <div class="toast" id="toast"></div>
 
 <div class="loader" id="loader">
@@ -3163,20 +3173,7 @@ crashRocketNFT.crossOrigin = 'anonymous';
 crashRocketNFT.src = 'https://nft.fragment.com/gift/stellarrocket-126045.medium.jpg';
 function drawRocket(ctx, u, flame) {
   ctx.save();
-  if (crashRocketNFT.complete && crashRocketNFT.naturalWidth > 0) {
-    if (flame) {
-      const pulse=1+Math.random()*.38;
-      const fire=ctx.createLinearGradient(0,.75*u,0,(1.75+pulse)*u);
-      fire.addColorStop(0,'#fff7d5');fire.addColorStop(.25,'#ffd16a');fire.addColorStop(.65,'#ff7545');fire.addColorStop(1,'rgba(73,151,255,0)');
-      ctx.beginPath();ctx.moveTo(-.38*u,.78*u);ctx.quadraticCurveTo(-.55*u,1.2*u,0,(1.85+pulse)*u);ctx.quadraticCurveTo(.55*u,1.2*u,.38*u,.78*u);ctx.closePath();ctx.fillStyle=fire;ctx.fill();
-    }
-    ctx.shadowColor='rgba(94,164,255,.85)';ctx.shadowBlur=18*u;
-    ctx.beginPath();ctx.roundRect(-1.22*u,-1.22*u,2.44*u,2.44*u,.34*u);ctx.fillStyle='#17243d';ctx.fill();
-    ctx.save();ctx.beginPath();ctx.roundRect(-1.13*u,-1.13*u,2.26*u,2.26*u,.27*u);ctx.clip();
-    ctx.drawImage(crashRocketNFT,-1.13*u,-1.13*u,2.26*u,2.26*u);ctx.restore();
-    ctx.shadowBlur=0;ctx.lineWidth=.11*u;ctx.strokeStyle='#f4d28b';ctx.beginPath();ctx.roundRect(-1.22*u,-1.22*u,2.44*u,2.44*u,.34*u);ctx.stroke();
-    ctx.restore();return;
-  }
+  // Clean vector rocket silhouette only: no square thumbnail or baked-in image background.
   ctx.lineJoin='round'; ctx.lineCap='round';
   const path=(points,fill,stroke='#17243a',width=.09)=>{
     ctx.beginPath(); points.forEach((p,i)=>i?ctx.lineTo(p[0]*u,p[1]*u):ctx.moveTo(p[0]*u,p[1]*u));
@@ -3237,8 +3234,11 @@ function drawCrash() {
   const P = s => ({ x: (30 * s + 1.2 * s * s) * k, y: -10 * Math.pow(s, 1.5) * k });   // траектория в «мире»
   const cur = P(t);
   ctx.clearRect(0, 0, W, H);
-  const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#1b3156'); bg.addColorStop(.55, '#101e38'); bg.addColorStop(1, '#091326');
-  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  const bg=ctx.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#080f25');bg.addColorStop(.48,'#101b3a');bg.addColorStop(1,'#050a18');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  const haze=(x,y,r,color)=>{const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,color);g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2)};
+  haze(W*.22,H*.25,W*.46,'rgba(62,104,220,.23)');haze(W*.82,H*.72,W*.4,'rgba(115,58,188,.19)');
+  for(let i=0;i<64;i++){const x=((i*83.17+cur.x*.12)%W+W)%W,y=((i*47.73+cur.y*.08)%H+H)%H;ctx.globalAlpha=.3+(i%5)*.12;ctx.fillStyle=i%9===0?'#a9d9ff':'#fff';ctx.beginPath();ctx.arc(x,y,(i%7===0?1.6:.65)*k,0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;
+  ctx.save();ctx.strokeStyle='rgba(117,163,255,.10)';ctx.lineWidth=1;for(let n=0;n<3;n++){ctx.beginPath();ctx.ellipse(W*.5,H*1.08,W*(.42+n*.13),H*(.20+n*.06),-.12,Math.PI*1.08,Math.PI*1.92);ctx.stroke()}ctx.restore();
   // сетка и звёзды движутся навстречу камере (параллакс)
   const grid = (sp, f, a, r) => { ctx.fillStyle = `rgba(255,255,255,${a})`;
     const ox = ((-cur.x * f) % sp + sp) % sp, oy = ((-cur.y * f) % sp + sp) % sp;
@@ -3259,7 +3259,7 @@ function drawCrash() {
   ctx.globalAlpha = 1;
   if (!crashed) {
     const th = crashHeading(t), bob = crashState === 'flying' ? Math.sin(performance.now() / 160) * 2 * k : 0;
-    ctx.save(); ctx.translate(cx, cy + bob); ctx.rotate(th + Math.PI / 2); drawRocket(ctx, 15 * k, crashState === 'flying'); ctx.restore();
+    ctx.save(); ctx.translate(cx,cy+bob);ctx.rotate(th+Math.PI/2);drawRocket(ctx,22*k,crashState==='flying');if(crashGiftFlightItem){ctx.save();ctx.translate(0,25*k);ctx.rotate(-th-Math.PI/2);ctx.beginPath();ctx.arc(0,0,10*k,0,Math.PI*2);ctx.fillStyle='rgba(8,17,38,.9)';ctx.fill();ctx.strokeStyle='rgba(255,214,125,.9)';ctx.lineWidth=1.4*k;ctx.stroke();ctx.font=(12*k)+'px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff';ctx.fillText('✦',0,0);ctx.restore()}ctx.restore();
   }
 }
 
@@ -3330,21 +3330,26 @@ function renderCrashUI() {
 }
 
 function setCrashWagerMode(mode) {
-  const giftMode = mode === 'gift';
-  document.getElementById('crashBet').style.display = giftMode ? 'none' : '';
-  document.getElementById('crashGiftSelect').style.display = giftMode ? '' : 'none';
+  const giftMode=mode==='gift';document.getElementById('crashBet').style.display=giftMode?'none':'';document.getElementById('crashGiftSelect').style.display='none';document.getElementById('crashGiftSelectButton').style.display=giftMode?'flex':'none';
   document.getElementById('crashGiftStatus').textContent = giftMode ? 'Подарок блокируется на время полёта. Выводите на множителе — получите самый дорогой доступный подарок.' : 'Выберите подарок для полёта: при выводе он улучшится по текущему множителю.';
 }
-function renderCrashGiftPicker() {
-  const select = document.getElementById('crashGiftSelect'); if (!select) return;
-  const current = select.value;
-  const items = inventory.filter(i => i.status === 'owned' && !i.demo);
-  select.innerHTML = '<option value="">Выберите подарок из инвентаря</option>' + items.map(i => {
-    const g = GIFTS[i.gift] || {}; return `<option value="${i.uid}">${g.name || i.name || 'Подарок'} · ${money(Number(i.price)||Number(g.price)||0)}</option>`;
-  }).join('');
-  if (items.some(i => i.uid === current)) select.value = current;
+function renderCrashGiftPicker(){
+ const select=document.getElementById('crashGiftSelect'),button=document.getElementById('crashGiftSelectButton');if(!select||!button)return;
+ const items=inventory.filter(i=>i.status==='owned'&&!i.demo),current=select.value;
+ select.innerHTML='<option value="">Выберите подарок</option>'+items.map(i=>'<option value="'+i.uid+'">'+((GIFTS[i.gift]||{}).name||i.name||'Подарок')+'</option>').join('');
+ if(items.some(i=>i.uid===current))select.value=current;
+ const chosen=items.find(i=>i.uid===select.value);
+ if(chosen){const g=GIFTS[chosen.gift]||{};button.innerHTML='<span class="crash-selected-art">'+(g.img||'🎁')+'</span><span class="crash-selected-copy"><b>'+(g.name||chosen.name||'Подарок')+'</b><small>'+(g.rarity||'Подарок')+' · '+money(Number(chosen.price)||Number(g.price)||0)+'</small></span><span class="crash-selected-change">Изменить</span>'}else button.textContent='🎁 Выбрать подарок из инвентаря';
 }
-
+function openCrashGiftPicker(){
+ const back=document.getElementById('crashGiftPickerBackdrop'),list=document.getElementById('crashGiftPickerList'),items=inventory.filter(i=>i.status==='owned'&&!i.demo);
+ if(!items.length){toast('В инвентаре пока нет доступных подарков.',true);return}
+ const selected=document.getElementById('crashGiftSelect').value;
+ list.innerHTML=items.map(item=>{const g=GIFTS[item.gift]||{},sel=item.uid===selected?'selected':'';return '<div class="inv-item picker-item '+sel+'" onclick="selectCrashGift(\''+item.uid+'\')"><span class="gift-img">'+(g.img||'🎁')+'</span><div class="name">'+(g.name||item.name||'Подарок')+'</div><div class="rarity">'+(g.rarity||'Подарок')+'</div><div class="value">'+money(Number(item.price)||Number(g.price)||0)+'</div></div>'}).join('');
+ back.classList.add('show');document.body.classList.add('upgrade-picker-open');
+}
+function selectCrashGift(uid){document.getElementById('crashGiftSelect').value=uid;renderCrashGiftPicker();closeCrashGiftPicker()}
+function closeCrashGiftPicker(){document.getElementById('crashGiftPickerBackdrop')?.classList.remove('show');document.body.classList.remove('upgrade-picker-open')}
 async function crashAction() {
   if (!ageConfirmed) return toast('Сначала подтвердите возраст 18+.', true);
   try {

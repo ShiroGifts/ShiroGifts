@@ -1856,6 +1856,81 @@ body{padding-top:calc(51px + env(safe-area-inset-top))!important;padding-bottom:
 .crash-bet-currency{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.8);font-size:11px;font-weight:900;pointer-events:none}
 @media(max-height:700px){#page-upgrade .upgrade-box{padding:6px 9px 8px!important}#page-upgrade .upgrade-box:before{margin-bottom:4px!important}#page-upgrade .upgrade-slot{min-height:78px!important;height:78px!important}#page-upgrade .wheel-wrap{width:clamp(156px,43vw,185px)!important;height:clamp(156px,43vw,185px)!important}#page-upgrade .chance{font-size:24px!important}#page-upgrade #upgradeBtn{min-height:42px!important}}
 @media(max-width:360px){#casePreview{padding-left:9px!important;padding-right:9px!important}#casePreview .case-preview-title{font-size:15px!important}#casePreview .case-preview-drops{gap:5px!important}#page-upgrade .upgrade-slot .label{font-size:9px!important}#upgradeChanceControl .upgrade-chance-presets{gap:5px!important}}
+
+/* Refined translucent theme for the requested panels. */
+body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixed!important}
+#page-cases.active{
+  position:relative;isolation:isolate;border-radius:26px;
+  background:radial-gradient(ellipse at 12% 0%,rgba(172,202,255,.25),transparent 42%),
+    radial-gradient(ellipse at 92% 18%,rgba(220,164,255,.18),transparent 38%),
+    linear-gradient(145deg,rgba(30,52,94,.22),rgba(70,54,112,.16))!important
+}
+#page-cases .case-card{
+  background:linear-gradient(145deg,rgba(255,255,255,.19),rgba(255,255,255,.085))!important;
+  border:1px solid rgba(255,255,255,.27)!important;border-radius:21px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 10px 24px rgba(13,25,61,.17)!important;
+  -webkit-backdrop-filter:blur(20px) saturate(155%)!important;backdrop-filter:blur(20px) saturate(155%)!important
+}
+#page-cases .case-card .gift-img{filter:drop-shadow(0 5px 12px rgba(14,26,58,.28))!important}
+#page-upgrade .upgrade-box{
+  background:linear-gradient(145deg,rgba(26,37,62,.55),rgba(20,29,51,.42))!important;
+  border:1px solid rgba(221,232,255,.2)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 12px 30px rgba(8,15,37,.14)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(145%)!important;backdrop-filter:blur(24px) saturate(145%)!important
+}
+#page-upgrade .upgrade-row{margin-bottom:13px!important}
+#page-upgrade .upgrade-slot{height:108px!important;min-height:108px!important;padding:9px 6px!important}
+#page-upgrade .upgrade-spin-modes{margin:0 0 7px!important;background:transparent!important;position:relative!important}
+#page-upgrade .upgrade-spin-modes button{position:relative!important;top:-7px!important;transform:translateY(-2px)!important}
+#page-upgrade .wheel-wrap{margin-top:0!important}
+#page-crash .crash-box{background:transparent!important;border:0!important;box-shadow:none!important;padding:10px 0!important}
+#page-crash .crash-canvas-wrap{
+  background:radial-gradient(ellipse at 50% 72%,rgba(59,123,255,.23),transparent 65%),linear-gradient(180deg,#172a4c,#0b1428)!important;
+  border:1px solid rgba(150,185,255,.24)!important;box-shadow:inset 0 0 35px rgba(4,10,24,.42),0 10px 28px rgba(9,17,43,.2)!important
+}
+#page-crash .crash-feed .feed-row{background:rgba(255,255,255,.105)!important;border-color:rgba(255,255,255,.16)!important;backdrop-filter:blur(16px)!important}
+#page-crash .crash-wager-buttons{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;width:100%!important;margin:10px 0 8px!important}
+#page-crash .crash-wager-icon{
+  width:100%!important;height:58px!important;display:flex!important;align-items:center!important;justify-content:center!important;
+  border:1px solid rgba(255,255,255,.28)!important;border-radius:17px!important;
+  color:#f4f6ff!important;background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.09))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 7px 18px rgba(13,25,61,.14)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(160%)!important;backdrop-filter:blur(18px) saturate(160%)!important
+}
+#page-crash .crash-wager-icon:active{transform:scale(.97)!important}
+#page-crash .crash-wager-icon:disabled{opacity:.38!important}
+#page-crash .crash-wager-icon svg{width:29px!important;height:29px!important}
+#page-crash .crash-controls{margin:7px 0 9px!important}
+#page-crash #crashBtn{width:100%!important}
+#page-crash .crash-preorder-status{min-height:0;margin:3px 0 0;text-align:center;color:rgba(242,246,255,.82);font-size:11px;font-weight:800}
+#page-crash .crash-preorder-cancel{width:100%;margin:7px 0 10px;padding:10px;border-radius:12px;border:1px solid rgba(255,190,190,.3);background:rgba(210,80,105,.17);color:#ffe0e7;font-size:12px;font-weight:900}
+#page-crash .crash-legacy-controls{display:none!important}
+#crashStakePickerBackdrop .upgrade-picker-sheet,#crashGiftPickerBackdrop .upgrade-picker-sheet{
+  background:linear-gradient(145deg,rgba(39,53,82,.94),rgba(22,31,53,.94))!important;
+  border:1px solid rgba(220,232,255,.22)!important;box-shadow:0 18px 48px rgba(4,10,30,.35)!important;
+  -webkit-backdrop-filter:blur(28px) saturate(155%)!important;backdrop-filter:blur(28px) saturate(155%)!important
+}
+.crash-stake-currency{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0 18px}
+.crash-stake-currency button{min-height:44px;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:rgba(255,255,255,.08);color:#dbe5ff;font-size:13px;font-weight:900}
+.crash-stake-currency button.active{border-color:rgba(173,197,255,.62);background:rgba(125,155,255,.28);color:#fff}
+.crash-stake-label{display:block;margin-bottom:7px;text-align:left;color:#cbd7f2;font-size:12px;font-weight:800}
+.crash-stake-input-wrap{position:relative;margin-bottom:14px}
+.crash-stake-input-wrap .crash-input{width:100%;padding-right:70px!important;background:rgba(4,12,30,.3)!important}
+.crash-stake-input-wrap span{position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:900;color:#c7d7ff}
+.crash-gift-sheet #crashGiftSubmit{margin-top:8px}
+.crash-gift-sheet #crashGiftSubmit:disabled{opacity:.4}
+.promo-panel{
+  background:linear-gradient(145deg,rgba(30,43,68,.58),rgba(21,31,51,.44))!important;
+  border:1px solid rgba(225,235,255,.2)!important;border-radius:20px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 12px 28px rgba(8,15,37,.15)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(150%)!important;backdrop-filter:blur(24px) saturate(150%)!important
+}
+.promo-input{background:rgba(5,13,30,.28)!important;border:1px solid rgba(220,232,255,.2)!important}
+@media(max-width:360px){
+  #page-upgrade .upgrade-slot{height:100px!important;min-height:100px!important}
+  #page-crash .crash-wager-buttons{gap:8px!important}
+}
+
 </style>
 
 </head>
@@ -2034,13 +2109,23 @@ body{padding-top:calc(51px + env(safe-area-inset-top))!important;padding-bottom:
     </div>
     <div class="crash-feed-title">Последние полёты</div>
     <div class="crash-history" id="crashHistory"></div>
-    <div class="crash-controls">
+    <div class="crash-wager-buttons" id="crashWagerButtons">
+      <button class="crash-wager-icon" id="crashCurrencyBetButton" type="button" onclick="openCrashStakePicker()" aria-label="Поставить в валюте" title="Поставить в валюте">
+        <svg id="crashCurrencyBetIcon" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4l5.7 12.1L43 18l-9.5 9.2L35.8 41 24 34.6 12.2 41l2.3-13.8L5 18l13.3-1.9L24 4z" fill="currentColor"/></svg>
+      </button>
+      <button class="crash-wager-icon" id="crashGiftBetButton" type="button" onclick="openCrashGiftPicker()" aria-label="Поставить подарком" title="Поставить подарком">
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 20h36v22H6zM4 13h40v8H4zM24 13v29M24 13H14.5a5 5 0 1 1 4.7-6.7C21 9.7 24 13 24 13zm0 0h9.5a5 5 0 1 0-4.7-6.7C27 9.7 24 13 24 13z" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <div class="crash-controls"><button class="btn-cashout" id="crashBtn" onclick="crashAction()">Забрать</button></div>
+    <div id="crashPreorderStatus" class="crash-preorder-status" aria-live="polite"></div>
+    <button id="crashPreorderCancel" class="crash-preorder-cancel" type="button" onclick="cancelCrashPreorder()" style="display:none">Отменить предзаказ</button>
+    <div class="crash-legacy-controls" aria-hidden="true">
       <select class="crash-input" id="crashWagerMode" onchange="setCrashWagerMode(this.value)"><option value="stars">Ставка Stars</option><option value="gift">NFT / подарок из инвентаря</option></select>
       <div class="crash-bet-wrap"><input class="crash-input" id="crashBet" type="number" value="50" min="1" step="1" aria-label="Размер ставки"><span class="crash-bet-currency" id="crashBetCurrency">Stars</span></div>
       <button class="crash-gift-select-btn" id="crashGiftSelectButton" type="button" onclick="openCrashGiftPicker()">🎁 Выбрать подарок из инвентаря</button><select class="crash-input" id="crashGiftSelect" style="display:none;min-width:0"></select>
-      <button class="btn-cashout" id="crashBtn" onclick="crashAction()">Взлететь</button>
     </div>
-    <div id="crashGiftStatus" class="crash-feed-title" style="text-align:center">Выберите подарок для полёта: при выводе он улучшится по текущему множителю.</div>
+    <div id="crashGiftStatus" class="crash-feed-title" style="text-align:center">Выберите валюту или подарок для ставки.</div>
     <div class="crash-feed-title" id="crashBetsTitle">Ставки игроков</div>
     <div class="crash-feed" id="crashFeed"></div>
   </div>
@@ -2071,7 +2156,8 @@ body{padding-top:calc(51px + env(safe-area-inset-top))!important;padding-bottom:
   </div>
 </div>
 
-<div class="upgrade-picker-backdrop" id="crashGiftPickerBackdrop" onclick="closeCrashGiftPicker()"><div class="upgrade-picker-sheet" onclick="event.stopPropagation()"><div class="upgrade-picker-head"><b>Выберите подарок для полёта</b><button type="button" onclick="closeCrashGiftPicker()">✕</button></div><div class="picker-list" id="crashGiftPickerList"></div></div></div>
+<div class="upgrade-picker-backdrop" id="crashGiftPickerBackdrop" onclick="closeCrashGiftPicker()"><div class="upgrade-picker-sheet crash-gift-sheet" onclick="event.stopPropagation()"><div class="upgrade-picker-head"><b>Выберите подарок для ставки</b><button type="button" onclick="closeCrashGiftPicker()">✕</button></div><div class="picker-list" id="crashGiftPickerList"></div><button class="btn-big" id="crashGiftSubmit" type="button" onclick="submitCrashGift()" disabled>Поставить подарком</button></div></div>
+<div class="upgrade-picker-backdrop" id="crashStakePickerBackdrop" onclick="closeCrashStakePicker()"><div class="upgrade-picker-sheet crash-stake-sheet" onclick="event.stopPropagation()"><div class="upgrade-picker-head"><b>Ставка в валюте</b><button type="button" onclick="closeCrashStakePicker()">✕</button></div><div class="crash-stake-currency"><button type="button" data-currency="STARS" onclick="setCrashStakeCurrency('STARS')">⭐ Stars</button><button type="button" data-currency="TON" onclick="setCrashStakeCurrency('TON')">TON</button></div><label class="crash-stake-label" for="crashStakeAmount">Размер ставки</label><div class="crash-stake-input-wrap"><input class="crash-input" id="crashStakeAmount" type="number" value="50" min="1" step="1"><span id="crashStakeCurrencyLabel">Stars</span></div><button class="btn-big" type="button" onclick="submitCrashStake()">Поставить</button></div></div>
 <div class="toast" id="toast"></div>
 
 <div class="loader" id="loader">
@@ -2389,6 +2475,12 @@ function updateCurrencyCopy() {
   if (button) button.textContent = currencyMode === 'TON' ? '⭐' : 'TON';
   const crashBetCurrency = document.getElementById('crashBetCurrency');
   const crashBetInput = document.getElementById('crashBet');
+  const stakeInput = document.getElementById('crashStakeAmount');
+  const currencyIcon = document.getElementById('crashCurrencyBetIcon');
+  if(currencyIcon) currencyIcon.innerHTML = currencyMode === 'TON' ? '<path d="M24 4l19 11-19 29L5 15 24 4zm0 0v40M5 15h38" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>' : '<path d="M24 4l5.7 12.1L43 18l-9.5 9.2L35.8 41 24 34.6 12.2 41l2.3-13.8L5 18l13.3-1.9L24 4z" fill="currentColor"/>';
+  if(stakeInput){stakeInput.step=currencyMode==='TON'?'0.01':'1';stakeInput.min=currencyMode==='TON'?'0.01':'1';}
+  const stakeLabel=document.getElementById('crashStakeCurrencyLabel');if(stakeLabel)stakeLabel.textContent=currencyMode==='TON'?'TON':'Stars';
+  document.querySelectorAll('.crash-stake-currency button').forEach(b=>b.classList.toggle('active',b.dataset.currency===currencyMode));
   const crashStarsOption = document.querySelector('#crashWagerMode option[value="stars"]');
   if (crashBetCurrency) crashBetCurrency.textContent = currencyMode === 'TON' ? 'TON' : 'Stars';
   if (crashStarsOption) crashStarsOption.textContent = 'Ставка ' + (currencyMode === 'TON' ? 'TON' : 'Stars');
@@ -2886,6 +2978,7 @@ function switchPage(name) {
   if (document.getElementById('casePreview')?.classList.contains('show')) closeCasePreview();
   if (document.getElementById('upgradePickerBackdrop')?.classList.contains('show')) closeUpgradePicker();
   if (document.getElementById('crashGiftPickerBackdrop')?.classList.contains('show')) closeCrashGiftPicker();
+  if (document.getElementById('crashStakePickerBackdrop')?.classList.contains('show')) closeCrashStakePicker();
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const nextPage = document.getElementById('page-' + name);
   if (nextPage) nextPage.classList.add('active');
@@ -3769,6 +3862,7 @@ const BET_WINDOW = 6000, RESULT_PAUSE = 3500;
 const GROWTH_K = 0.15, multAt = t => Math.exp(GROWTH_K * t), timeAt = m => Math.log(m) / GROWTH_K;
 let round = { phase: 'betting', id: 0, startsAt: Date.now() + BET_WINDOW, startedAt: 0 };
 let myBet = null;          // { amount, cashed: null | mult }
+let myPreorder = null;     // queued wager for the next round
 let flightHistory = [];    // последние 5 краш-множителей, новые слева
 let serverOffset = 0;      // serverTime - Date.now()
 const serverNow = () => Date.now() + serverOffset;
@@ -3798,14 +3892,24 @@ function renderHistory() {
 function renderCrashUI() {
   const btn = document.getElementById('crashBtn'), inp = document.getElementById('crashBet');
   document.getElementById('crashMult').classList.toggle('crashed', round.phase === 'crashed');
-  let txt = 'Раунд окончен', dis = true, cash = false;
-  if (round.phase === 'betting') { txt = myBet ? 'Ставка принята' : 'Поставить'; dis = !!myBet; }
-  else if (round.phase === 'flying') {
-    if (myBet && myBet.cashed === null) { txt = 'Забрать'; dis = false; cash = true; }
-    else txt = myBet ? 'Вывели' : 'Ждём краш';
+  const cash = round.phase === 'flying' && myBet && myBet.cashed === null;
+  btn.textContent = 'Забрать'; btn.disabled = !cash; btn.style.display = cash ? 'block' : 'none';
+  btn.classList.toggle('cashout-mode', !!cash);
+  inp.disabled = true;
+  const pending = !!(myPreorder && myPreorder.status === 'pending');
+  const unavailable = pending || (round.phase === 'betting' && !!myBet);
+  document.querySelectorAll('#crashWagerButtons button').forEach(button => { button.disabled = unavailable; });
+  const status = document.getElementById('crashPreorderStatus');
+  const cancel = document.getElementById('crashPreorderCancel');
+  if (pending) {
+    status.textContent = myPreorder.type === 'gift' ? 'Подарок зарезервирован для следующего раунда.' : 'Предзаказ на следующий раунд ожидает старта.';
+    cancel.style.display = 'block';
+  } else {
+    status.textContent = myPreorder && myPreorder.status === 'failed'
+      ? (myPreorder.error === 'insufficient_balance' ? 'Предзаказ не прошёл: недостаточно Stars на момент старта.' : 'Предзаказ не удалось активировать.')
+      : (myPreorder && myPreorder.status === 'activated' && String(myPreorder.id) ? 'Предзаказ активирован.' : '');
+    cancel.style.display = 'none';
   }
-  btn.textContent = txt; btn.disabled = dis; btn.classList.toggle('cashout-mode', cash);
-  inp.disabled = !(round.phase === 'betting' && !myBet);
 }
 
 function setCrashWagerMode(mode) {
@@ -3825,10 +3929,80 @@ function openCrashGiftPicker(){
  if(!items.length){toast('В инвентаре пока нет доступных подарков.',true);return}
  const selected=document.getElementById('crashGiftSelect').value;
  list.innerHTML=items.map(item=>{const g=GIFTS[item.gift]||{},sel=item.uid===selected?'selected':'';return '<div class="inv-item picker-item '+sel+'" onclick="selectCrashGift(\''+item.uid+'\')"><span class="gift-img">'+(g.img||'🎁')+'</span><div class="name">'+(g.name||item.name||'Подарок')+'</div><div class="rarity">'+(g.rarity||'Подарок')+'</div><div class="value">'+money(Number(item.price)||Number(g.price)||0)+'</div></div>'}).join('');
+ const submit=document.getElementById('crashGiftSubmit');if(submit)submit.disabled=!selected;
  back.classList.add('show');document.body.classList.add('upgrade-picker-open');
 }
-function selectCrashGift(uid){document.getElementById('crashGiftSelect').value=uid;renderCrashGiftPicker();closeCrashGiftPicker()}
+function selectCrashGift(uid){
+  document.getElementById('crashGiftSelect').value=uid;
+  renderCrashGiftPicker();
+  const submit=document.getElementById('crashGiftSubmit');
+  if(submit) submit.disabled=false;
+}
 function closeCrashGiftPicker(){document.getElementById('crashGiftPickerBackdrop')?.classList.remove('show');document.body.classList.remove('upgrade-picker-open')}
+function openCrashStakePicker(){
+  if(myPreorder&&myPreorder.status==='pending')return toast('У вас уже есть предзаказ.',true);
+  const input=document.getElementById('crashStakeAmount');
+  if(input)input.value=currencyMode==='TON'?'0.50':'50';
+  setCrashStakeCurrency(currencyMode==='TON'?'TON':'STARS');
+  document.getElementById('crashStakePickerBackdrop')?.classList.add('show');
+  document.body.classList.add('upgrade-picker-open');
+}
+function closeCrashStakePicker(){document.getElementById('crashStakePickerBackdrop')?.classList.remove('show');document.body.classList.remove('upgrade-picker-open')}
+function setCrashStakeCurrency(currency){
+  currencyMode=currency==='TON'?'TON':'STARS';
+  updateCurrencyCopy();
+  document.querySelectorAll('.crash-stake-currency button').forEach(b=>b.classList.toggle('active',b.dataset.currency===currencyMode));
+  const input=document.getElementById('crashStakeAmount'),label=document.getElementById('crashStakeCurrencyLabel');
+  if(input){input.step=currencyMode==='TON'?'0.01':'1';input.min=currencyMode==='TON'?'0.01':'1';}
+  if(label)label.textContent=currencyMode==='TON'?'TON':'Stars';
+}
+async function submitCrashWager(type,payload){
+  if(!ageConfirmed)return toast('Сначала подтвердите возраст 18+.',true);
+  if(myPreorder&&myPreorder.status==='pending')return toast('У вас уже есть предзаказ.',true);
+  const isPreorder=round.phase!=='betting'||!!myBet;
+  try{
+    let result;
+    if(type==='gift'){
+      result=await apiRequest(isPreorder?'/api/crash/preorder':'/api/crash/bet',{method:'POST',body:JSON.stringify(isPreorder?{type:'gift',inventoryId:payload.inventoryId}:{inventoryId:payload.inventoryId})});
+      crashGiftFlightItem=inventory.find(i=>i.uid===payload.inventoryId)||null;
+    }else{
+      result=await apiRequest(isPreorder?'/api/crash/preorder':'/api/crash/bet',{method:'POST',body:JSON.stringify(isPreorder?{type:'stars',amount:payload.amount,currency:payload.currency}:{amount:payload.amount,currency:payload.currency})});
+    }
+    closeCrashStakePicker();closeCrashGiftPicker();
+    haptic('light');
+    toast(isPreorder?'Предзаказ на следующий раунд создан':type==='gift'?'Подарок отправлен в полёт!':'Ставка принята');
+    await loadAccount();await syncCrashState();
+    return result;
+  }catch(error){
+    if(error.message==='round_open_for_bet'){
+      try{
+        const body=type==='gift'?{inventoryId:payload.inventoryId}:{amount:payload.amount,currency:payload.currency};
+        await apiRequest('/api/crash/bet',{method:'POST',body:JSON.stringify(body)});
+        closeCrashStakePicker();closeCrashGiftPicker();toast('Ставка принята');await loadAccount();await syncCrashState();return;
+      }catch(retryError){error=retryError;}
+    }
+    const messages={invalid_bet_amount:'Ставка должна быть от 1 до 10000 Stars.',crash_item_not_found:'Подарок уже недоступен в инвентаре.',invalid_crash_item:'Этот подарок нельзя отправить в полёт.',insufficient_balance:'Недостаточно средств на балансе.',preorder_already_exists:'У вас уже есть предзаказ.',round_open_for_bet:'Сейчас открыта ставка на текущий раунд.'};
+    toast(messages[error.message]||'Ошибка Crash: '+error.message,true);
+    await syncCrashState().catch(()=>{});
+  }
+}
+async function submitCrashStake(){
+  const entered=Number(String(document.getElementById('crashStakeAmount').value).replace(',','.'));
+  const amount=currencyMode==='TON'?Math.round(entered*STARS_PER_TON):Math.round(entered);
+  if(!Number.isFinite(entered)||!Number.isSafeInteger(amount)||amount<1||amount>10000||(currencyMode==='TON'&&Math.abs(entered-amount/STARS_PER_TON)>0.000001))return toast('Ставка минимум 1 Star (0,01 TON).',true);
+  await submitCrashWager('stars',{amount,currency:currencyMode});
+}
+async function submitCrashGift(){
+  const inventoryId=document.getElementById('crashGiftSelect').value;
+  if(!inventoryId)return toast('Сначала выберите подарок.',true);
+  await submitCrashWager('gift',{inventoryId});
+}
+async function cancelCrashPreorder(){
+  try{
+    await apiRequest('/api/crash/preorder/cancel',{method:'POST',body:'{}'});
+    myPreorder=null;await loadAccount();await syncCrashState();haptic('light');toast('Предзаказ отменён');
+  }catch(error){toast(error.message==='preorder_not_found'?'Предзаказ уже не ожидает старта.':'Не удалось отменить предзаказ.',true);await syncCrashState().catch(()=>{});}
+}
 async function crashAction() {
   if (!ageConfirmed) return toast('Сначала подтвердите возраст 18+.', true);
   try {
@@ -4025,15 +4199,17 @@ async function syncCrashState() {
     serverOffset = Number(data.serverTime) - Date.now();
     const incoming = data.round;
     const changed = String(round.id) !== String(incoming.id) || round.phase !== incoming.phase;
-    myBet = data.myBet ? { amount:Number(data.myBet.amount), cashed:data.myBet.cashed === null ? null : Number(data.myBet.cashed), payout:data.myBet.payout } : null;
+    const incomingBet = data.myBet ? { id:String(data.myBet.id), amount:Number(data.myBet.amount), cashed:data.myBet.cashed === null ? null : Number(data.myBet.cashed), payout:data.myBet.payout } : null;
+    myPreorder = data.preorder || null;
     if (changed) onRound(incoming);
     else {
       round = incoming;
       crashState = PHASE_STATE[incoming.phase];
       if (incoming.phase === 'flying') crashMult = Number(incoming.currentMult) || 1;
       if (incoming.phase === 'crashed') crashMult = Number(incoming.crashMult) || 1;
-      renderCrashUI();
     }
+    myBet = incomingBet;
+    renderCrashUI();
     flightHistory = (data.history || []).slice(0,12).map(Number);
     renderHistory();
     (data.bets || []).forEach(b => {

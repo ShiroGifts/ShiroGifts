@@ -1,5 +1,6 @@
 const { pool } = require('../db/pool');
 
+// Owner notifications are sent after the related database transaction has committed.
 async function notifyAdminGift({ telegramId, username, firstName, itemName, source, inventoryId }) {
   try {
     const setting = await pool.query("SELECT value FROM app_settings WHERE key = 'gift_admin_notifications_enabled'");

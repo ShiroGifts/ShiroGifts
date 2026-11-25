@@ -1367,11 +1367,15 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
 #upgradePickerBackdrop .picker-item{min-width:0;max-width:100%;overflow:hidden;overflow-wrap:anywhere}
 @media(max-width:360px){#upgradePickerBackdrop .upgrade-picker-sheet{padding-left:10px;padding-right:10px}.upgrade-chance-control{padding:10px}.sell-all-bar{font-size:11px}}
 
-/* Keep the upgrade action anchored at the bottom of its panel on short and tall screens. */
-#page-upgrade .upgrade-box{display:flex!important;flex-direction:column!important;min-height:calc(100dvh - 190px)!important;box-sizing:border-box!important}
-#page-upgrade #upgradeBtn{flex:0 0 auto!important;width:100%!important;margin-top:auto!important;position:relative!important;z-index:5!important}
-@media(max-height:700px){#page-upgrade .upgrade-box{min-height:calc(100dvh - 155px)!important}#page-upgrade .wheel-wrap{flex-shrink:1!important}}
-@media(max-height:620px){#page-upgrade .upgrade-box{height:calc(100dvh - 145px)!important;min-height:0!important}#page-upgrade #upgradeBtn{margin-top:auto!important}}
+/* While the wheel spins, pin its action above the fixed bottom navigation. */
+#page-upgrade.upgrade-spinning #upgradeBtn{
+  position:fixed!important;left:50%!important;bottom:calc(78px + env(safe-area-inset-bottom))!important;
+  transform:translateX(-50%)!important;width:min(calc(100vw - 36px),484px)!important;
+  max-width:484px!important;z-index:19!important;margin:0!important;
+  min-height:44px!important;padding:11px 14px!important;box-shadow:0 6px 24px rgba(0,0,0,.42)!important
+}
+#page-upgrade.upgrade-spinning{padding-bottom:calc(138px + env(safe-area-inset-bottom))!important}
+@media(max-height:560px){#page-upgrade.upgrade-spinning #upgradeBtn{bottom:calc(72px + env(safe-area-inset-bottom))!important;min-height:40px!important}}
 </style>
 </head>
 <body>
@@ -2932,6 +2936,7 @@ async function doUpgrade() {
   if (!isOwnerDemoBoostActive() && calcChance(fromItem.gift, upgradeToKey) < 0.000001) return toast('Нельзя апгрейдить на этот предмет: шанс ниже 1%.', true);
 
   upgradeBusy = true;
+  document.getElementById('page-upgrade')?.classList.add('upgrade-spinning');
   updateUpgradeButton();
   if (!pendingUpgradeRequestId) pendingUpgradeRequestId = crypto.randomUUID();
   try {
@@ -3013,6 +3018,7 @@ async function doUpgrade() {
     if (error.message === 'inventory_item_not_found') await loadAccount();
   } finally {
     upgradeBusy = false;
+    document.getElementById('page-upgrade')?.classList.remove('upgrade-spinning');
     renderUpgrade();
   }
 }

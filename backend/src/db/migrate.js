@@ -141,6 +141,23 @@ async function migrate() {
     ALTER TABLE crash_bets ADD COLUMN IF NOT EXISTS cashout_inventory_id BIGINT REFERENCES inventory(id);
     ALTER TABLE crash_bets ADD COLUMN IF NOT EXISTS wager_currency TEXT NOT NULL DEFAULT 'STARS';
     CREATE INDEX IF NOT EXISTS crash_bets_round_idx ON crash_bets(round_id, created_at DESC);
+    ALTER TABLE inventory DROP CONSTRAINT IF EXISTS inventory_status_check;
+    ALTER TABLE inventory ADD CONSTRAINT inventory_status_check CHECK (status IN ('owned','sold','withdrawn','upgraded','burned','withdraw_pending','crash_locked','crash_preorder_locked'));
+    CREATE TABLE IF NOT EXISTS crash_preorders (
+      id BIGSERIAL PRIMARY KEY,
+      telegram_id BIGINT NOT NULL REFERENCES users(telegram_id),
+      wager_type TEXT NOT NULL CHECK (wager_type IN ('stars','gift')),
+      amount_stars BIGINT CHECK (amount_stars IS NULL OR amount_stars BETWEEN 1 AND 10000),
+      wager_currency TEXT NOT NULL DEFAULT 'STARS' CHECK (wager_currency IN ('STARS','TON','NFT')),
+      inventory_id BIGINT REFERENCES inventory(id),
+      status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','activated','cancelled','failed')),
+      activated_round_id BIGINT REFERENCES crash_rounds(id),
+      error_code TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      CHECK ((wager_type='stars' AND amount_stars IS NOT NULL AND inventory_id IS NULL) OR (wager_type='gift' AND amount_stars IS NULL AND inventory_id IS NOT NULL))
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS crash_preorders_one_pending_per_user ON crash_preorders(telegram_id) WHERE status='pending';
+    CREATE INDEX IF NOT EXISTS crash_preorders_queue_idx ON crash_preorders(status, created_at ASC);
 
     CREATE TABLE IF NOT EXISTS promo_codes (
       id BIGSERIAL PRIMARY KEY,

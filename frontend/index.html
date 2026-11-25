@@ -3306,20 +3306,10 @@ crashRocketImage.crossOrigin = 'anonymous';
 crashRocketImage.decoding = 'async';
 crashRocketImage.src = 'https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/gift_5170564780938756245.webp';
 crashRocketImage.onload = () => { if (document.getElementById('crashCanvas')) drawCrash(); };
-function drawRocket(ctx,u,flame){
+function drawRocket(ctx,u){
   ctx.save();
   const h=2.05*u,w=crashRocketImage.naturalWidth ? h*crashRocketImage.naturalWidth/crashRocketImage.naturalHeight : h;
-  if(flame){
-    const flicker=0.88+0.12*Math.sin(performance.now()/43);
-    const y=h*.40, fh=h*.48*flicker;
-    const g=ctx.createLinearGradient(0,y,0,y+fh);
-    g.addColorStop(0,'rgba(255,244,176,.96)');
-    g.addColorStop(.28,'rgba(255,174,66,.94)');
-    g.addColorStop(.72,'rgba(255,91,47,.68)');
-    g.addColorStop(1,'rgba(255,91,47,0)');
-    ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(-w*.105,y);ctx.quadraticCurveTo(-w*.20,y+fh*.45,0,y+fh);ctx.quadraticCurveTo(w*.20,y+fh*.45,w*.105,y);ctx.closePath();ctx.fill();
-    ctx.fillStyle='rgba(255,239,177,.9)';ctx.beginPath();ctx.moveTo(-w*.045,y);ctx.quadraticCurveTo(-w*.08,y+fh*.34,0,y+fh*.67);ctx.quadraticCurveTo(w*.08,y+fh*.34,w*.045,y);ctx.closePath();ctx.fill();
-  }
+  // Не рисуем отдельное пламя: остаются только частицы выхлопа.
   if(crashRocketImage.complete && crashRocketImage.naturalWidth) ctx.drawImage(crashRocketImage,-w/2,-h/2,w,h);
   ctx.restore();
 }
@@ -3366,7 +3356,7 @@ function drawCrash() {
       const th = crashHeading(t);
       const gentleRoll = Math.sin(t*3.1)*0.105;
       ctx.save(); ctx.translate(cx,cy); ctx.rotate(th + Math.PI/4 + gentleRoll);
-      drawRocket(ctx,rocketSize,true); ctx.restore();
+      drawRocket(ctx,rocketSize); ctx.restore();
     } else {
       const startAt = Number(round.startsAt) || serverNow();
       const duration = 1750;
@@ -3526,6 +3516,18 @@ function crashFrame() {
     for (let i = 0; i < 2; i++) crashParticles.push({ x: tx, y: ty, vx: -Math.cos(th) * 2.2 + (Math.random() - .5), vy: -Math.sin(th) * 2.2 + (Math.random() - .5) - 0.1, r: Math.random() * 3 + 2, life: 0.8, color: Math.random() < .5 ? '#ffc42e' : '#ff6a2b' });
   } else if (round.phase === 'betting') {
     multEl.classList.remove('wait'); multEl.textContent = '1.00x';
+    // Частицы появляются уже во время подлёта ракеты к стартовой точке.
+    const cw = document.getElementById('crashCanvas').parentElement, k = Math.min(cw.clientWidth, cw.clientHeight) / 250;
+    const startAt = Number(round.startsAt) || serverNow(), duration = 1750;
+    const progress = Math.max(0, Math.min(1, 1 - (startAt - serverNow()) / duration));
+    const eased = progress * progress * (3 - 2 * progress);
+    const sx = 28 * k, sy = cw.clientHeight - 30 * k, cx = cw.clientWidth / 2, cy = cw.clientHeight * 0.52;
+    const rx = sx + (cx - sx) * eased, ry = sy + (cy - sy) * eased;
+    const approach = Math.atan2(cy - sy, cx - sx), launchAngle = crashHeading(0);
+    const turn = Math.max(0, Math.min(1, (progress - .68) / .32)), smoothTurn = turn * turn * (3 - 2 * turn);
+    const angle = approach + (launchAngle - approach) * smoothTurn;
+    const tx = rx - Math.cos(angle) * 24 * k, ty = ry - Math.sin(angle) * 24 * k;
+    for (let i = 0; i < 1; i++) crashParticles.push({ x: tx, y: ty, vx: -Math.cos(angle) * 1.4 + (Math.random() - .5) * .8, vy: -Math.sin(angle) * 1.4 + (Math.random() - .5) * .8, r: Math.random() * 2.2 + 1.5, life: .65, color: Math.random() < .5 ? '#ffc42e' : '#ff6a2b' });
   } else { multEl.classList.remove('wait'); multEl.textContent = crashMult.toFixed(2) + 'x'; }
   const countdown = document.getElementById('crashCountdown');
   if (countdown) {

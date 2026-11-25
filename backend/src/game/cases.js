@@ -4,9 +4,9 @@ const CASES = [
     { type: 'nothing', weight: 999 }
   ]},
   { id: 'starter', name: 'Стартовый', price: 10, drops: [
-    { type: 'gift', key: 'bear', weight: 38 }, { type: 'gift', key: 'heart', weight: 28 },
-    { type: 'gift', key: 'rose', weight: 18 }, { type: 'stars', amount: 5, weight: 12 },
-    { type: 'stars', amount: 10, weight: 4 }
+    { type: 'gift', key: 'bear', weight: 20 }, { type: 'gift', key: 'heart', weight: 20 },
+    { type: 'gift', key: 'rose', weight: 15 }, { type: 'stars', amount: 5, weight: 2 },
+    { type: 'stars', amount: 10, weight: 1 }, { type: 'nothing', weight: 42 }
   ]},
   { id: 'mini', name: 'Мини', price: 25, drops: [
     { type: 'gift', key: 'bear', weight: 20 }, { type: 'gift', key: 'heart', weight: 18 },

@@ -693,6 +693,19 @@ body{
 .case-card:active{transform:translateY(2px) scale(.985)!important;filter:brightness(1.12)}
 .case-card .rarity-bar{height:4px;opacity:.9}
 
+
+/* Real 3D chest artwork from an online game asset */
+.case-card .gift-img img{width:112px;height:104px;object-fit:contain;display:block;filter:drop-shadow(0 9px 7px rgba(0,0,0,.38));transform:translateY(-2px);}
+.case-card.tier-farm .gift-img img,.case-card.tier-starter .gift-img img{filter:hue-rotate(-18deg) saturate(.78) drop-shadow(0 9px 7px rgba(0,0,0,.38));}
+.case-card.tier-mini .gift-img img,.case-card.tier-bronze .gift-img img{filter:hue-rotate(-8deg) saturate(1.05) drop-shadow(0 9px 7px rgba(0,0,0,.38));}
+.case-card.tier-silver .gift-img img{filter:grayscale(.42) brightness(1.16) saturate(.62) drop-shadow(0 9px 7px rgba(0,0,0,.38));}
+.case-card.tier-gold .gift-img img{filter:sepia(.42) saturate(1.7) hue-rotate(2deg) drop-shadow(0 9px 7px rgba(0,0,0,.38));}
+.case-card.tier-legend .gift-img img,.case-card.tier-cosmic .gift-img img{filter:hue-rotate(38deg) saturate(1.35) drop-shadow(0 9px 7px rgba(0,0,0,.38));}
+.case-card.tier-ruby .gift-img img{filter:hue-rotate(305deg) saturate(1.65) drop-shadow(0 9px 7px rgba(0,0,0,.38));}
+.case-card.tier-diamond .gift-img img{filter:hue-rotate(155deg) saturate(.95) brightness(1.12) drop-shadow(0 9px 7px rgba(0,0,0,.38));}
+.case-card.tier-nft .gift-img img{filter:hue-rotate(12deg) saturate(1.4) brightness(1.08) drop-shadow(0 9px 7px rgba(0,0,0,.38));}
+.case-card.tier-free .gift-img img,.case-card.tier-lock .gift-img img{filter:grayscale(.25) saturate(.75) drop-shadow(0 9px 7px rgba(0,0,0,.38));}
+
 /* Upgrade station */
 #page-upgrade>.section-title{color:#d9d0ff}
 .upgrade-box{position:relative;overflow:hidden;padding:18px 14px 20px!important;background:
@@ -1549,7 +1562,8 @@ const chest=(a,b)=>`<svg class="ic case-chest-art" viewBox="0 0 96 96" xmlns="ht
   <path d="M34 11l2-5m26 5-2-5" stroke="#fff" stroke-width="2" opacity=".55" stroke-linecap="round"/>
 </svg>`;
 function imageAsset(url, alt) { return '<img src="' + url + '" alt="' + alt + '" loading="lazy" decoding="async">'; }
-const casePhoto = chest('#813d22','#ef8645');
+const CHEST_ART = 'https://dunb17ur4ymx4.cloudfront.net/packages/images/7db02202c553ac1308c93406bfc6508d325462c2.png';
+const casePhoto = imageAsset(CHEST_ART, '3D сундук кейса');
 // Свои иллюстрации в стиле TG-стикеров. Реальные картинки подарков подставляются в GIFTS[key].img как <img src=...> (см. getAvailableGifts).
 const IC={
 bear:S('<circle cx="17" cy="19" r="8" fill="#b96a1f"/><circle cx="47" cy="19" r="8" fill="#b96a1f"/><circle cx="32" cy="36" r="21" fill="#e0902e"/><ellipse cx="32" cy="43" rx="9" ry="7" fill="#ffd08a"/><circle cx="24" cy="31" r="2.5" fill="#0a0c12"/><circle cx="40" cy="31" r="2.5" fill="#0a0c12"/><ellipse cx="32" cy="40" rx="3" ry="2" fill="#0a0c12"/>'),
@@ -2018,7 +2032,7 @@ function renderCases() {
     return `
       <div class="case-card tier-${c.id}" onclick="openCase('${c.id}')">
         ${tag}
-        <div class="gift-img">${c.icon}</div>
+        <div class="gift-img">${imageAsset(CHEST_ART, "Сундук " + c.name)}</div>
         <div class="name">${c.name}</div>
         <div class="price">★ ${fmt(c.price)}</div>
         ${nftHint}

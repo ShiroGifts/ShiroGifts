@@ -130,6 +130,26 @@ async function migrate() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
     CREATE INDEX IF NOT EXISTS upgrade_events_user_idx ON upgrade_events(telegram_id, created_at DESC);
+    ALTER TABLE upgrade_events ADD COLUMN IF NOT EXISTS double_reward BOOLEAN NOT NULL DEFAULT FALSE;
+    ALTER TABLE upgrade_events ADD COLUMN IF NOT EXISTS second_created_inventory_id BIGINT REFERENCES inventory(id);
+
+    CREATE TABLE IF NOT EXISTS mines_games (
+      id UUID PRIMARY KEY,
+      telegram_id BIGINT NOT NULL REFERENCES users(telegram_id),
+      bet_stars BIGINT NOT NULL CHECK (bet_stars BETWEEN 1 AND 10000),
+      mine_count SMALLINT NOT NULL CHECK (mine_count BETWEEN 3 AND 10),
+      mine_positions SMALLINT[] NOT NULL,
+      picked_positions SMALLINT[] NOT NULL DEFAULT '{}',
+      server_seed TEXT NOT NULL,
+      seed_hash TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','lost','cashed_out')),
+      multiplier NUMERIC(12,6) NOT NULL DEFAULT 1,
+      payout_stars BIGINT NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      ended_at TIMESTAMPTZ
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS mines_games_one_active_per_user ON mines_games(telegram_id) WHERE status='active';
+    CREATE INDEX IF NOT EXISTS mines_games_user_created_idx ON mines_games(telegram_id, created_at DESC);
 
 
     ALTER TABLE crash_rounds ADD COLUMN IF NOT EXISTS starts_at TIMESTAMPTZ;

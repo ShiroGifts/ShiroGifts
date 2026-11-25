@@ -128,7 +128,7 @@ router.post('/admin/settings/gift-notifications', async (req, res) => {
 router.post('/admin/referrals/grant', async (req, res) => {
   if (!isAdmin(req)) return res.status(403).json({ ok: false, error: 'admin_only' });
   const targetId = String(req.body && req.body.telegramId || '').trim();
-  if (!/^\\d{5,20}$/.test(targetId)) return res.status(400).json({ ok: false, error: 'invalid_telegram_id' });
+  if (!/^\d{5,20}$/.test(targetId)) return res.status(400).json({ ok: false, error: 'invalid_telegram_id' });
   const client = await pool.connect();
   try {
     await client.query('BEGIN');

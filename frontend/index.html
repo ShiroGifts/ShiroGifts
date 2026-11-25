@@ -1609,15 +1609,31 @@ function playUiSound(kind) {
     audioContext = audioContext || new Ctx();
     if (audioContext.state === 'suspended') audioContext.resume();
     const now = audioContext.currentTime;
-    const notes = kind === 'win' ? [660, 880, 1100] : kind === 'spin' ? [190,245,310,390,470] : [520];
+    if (kind === 'spin') {
+      // A soft roulette rattle that gradually slows with the spinning reels.
+      let at = 0.04;
+      for (let i = 0; i < 23; i++) {
+        const osc = audioContext.createOscillator(), gain = audioContext.createGain();
+        const when = now + at, strength = 0.018 + (i / 23) * 0.012;
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(1150 + (i % 3) * 170, when);
+        gain.gain.setValueAtTime(0.0001, when);
+        gain.gain.exponentialRampToValueAtTime(strength, when + 0.004);
+        gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.035);
+        osc.connect(gain); gain.connect(audioContext.destination);
+        osc.start(when); osc.stop(when + 0.04);
+        at += 0.075 + (i / 22) * 0.105;
+      }
+      return;
+    }
+    const notes = kind === 'win' ? [660, 880, 1100] : [520];
     notes.forEach((frequency, index) => {
-      const osc = audioContext.createOscillator();
-      const gain = audioContext.createGain();
-      osc.type = kind === 'spin' ? 'sawtooth' : 'sine';
+      const osc = audioContext.createOscillator(), gain = audioContext.createGain();
+      osc.type = 'sine';
       osc.frequency.setValueAtTime(frequency, now + index * 0.09);
       gain.gain.setValueAtTime(0.0001, now + index * 0.09);
       gain.gain.exponentialRampToValueAtTime(kind === 'win' ? 0.08 : 0.035, now + index * 0.09 + 0.015);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.09 + (kind === 'spin' ? 0.18 : 0.24));
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.09 + 0.24);
       osc.connect(gain); gain.connect(audioContext.destination);
       osc.start(now + index * 0.09); osc.stop(now + index * 0.09 + 0.26);
     });

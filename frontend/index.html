@@ -3295,7 +3295,7 @@ function crashHeading(t) { const x = 30 + 2.4 * Math.max(0,t); const y = -15 * M
 const crashRocketImage = new Image();
 crashRocketImage.crossOrigin = 'anonymous';
 crashRocketImage.decoding = 'async';
-crashRocketImage.src = 'https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/gift_5170564780938756245.webp';
+crashRocketImage.src = '/images/crash-space-rocket.svg';
 crashRocketImage.onload = () => { if (document.getElementById('crashCanvas')) drawCrash(); };
 function drawRocket(ctx,u,flame){
   ctx.save();

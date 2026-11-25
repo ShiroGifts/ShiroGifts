@@ -1515,6 +1515,14 @@ body:has(#page-crash.active){overflow-y:auto!important;overflow-x:hidden!importa
 #page-crash .crash-feed{flex:0 0 76px!important;height:76px!important;min-height:76px!important;max-height:76px!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;scrollbar-width:thin}
 #page-crash .crash-feed .feed-row{flex:0 0 auto!important}
 @media(max-height:740px){#page-crash .crash-feed{flex-basis:64px!important;height:64px!important;min-height:64px!important;max-height:64px!important}}
+#page-crash .crash-gift-flight{left:8px!important;right:8px!important;bottom:8px!important;width:auto!important;max-width:calc(100% - 16px)!important;box-sizing:border-box!important;display:none;align-items:center!important;justify-content:flex-start!important;gap:8px!important;padding:5px 8px!important;white-space:normal!important;overflow:hidden!important;font-size:10px!important;line-height:1.15!important}
+#page-crash .crash-flight-thumb{width:30px!important;height:30px!important;flex:0 0 30px!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important}
+#page-crash .crash-flight-thumb img{display:block!important;width:auto!important;height:auto!important;max-width:28px!important;max-height:28px!important;object-fit:contain!important;filter:none!important}
+#page-crash .crash-flight-copy{min-width:0!important;display:flex!important;flex-direction:column!important;gap:2px!important;overflow:hidden!important}
+#page-crash .crash-flight-copy b,#page-crash .crash-flight-copy small{display:block!important;max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+#page-crash .crash-flight-copy b{font-size:10px!important}#page-crash .crash-flight-copy small{font-size:9px!important;opacity:.75}
+#page-crash .crash-feed-title:nth-of-type(2){margin:4px 2px 3px!important;flex:0 0 auto!important}
+#page-crash .crash-feed{align-self:stretch!important;contain:strict!important}
 </style>
 </head>
 <body>
@@ -3224,10 +3232,8 @@ function updateCrashGiftProgress() {
   if (!crashGiftFlightItem || !myBet || myBet.cashed !== null || round.phase !== "flying") { el.style.display = "none"; return; }
   const base = Number(crashGiftFlightItem.price) || 0, ceiling = base * crashMult;
   const candidates = Object.entries(GIFTS).filter(([key,g]) => key !== "random_nft" && Number(g.price) > base && Number(g.price) <= ceiling).sort((a,b)=>Number(b[1].price)-Number(a[1].price));
-  const next = candidates[0]; const gift = next ? next[1] : (GIFTS[crashGiftFlightItem.gift] || {});
-  const art = gift.img || crashGiftFlightItem.emoji || "🎁";
-  const art = gift.img || crashGiftFlightItem.emoji || "🎁";
-  el.innerHTML = `<span class="crash-flight-thumb">${art}</span><span class="crash-flight-copy"><b>${next ? "Апгрейд" : "Ставка"}: ${gift.name || crashGiftFlightItem.name || "Подарок"}</b><small>${crashMult.toFixed(2)}x</small></span>`;
+  const next = candidates[0]; const selected = GIFTS[crashGiftFlightItem.gift] || {}; const art = selected.img || "🎁"; const src = String(art).match(/src=["']([^"']+)/);
+  el.innerHTML = `<span class="crash-flight-thumb">${src ? '<img src="'+src[1]+'" alt="">' : art}</span><span class="crash-flight-copy"><b>${selected.name || crashGiftFlightItem.name || "Подарок"}</b><small>${next ? "Следующий апгрейд: " + (next[1].name || "Подарок") : "Пока без апгрейда"} · ${crashMult.toFixed(2)}x</small></span>`;
   el.style.display = "flex";
 }
 
@@ -3265,12 +3271,14 @@ const crashRocketImage = new Image();
 crashRocketImage.decoding = 'async';
 crashRocketImage.src = 'https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/gift_5170564780938756245.webp';
 crashRocketImage.onload = () => { if (document.getElementById('page-crash')?.classList.contains('active')) drawCrash(); };
+const crashRocketImage = new Image();
+crashRocketImage.decoding = 'async';
+crashRocketImage.src = (String(GIFTS.rocket.img).match(/src=["']([^"']+)/)||[])[1] || '';
+crashRocketImage.onload = () => { if (document.getElementById('page-crash')?.classList.contains('active')) drawCrash(); };
 function drawRocket(ctx,u,flame){
-  ctx.save();
-  if(flame){const fire=ctx.createRadialGradient(0,.82*u,0,0,.92*u,.58*u);fire.addColorStop(0,'rgba(255,255,238,.95)');fire.addColorStop(.22,'rgba(255,211,102,.9)');fire.addColorStop(.58,'rgba(255,105,51,.55)');fire.addColorStop(1,'rgba(65,139,255,0)');ctx.fillStyle=fire;ctx.beginPath();ctx.ellipse(0,.9*u,.28*u,.72*u,0,0,Math.PI*2);ctx.fill();}
-  if(crashRocketImage.complete&&crashRocketImage.naturalWidth){const ratio=crashRocketImage.naturalWidth/crashRocketImage.naturalHeight;const h=1.85*u,w=h*ratio;ctx.drawImage(crashRocketImage,-w/2,-h/2,w,h);}
-  else{ctx.fillStyle='#d9f2ff';ctx.strokeStyle='#315a9a';ctx.lineWidth=.1*u;ctx.beginPath();ctx.moveTo(0,-.95*u);ctx.quadraticCurveTo(.62*u,-.35*u,.34*u,.58*u);ctx.lineTo(-.34*u,.58*u);ctx.quadraticCurveTo(-.62*u,-.35*u,0,-.95*u);ctx.fill();ctx.stroke();}
-  ctx.restore();
+  if(crashRocketImage.complete && crashRocketImage.naturalWidth){const ratio=crashRocketImage.naturalWidth/crashRocketImage.naturalHeight;const h=2.35*u,w=h*ratio;ctx.drawImage(crashRocketImage,-w/2,-h/2,w,h);}
+  else{ctx.fillStyle='#eaf4ff';ctx.strokeStyle='#5679ad';ctx.lineWidth=.07*u;ctx.beginPath();ctx.moveTo(0,-1.1*u);ctx.quadraticCurveTo(.7*u,-.35*u,.36*u,.62*u);ctx.lineTo(-.36*u,.62*u);ctx.quadraticCurveTo(-.7*u,-.35*u,0,-1.1*u);ctx.fill();ctx.stroke();}
+  if(flame){const fire=ctx.createRadialGradient(0,.78*u,0,0,.9*u,.55*u);fire.addColorStop(0,'rgba(255,255,230,.9)');fire.addColorStop(.35,'rgba(255,180,65,.75)');fire.addColorStop(1,'rgba(255,90,40,0)');ctx.fillStyle=fire;ctx.beginPath();ctx.ellipse(0,.88*u,.22*u,.55*u,0,0,Math.PI*2);ctx.fill();}
 }
 function drawCrash() {
   const c = document.getElementById('crashCanvas');

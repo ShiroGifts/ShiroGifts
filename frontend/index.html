@@ -1312,14 +1312,12 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
 #page-cases{position:relative;isolation:isolate;background:radial-gradient(ellipse at 50% 0%,rgba(63,119,211,.22),transparent 48%),linear-gradient(180deg,rgba(14,29,55,.25),rgba(8,16,31,.08))}
 #page-cases:before{content:"";position:absolute;z-index:-1;pointer-events:none;inset:-18px -18px 0;opacity:.75;background:radial-gradient(circle at 12% 12%,rgba(111,174,255,.22) 0 1px,transparent 2px),radial-gradient(circle at 82% 21%,rgba(255,215,130,.2) 0 1px,transparent 2px),radial-gradient(circle at 72% 62%,rgba(111,174,255,.16) 0 1px,transparent 2px),radial-gradient(ellipse at 50% 5%,rgba(54,106,190,.14),transparent 68%);background-size:73px 81px,91px 97px,67px 89px,100% 100%}
 #page-cases>.section-title,#page-cases>.cases-grid{position:relative;z-index:1}
-.pepe-seat-anchor{position:relative!important}
-.pepe-easter-egg{position:absolute;z-index:8;right:9px;top:-20px;width:38px;height:38px;object-fit:contain;pointer-events:none;filter:drop-shadow(0 4px 4px #0009);transform:rotate(5deg);animation:pepePop .35s cubic-bezier(.2,.8,.2,1)}
-.pepe-easter-egg:after{content:""}
-.pepe-seat-anchor.pepe-bottom .pepe-easter-egg{top:auto;bottom:-8px;right:8px;transform:rotate(-7deg)}
-@keyframes pepePop{from{opacity:0;transform:translateY(7px) scale(.7)}to{opacity:1;transform:translateY(0) scale(1)}}
-.pepe-seat{position:absolute;z-index:8;right:7px;bottom:5px;width:34px;height:5px;border-radius:5px;background:linear-gradient(180deg,#c89b62,#704a2d);box-shadow:0 2px 4px #0009;pointer-events:none}
-.pepe-seat .pepe-easter-egg{right:0;bottom:3px;top:auto;width:34px;height:34px;object-fit:contain;transform:rotate(4deg);filter:drop-shadow(0 3px 3px #0009)}
-.case-card .gift-img .pepe-seat{right:2px;bottom:1px}
+.balance{position:relative;overflow:visible}
+.hero-panel,.profile-hero,.upgrade-box{position:relative;overflow:visible}
+.pepe-easter-egg{position:absolute;z-index:30;object-fit:contain;pointer-events:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55));animation:pepePop .28s ease-out}
+.pepe-easter-egg.pepe-on-balance{width:25px;height:25px;right:29px;top:-21px;transform:rotate(-5deg)}
+.pepe-easter-egg.pepe-on-panel{width:28px;height:28px;right:10px;top:-19px;transform:rotate(5deg)}
+@keyframes pepePop{from{opacity:0;transform:translateY(5px) scale(.82)}to{opacity:1;transform:translateY(0) scale(1)}}
 </style>
 </head>
 <body>
@@ -1431,8 +1429,8 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
     <button class="btn btn-sell" style="width:100%" onclick="copyTelegramId()">Скопировать Telegram ID</button>
   </div>
   <div class="promo-panel promo-admin" id="promoAdminPanel" style="display:none">
-    <div class="promo-heading">Уведомления о подарках</div>
-    <div class="promo-description">Сообщать владельцу в Telegram, когда игрок получает новый подарок, выигрывает его или отправляет заявку на вывод.</div>
+    <div class="promo-heading">Сообщения бота в Telegram</div>
+    <div class="promo-description">Включи или отключи сообщения бота владельцу о новых подарках игроков, выигрышах и заявках на вывод.</div>
     <label class="gift-notify-setting"><input id="giftNotifyToggle" type="checkbox" onchange="saveGiftNotificationSetting(this.checked)"><span class="gift-notify-switch"></span><span><b>Уведомления включены</b><small id="giftNotifyStatus">Загружаю настройку…</small></span></label>
     <div class="promo-status" id="giftNotifyResult" aria-live="polite"></div>
     <div class="promo-heading" style="margin-top:22px">Создать промокод</div>
@@ -2076,42 +2074,31 @@ async function claimDailyNameReward() {
 }
 
 function refreshPepeEasterEggs(pageName) {
-  document.querySelectorAll('.pepe-easter-egg,.pepe-seat').forEach(node => node.remove());
-  const active = document.getElementById('page-' + pageName);
-  if (!active || Math.random() > 0.72) return;
-  const selectors = {
-    cases: '.case-card .gift-img',
-    crash: '.crash-box',
-    upgrade: '.upgrade-box',
-    inventory: '.profile-hero,.ref-box,.profile-reward-panel',
-    promo: '.promo-panel'
-  };
-  const candidates = Array.from(active.querySelectorAll(selectors[pageName] || '.promo-panel'));
+  document.querySelectorAll('.pepe-easter-egg').forEach(node => node.remove());
+  // One tiny, uncommon easter egg at a time. It sits on a panel edge and never intercepts taps.
+  if (Math.random() > 0.14) return;
+  const selectors = [
+    ['.balance', 'balance'],
+    ['#page-cases .hero-panel', 'panel'],
+    ['#page-inventory .profile-hero', 'panel'],
+    ['#page-upgrade .upgrade-box', 'panel']
+  ];
+  const candidates = selectors
+    .map(([selector, kind]) => ({ anchor: document.querySelector(selector), kind }))
+    .filter(item => item.anchor && item.anchor.getClientRects().length);
   if (!candidates.length) return;
-  const chosen = [];
-  const count = Math.random() < 0.22 && candidates.length > 1 ? 2 : 1;
-  while (chosen.length < count && candidates.length) {
-    const index = Math.floor(Math.random() * candidates.length);
-    chosen.push(candidates.splice(index, 1)[0]);
-  }
+  const selected = candidates[Math.floor(Math.random() * candidates.length)];
   const match = String(GIFTS?.plush_pepe?.img || '').match(/src=["']([^"']+)["']/i);
   if (!match) return;
-  chosen.forEach((anchor, index) => {
-    anchor.classList.add('pepe-seat-anchor');
-    const seat = document.createElement('span');
-    seat.className = 'pepe-seat';
-    const pepe = document.createElement('img');
-    pepe.className = 'pepe-easter-egg';
-    pepe.src = match[1];
-    pepe.alt = 'Плюш Пепе';
-    pepe.loading = 'lazy';
-    pepe.onerror = () => { seat.remove(); pepe.remove(); };
-    seat.appendChild(pepe);
-    anchor.appendChild(seat);
-    if (index && Math.random() > .5) anchor.classList.add('pepe-bottom');
-  });
+  const pepe = document.createElement('img');
+  pepe.className = 'pepe-easter-egg pepe-on-' + selected.kind;
+  pepe.src = match[1];
+  pepe.alt = '';
+  pepe.setAttribute('aria-hidden', 'true');
+  pepe.loading = 'lazy';
+  pepe.onerror = () => pepe.remove();
+  selected.anchor.appendChild(pepe);
 }
-
 function switchPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
@@ -3053,7 +3040,7 @@ async function loadGiftNotificationSetting() {
   try {
     const data = await apiRequest('/api/admin/settings/gift-notifications');
     toggle.checked = data.enabled !== false;
-    if (status) status.textContent = toggle.checked ? 'Новые подарки будут приходить владельцу.' : 'Оповещения о новых подарках отключены.';
+    if (status) status.textContent = toggle.checked ? 'Бот будет присылать сообщения в Telegram о событиях с подарками.' : 'Сообщения бота о подарках отключены.';
   } catch (error) {
     if (status) status.textContent = 'Не удалось загрузить настройку.';
   }

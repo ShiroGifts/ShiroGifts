@@ -1367,6 +1367,37 @@ body.upgrade-picker-open{overflow:hidden!important;touch-action:none!important;}
 #upgradePickerBackdrop .picker-item{min-width:0;max-width:100%;overflow:hidden;overflow-wrap:anywhere}
 @media(max-width:360px){#upgradePickerBackdrop .upgrade-picker-sheet{padding-left:10px;padding-right:10px}.upgrade-chance-control{padding:10px}.sell-all-bar{font-size:11px}}
 
+/* Give the upgrade workbench enough height for the wheel and its action button. */
+#page-upgrade .upgrade-box{
+  height:calc(100dvh - 122px)!important;
+  min-height:450px!important;
+  max-height:640px!important;
+  padding-bottom:16px!important;
+  overflow:visible!important;
+}
+#page-upgrade #upgradeBtn{
+  display:block!important;
+  align-self:stretch!important;
+  width:100%!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  flex-shrink:0!important;
+}
+@media(max-height:700px){
+  #page-upgrade .upgrade-box{
+    height:calc(100dvh - 112px)!important;
+    min-height:0!important;
+    max-height:none!important;
+    padding-bottom:12px!important;
+  }
+}
+@media(max-height:560px){
+  #page-upgrade .upgrade-box{
+    height:auto!important;
+    min-height:calc(100dvh - 105px)!important;
+  }
+}
+
 /* Spin state never changes the button's layout or viewport position. */
 body.upgrade-spinning #page-upgrade #upgradeBtn{
   position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;

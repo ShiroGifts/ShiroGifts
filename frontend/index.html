@@ -3307,14 +3307,16 @@ crashRocketImage.src = '/images/crash-space-rocket.svg?v=spacebot-2_504';
 crashRocketImage.onload = () => { if (document.getElementById('crashCanvas')) drawCrash(); };
 function drawRocket(ctx,u,flame){
   ctx.save();
-  if(flame){
-    const fire=ctx.createRadialGradient(0,.82*u,0,0,.92*u,.52*u);
-    fire.addColorStop(0,'rgba(255,255,235,.95)');fire.addColorStop(.28,'rgba(255,194,76,.8)');fire.addColorStop(1,'rgba(255,91,45,0)');
-    ctx.fillStyle=fire;ctx.beginPath();ctx.ellipse(0,.92*u,.23*u,.65*u,0,0,Math.PI*2);ctx.fill();
-  }
   if(crashRocketImage.complete && crashRocketImage.naturalWidth){
     const h=1.85*u,w=h*crashRocketImage.naturalWidth/crashRocketImage.naturalHeight;
     ctx.drawImage(crashRocketImage,-w/2,-h/2,w,h);
+    // Small hand-drawn panel seams and fasteners add definition without a glossy 3D effect.
+    ctx.save();
+    ctx.strokeStyle='rgba(16,25,38,.62)';ctx.lineWidth=Math.max(.7,u*.035);ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(-w*.16,-h*.19);ctx.lineTo(w*.16,-h*.19);ctx.moveTo(-w*.18,h*.12);ctx.lineTo(w*.18,h*.12);ctx.stroke();
+    ctx.fillStyle='rgba(205,224,238,.78)';
+    [[-.17,-.12],[.17,-.12],[-.17,.16],[.17,.16]].forEach(([x,y])=>{ctx.beginPath();ctx.arc(x*w,y*h,Math.max(.7,u*.035),0,Math.PI*2);ctx.fill();});
+    ctx.restore();
   }
   ctx.restore();
 }
@@ -3353,11 +3355,26 @@ function drawCrash() {
   // частицы (выхлоп/взрыв) в экранных координатах
   crashParticles.forEach(p => { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * k, 0, 7); ctx.fill(); });
   ctx.globalAlpha = 1;
-  // WebGL fallback: keep the rocket visible and correctly aligned if 3D is unavailable.
-  if (!crash3D) {
-    const th = crashHeading(t);
-    ctx.save(); ctx.translate(cx,cy); ctx.rotate(th + 0.94);
-    drawRocket(ctx,23*k,crashState==='flying'); ctx.restore();
+  // Rocket is hidden after a crash. Before launch it approaches the center on its own
+  // timer, independent of crashMult; the actual round multiplier starts only on "flying".
+  if (!crash3D && !crashed) {
+    const rocketSize = 29*k;
+    if (round.phase === 'flying') {
+      const th = crashHeading(t);
+      const gentleRoll = Math.sin(t*3.1)*0.105;
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate(th + 0.94 + gentleRoll);
+      drawRocket(ctx,rocketSize,true); ctx.restore();
+    } else {
+      const startAt = Number(round.startsAt) || serverNow();
+      const duration = 1750;
+      const progress = Math.max(0,Math.min(1,1-(startAt-serverNow())/duration));
+      const eased = progress*progress*(3-2*progress);
+      const sx = 28*k, sy = H-30*k;
+      const rx = sx+(cx-sx)*eased, ry = sy+(cy-sy)*eased;
+      const approach = Math.atan2(cy-sy,cx-sx);
+      ctx.save(); ctx.translate(rx,ry); ctx.rotate(approach+0.94);
+      drawRocket(ctx,rocketSize,false); ctx.restore();
+    }
   }
 }
 

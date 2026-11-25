@@ -28,6 +28,7 @@ app.use('/api', upgradeRoutes);
 app.use('/api', inventoryRoutes);
 app.use('/api', subscriptionRoutes);
 app.use('/api', crashRoutes);
+app.use('/api', (_req, res) => res.status(404).json({ ok: false, error: 'api_route_not_found' }));
 
 app.use(express.static(path.join(__dirname, '../../frontend')));
 app.get('*', (_req, res) => res.sendFile(path.join(__dirname, '../../frontend/index.html')));

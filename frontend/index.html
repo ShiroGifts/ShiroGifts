@@ -2030,7 +2030,7 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
 
 
 /* Mines currency silhouettes and one-position action control */
-.mines-nav-icon svg{display:block;width:22px;height:22px}
+.mines-nav-icon svg{display:block;width:18px;height:18px}
 .mines-currency-icon{display:block;width:32px;height:32px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.2))}
 .mines-currency-icon.ton{width:34px;height:34px}
 .mines-cell.safe-open .mines-currency-icon{width:34px;height:34px}
@@ -3703,7 +3703,7 @@ function renderUpgradeWheelSecret(chance,available){
   if(!seg||!marker||!wheel)return;
   const blueWidth=chance*360;
   if(!available||blueWidth<=0){seg.style.background=`conic-gradient(var(--accent) 0deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;marker.style.display='none';return;}
-  const secretWidth=blueWidth*0.08,secretStart=(blueWidth-secretWidth)/2,secretEnd=secretStart+secretWidth;
+  const secretWidth=blueWidth*0.008,secretStart=(blueWidth-secretWidth)/2,secretEnd=secretStart+secretWidth;
   seg.style.background=`conic-gradient(var(--accent) 0deg ${secretStart}deg,#f6c94b ${secretStart}deg ${secretEnd}deg,var(--accent) ${secretEnd}deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;
   const angle=(secretStart+secretEnd)/2*Math.PI/180,radius=Math.max(16,wheel.clientWidth/2-19);
   marker.style.left=`calc(50% + ${Math.sin(angle)*radius}px)`;
@@ -3758,8 +3758,8 @@ async function doUpgrade() {
       const demoChance = boostEnabled
         ? (Number.isFinite(configured) ? Math.max(0,Math.min(100,configured))/100 : 0.30)
         : actualChance;
-      const demoSuccess=Math.random()<demoChance,x2AppearanceChance=Math.min(0.005,0.00005/actualChance),x2Available=Math.random()<x2AppearanceChance,doubleReward=demoSuccess&&x2Available&&Math.random()<0.08;
-      result = { chance:actualChance,success:demoSuccess,doubleReward,x2Available,x2Chance:actualChance*x2AppearanceChance*0.08,demo:true };
+      const demoSuccess=Math.random()<demoChance,x2AppearanceChance=Math.min(0.05,0.0005/actualChance),x2Available=Math.random()<x2AppearanceChance,doubleReward=demoSuccess&&x2Available&&Math.random()<0.008;
+      result = { chance:actualChance,success:demoSuccess,doubleReward,x2Available,x2Chance:actualChance*x2AppearanceChance*0.008,demo:true };
     } else {
       result = await apiRequest('/api/upgrade', {
         method:'POST',

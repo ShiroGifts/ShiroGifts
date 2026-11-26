@@ -418,7 +418,7 @@
   .roulette-multi .roulette-item{flex:0 0 120px;font-size:10px}
   .roulette-multi .roulette-item .gift-img{font-size:27px;height:32px;margin-bottom:2px}
   .roulette-multi.is-finished{display:none}
-  .multi-rewards{display:grid;grid-template-columns:repeat(var(--reward-count,1),minmax(0,1fr));gap:6px;margin:0 auto 14px;width:100%;max-width:440px;max-height:none;overflow:visible;align-items:stretch}
+  .multi-rewards{display:grid;grid-template-columns:repeat(var(--reward-count,1),minmax(0,1fr));gap:6px;margin:0 auto 14px;width:100%;max-width:440px;max-height:none;overflow:visible;align-items:stretch}.multi-rewards.has-many{grid-template-columns:repeat(3,minmax(0,1fr))}.multi-rewards.has-four{grid-template-columns:repeat(2,minmax(0,1fr))}.multi-rewards.has-many .multi-reward{padding:10px 6px}.multi-rewards.has-many .multi-reward strong{font-size:10px}.multi-rewards.has-many .multi-reward small{font-size:9px}@media(max-width:380px){.multi-rewards.has-many{grid-template-columns:repeat(2,minmax(0,1fr))}}
   .multi-reward{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:9px 4px;border-radius:12px;background:linear-gradient(150deg,#26385b,#17243d);border:1px solid rgba(160,180,225,.24);text-align:center;overflow:hidden}
   .multi-reward .big-img{font-size:clamp(20px,6vw,34px);margin:0;height:clamp(30px,8vw,44px);display:flex;align-items:center;justify-content:center}
   .multi-reward .big-img img{max-width:100%;max-height:40px;object-fit:contain}
@@ -3478,15 +3478,14 @@ function showCaseOverlay(c, winnerKeys, free = false, demo = false, skipAnimatio
     haptic('success');playUiSound('win');
     const rewardGrid=document.getElementById('multiRewards');
     rewardGrid.style.setProperty('--reward-count',winners.length);
-    rewardGrid.classList.toggle('has-many',winners.length>3);
+    rewardGrid.classList.toggle('has-many',winners.length>3);rewardGrid.classList.toggle('has-four',winners.length===4);
     rewardGrid.innerHTML=winners.map(key=>{
       const item=dropMeta(key);if(demo&&item.type==='gift')addDemoInventoryGift(key);
       const valueText=item.type==='gift'?money(item.price||0):item.type==='stars'?'+'+money(item.amount):'Пусто';
       return '<div class="multi-reward"><div class="big-img">'+item.img+'</div><strong>'+item.name+'</strong><small>'+valueText+'</small></div>';
     }).join('');
     const sellBtn=document.getElementById('caseSellRewardsBtn');
-    const sellTotal=winners.reduce((sum,key)=>{const item=dropMeta(key);return sum+(item.type==='gift'?(Number(item.price)||0):0);},0);
-    if(sellBtn){sellBtn.style.display=caseRewardInventoryIds.length&&!demo?'':'none';sellBtn.disabled=false;sellBtn.textContent='Продать за '+money(sellTotal);}
+    if(sellBtn){sellBtn.style.display=caseRewardInventoryIds.length&&!demo?'':'none';sellBtn.disabled=false;sellBtn.textContent='Проверяем цену продажи…';if(caseRewardInventoryIds.length&&!demo){apiRequest('/api/inventory/sell-case-rewards-preview',{method:'POST',body:JSON.stringify({inventoryIds:caseRewardInventoryIds})}).then(preview=>{if(document.getElementById('caseOverlay').classList.contains('show')&&caseRewardInventoryIds.length){sellBtn.textContent='Продать '+preview.itemsCount+' подарка за '+money(preview.payout);}}).catch(()=>{sellBtn.textContent='Продать подарки';});}}
     multi.classList.add('is-finished');result.classList.add('show');if(!demo)loadAccount();
   };
   if(skipAnimation){

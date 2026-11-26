@@ -9,6 +9,12 @@ const router = express.Router();
 router.use(requireTelegramUser);
 router.use(requireAgeConfirmed);
 
+router.get('/cases/nft/prices', async (_req, res) => {
+  const prices = Object.fromEntries(Object.entries(GIFT_DATA)
+    .filter(([key, gift]) => key !== 'random_nft' && String(gift.rarity || '').toUpperCase().includes('NFT'))
+    .map(([key, gift]) => [key, Number(gift.value) || 0]));
+  res.json({ ok: true, prices });
+});
 
 async function isSubscribedToChannel(telegramId) {
   const token = process.env.TELEGRAM_BOT_TOKEN;

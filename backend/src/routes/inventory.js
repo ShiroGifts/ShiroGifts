@@ -23,7 +23,7 @@ router.post('/inventory/sell', async (req, res) => {
       [id, telegramId]
     );
     if (!item.rowCount) { await client.query('ROLLBACK'); return res.status(404).json({ ok: false, error: 'inventory_item_not_found' }); }
-    const payout = Math.floor(Number(item.rows[0].value_stars) * 0.7);
+    const payout = Number(item.rows[0].value_stars);
     if (!Number.isSafeInteger(payout) || payout < 1) { await client.query('ROLLBACK'); return res.status(400).json({ ok: false, error: 'item_not_sellable' }); }
     await client.query("UPDATE inventory SET status = 'sold' WHERE id = $1", [id]);
     await client.query(
@@ -60,7 +60,7 @@ router.post('/inventory/sell-case-rewards', async (req, res) => {
       await client.query('ROLLBACK');
       return res.status(404).json({ ok:false, error:'case_reward_not_sellable' });
     }
-    const payout = items.rows.reduce((sum, item) => sum + Math.floor(Number(item.value_stars) * 0.7), 0);
+    const payout = items.rows.reduce((sum, item) => sum + Number(item.value_stars), 0);
     if (!Number.isSafeInteger(payout) || payout < 1) {
       await client.query('ROLLBACK');
       return res.status(400).json({ ok:false, error:'case_reward_not_sellable' });
@@ -101,7 +101,7 @@ router.post('/inventory/sell-all', async (req, res) => {
     let payout = 0;
     for (const item of items.rows) {
       const value = Number(item.value_stars);
-      const itemPayout = Math.floor(value * 0.7);
+      const itemPayout = value;
       if (!Number.isSafeInteger(value) || value < 1 || !Number.isSafeInteger(itemPayout) || itemPayout < 1) {
         throw new Error('invalid_inventory_value');
       }

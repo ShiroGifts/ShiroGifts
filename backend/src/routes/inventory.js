@@ -41,6 +41,28 @@ router.post('/inventory/sell', async (req, res) => {
 });
 
 
+router.post('/inventory/sell-case-rewards-preview', async (req, res) => {
+  const inventoryIds = req.body && req.body.inventoryIds;
+  if (!Array.isArray(inventoryIds) || inventoryIds.length < 1 || inventoryIds.length > 5 ||
+      inventoryIds.some(id => !/^[0-9]+$/.test(String(id))) ||
+      new Set(inventoryIds.map(String)).size !== inventoryIds.length) {
+    return res.status(400).json({ ok:false, error:'invalid_inventory_ids' });
+  }
+  try {
+    const items = await pool.query(
+      "SELECT id, value_stars FROM inventory WHERE id = ANY($1::bigint[]) AND telegram_id = $2 AND status = 'owned' ORDER BY id",
+      [inventoryIds.map(String), String(req.telegramUser.id)]
+    );
+    if (items.rowCount !== inventoryIds.length) return res.status(404).json({ ok:false, error:'case_reward_not_sellable' });
+    const payout = items.rows.reduce((sum, item) => sum + Number(item.value_stars), 0);
+    if (!Number.isSafeInteger(payout) || payout < 1) return res.status(400).json({ ok:false, error:'case_reward_not_sellable' });
+    return res.json({ ok:true, itemsCount:items.rowCount, payout });
+  } catch (error) {
+    console.error('[CASE REWARD PREVIEW ERROR]', error.code || error.message);
+    return res.status(500).json({ ok:false, error:'case_reward_preview_failed' });
+  }
+});
+
 router.post('/inventory/sell-case-rewards', async (req, res) => {
   const inventoryIds = req.body && req.body.inventoryIds;
   if (!Array.isArray(inventoryIds) || inventoryIds.length < 1 || inventoryIds.length > 5 ||

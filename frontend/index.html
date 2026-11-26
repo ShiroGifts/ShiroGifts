@@ -678,7 +678,7 @@ body{
 .nav-item.active .icon{filter:drop-shadow(0 0 10px rgba(157,139,255,.35))}
 .toast{border-radius:15px;background:#17243a;border-color:#9c8bff}
 .modal-card,.age-card{border:1px solid rgba(180,190,230,.2);border-radius:24px;background:linear-gradient(150deg,#1b2942,#101a2d);box-shadow:0 24px 70px rgba(0,0,0,.5)}
-.case-preview-overlay{background:radial-gradient(ellipse at 50% 0%,#20294c,#080d18 65%)}
+.case-preview-overlay{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixed!important}
 .case-preview-open{margin-top:6px}
 @media(min-width:560px){.cases-grid,.inv-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.hero-panel{padding:29px 28px}.case-card{min-height:190px}}
 @media(max-width:380px){.header{padding-left:12px;padding-right:12px}.page{padding-left:12px;padding-right:12px}.hero-panel{padding:20px 17px}.logo{font-size:19px}.online-badge{font-size:11px}}
@@ -2058,8 +2058,6 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
 #page-upgrade .chance{font-size:29px!important}
 #page-upgrade .chance small{font-size:10px!important}
 
-.avatar-inventory-hint{position:absolute;top:calc(100% + 5px);left:18px;z-index:140;max-width:220px;padding:7px 10px;border:1px solid rgba(151,177,255,.25);border-radius:10px;background:#202d49;color:#e8efff;font-size:10px;font-weight:750;line-height:1.3;box-shadow:0 5px 16px #0004;pointer-events:none;animation:avatarHintIn .25s ease}
-@keyframes avatarHintIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 .vibration-setting{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;padding:13px 14px;border:1px solid rgba(255,255,255,.12);border-radius:15px;background:linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.035))}
 .vibration-setting-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
 .vibration-setting-copy b{font-size:13px;font-weight:850}
@@ -2081,7 +2079,6 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
     <span class="header-avatar" id="headerAvatar">S</span>
     <span class="header-name" id="headerName">Игрок</span>
   </button>
-  <div class="avatar-inventory-hint" id="avatarInventoryHint">Нажми на аватарку — откроется инвентарь</div>
   <div class="header-right">
     <span id="onlineCount" hidden>—</span>
     <div class="balance"><span class="star" id="balanceCurrencyIcon">⭐</span> <span id="balanceVal">0</span><button id="topupBtn" onclick="topUp()" aria-label="Пополнить баланс" style="margin-left:6px;border:0;border-radius:50%;width:24px;height:24px;background:var(--accent);color:#fff;font-size:19px;font-weight:900;line-height:1;cursor:pointer">+</button></div>
@@ -2384,8 +2381,6 @@ function toggleVibration() {
   try { localStorage.setItem('shiro_vibration', vibrationEnabled ? 'on' : 'off'); } catch(e) {}
 }
 function openInventoryFromAvatar() {
-  try { localStorage.setItem('shiro_avatar_hint_seen', '1'); } catch(e) {}
-  document.getElementById('avatarInventoryHint')?.remove();
   switchPage('inventory');
 }
 function haptic(type) {
@@ -4816,7 +4811,6 @@ function copyRefLink() {
 
 /* ===== INIT ===== */
 syncVibrationToggle();
-try { if (localStorage.getItem('shiro_avatar_hint_seen') === '1') document.getElementById('avatarInventoryHint')?.remove(); } catch(e) {}
 renderAdminGiftOptions();
 // The upgrade picker is authored directly under <body>, outside animated .page containers.
 document.querySelectorAll('[data-ic]').forEach(e => e.innerHTML = IC[e.dataset.ic]);

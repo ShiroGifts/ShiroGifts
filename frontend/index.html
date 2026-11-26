@@ -2069,6 +2069,47 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
 .vibration-switch input:checked+span{background:var(--accent)}
 .vibration-switch input:checked+span:after{transform:translateX(18px)}
 .vibration-switch input:focus-visible+span{outline:2px solid #fff;outline-offset:3px}
+.theme-setting{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;padding:13px 14px;border:1px solid rgba(255,255,255,.12);border-radius:15px;background:linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.035))}
+.theme-setting-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.theme-setting-copy b{font-size:13px;font-weight:850}
+.theme-setting-copy span{font-size:10px;line-height:1.35;color:var(--text-dim)}
+.theme-choice{display:flex;gap:4px;padding:3px;border-radius:11px;background:rgba(10,15,27,.24);border:1px solid rgba(255,255,255,.1);flex:none}
+.theme-choice button{border:0;border-radius:8px;padding:7px 9px;background:transparent;color:var(--text-dim);font:800 10px Manrope,sans-serif;cursor:pointer}
+.theme-choice button.active{background:rgba(255,255,255,.19);color:var(--text);box-shadow:0 1px 5px rgba(0,0,0,.12)}
+/* Dark theme — a separate charcoal/indigo palette; the current gradient remains the light theme. */
+body.theme-dark{
+  --bg:#080c14;--surface:#111827;--surface-2:#192438;--surface-3:#24334d;
+  --text:#edf2fa;--text-dim:#9aa9bd;--accent:#8c82ff;--accent-2:#6e63df;
+  --gold:#e8c477;--danger:#ff7180;--success:#55d6a2;--border:rgba(150,170,205,.18);
+  background:radial-gradient(ellipse at 12% -8%,rgba(72,88,150,.2),transparent 38%),linear-gradient(180deg,#0b111d,#070b12 72%) fixed!important;
+  color:var(--text)!important
+}
+body.theme-dark .header{background:linear-gradient(180deg,rgba(8,12,20,.98),rgba(8,12,20,.84))!important;border-bottom:1px solid var(--border)!important}
+body.theme-dark .nav{background:rgba(8,12,20,.97)!important;border-top:1px solid var(--border)!important}
+body.theme-dark .online-badge,body.theme-dark .balance{background:#141e2e!important;border-color:var(--border)!important;color:var(--text)!important}
+body.theme-dark .section-title,body.theme-dark .picker-title{color:var(--text-dim)!important}
+body.theme-dark #page-cases.active{background:radial-gradient(ellipse at 50% 0%,rgba(77,94,153,.2),transparent 48%),linear-gradient(180deg,#0d1421,#080c14)!important}
+body.theme-dark #page-cases:before{opacity:.22}
+body.theme-dark #page-cases .case-card,body.theme-dark .case-card,body.theme-dark .inv-item,body.theme-dark .upgrade-box,body.theme-dark .crash-box,body.theme-dark .ref-box,body.theme-dark .promo-panel,body.theme-dark .picker-item,body.theme-dark .upgrade-slot{
+  background:linear-gradient(150deg,#182438,#101827)!important;border-color:rgba(151,173,210,.2)!important;color:var(--text)!important;box-shadow:0 8px 22px rgba(0,0,0,.28)!important
+}
+body.theme-dark #page-cases .case-card .name,body.theme-dark .case-preview-title,body.theme-dark .case-preview-drops-title{color:var(--text)!important}
+body.theme-dark .profile-hero,body.theme-dark .vibration-setting,body.theme-dark .theme-setting{
+  background:linear-gradient(145deg,#18263b,#101827)!important;border-color:var(--border)!important;color:var(--text)!important
+}
+body.theme-dark .profile-name,body.theme-dark .vibration-setting-copy b,body.theme-dark .theme-setting-copy b{color:var(--text)!important}
+body.theme-dark .case-preview-overlay{background:linear-gradient(145deg,#0d1421,#080c14 72%)!important}
+body.theme-dark #casePreview .case-preview-top{background:rgba(12,19,31,.88)!important;border-color:var(--border)!important}
+body.theme-dark .case-back{background:#1b2940!important;border-color:var(--border)!important;color:var(--text)!important}
+body.theme-dark .preview-drop{background:linear-gradient(145deg,#1a2940,#111a29)!important;border-color:var(--border)!important}
+body.theme-dark .preview-drop .drop-name{color:#e5ebf5!important}
+body.theme-dark input,body.theme-dark select,body.theme-dark textarea{background-color:#141f31!important;color:var(--text)!important;border-color:var(--border)!important}
+body.theme-dark .feed-row,body.theme-dark .crash-canvas-wrap,body.theme-dark .crash-input{background:#141f31!important;border-color:var(--border)!important;color:var(--text)!important}
+body.theme-dark .modal-card,body.theme-dark .age-card{background:linear-gradient(150deg,#1a2940,#0e1624)!important;border-color:var(--border)!important}
+body.theme-dark .toast{background:#17243a!important;color:var(--text)!important}
+body.theme-dark .theme-choice{background:#080d17;border-color:var(--border)}
+body.theme-dark .theme-choice button.active{background:#34425d;color:#fff}
+#page-cases.case-preview-active{visibility:hidden!important}
 </style>
 
 </head>
@@ -2117,6 +2158,13 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
       <input id="vibrationToggle" type="checkbox" checked onchange="toggleVibration()">
       <span></span>
     </label>
+  </div>
+  <div class="theme-setting">
+    <div class="theme-setting-copy"><b>Тема оформления</b><span>Выбери светлый или тёмный вид приложения</span></div>
+    <div class="theme-choice" role="group" aria-label="Тема оформления">
+      <button id="themeLightBtn" type="button" onclick="setAppTheme('light')" aria-pressed="true">Светлая</button>
+      <button id="themeDarkBtn" type="button" onclick="setAppTheme('dark')" aria-pressed="false">Тёмная</button>
+    </div>
   </div>
   <div class="promo-panel profile-reward-panel" id="dailyNameRewardPanel">
     <div class="promo-heading">🎁 Награда за ник · 10 ★</div>
@@ -2382,6 +2430,19 @@ function toggleVibration() {
 }
 function openInventoryFromAvatar() {
   switchPage('inventory');
+}
+let appTheme = (() => { try { return localStorage.getItem('shiro_theme') === 'dark' ? 'dark' : 'light'; } catch(e) { return 'light'; } })();
+function setAppTheme(theme) {
+  appTheme = theme === 'dark' ? 'dark' : 'light';
+  document.body.classList.toggle('theme-dark', appTheme === 'dark');
+  try { localStorage.setItem('shiro_theme', appTheme); } catch(e) {}
+  const light = document.getElementById('themeLightBtn'), dark = document.getElementById('themeDarkBtn');
+  if (light) { light.classList.toggle('active', appTheme === 'light'); light.setAttribute('aria-pressed', appTheme === 'light' ? 'true' : 'false'); }
+  if (dark) { dark.classList.toggle('active', appTheme === 'dark'); dark.setAttribute('aria-pressed', appTheme === 'dark' ? 'true' : 'false'); }
+  try {
+    if (tg?.setHeaderColor) tg.setHeaderColor(appTheme === 'dark' ? '#080c14' : '#38558f');
+    if (tg?.setBackgroundColor) tg.setBackgroundColor(appTheme === 'dark' ? '#080c14' : '#514b91');
+  } catch(e) {}
 }
 function haptic(type) {
   if (!vibrationEnabled || !tg?.HapticFeedback) return;
@@ -3283,6 +3344,7 @@ function openCase(caseId) {
     const priceText = item.type === 'nothing' ? '—' : item.type === 'stars' ? '+' + money(item.amount) : money(item.price || 0);
     return `<div class="preview-drop ${rarity.cls}"><div class="drop-price">${priceText}</div><div class="drop-img">${item.img}</div><div class="drop-name">${item.name}</div><div class="drop-rarity">${rarity.label}</div>${key === 'plush_pepe_royal' ? '<div class="jackpot-item-label">★ ДЖЕКПОТ ★</div>' : ''}</div>`;
   }).join('');
+  document.getElementById('page-cases').classList.add('case-preview-active');
   document.getElementById('casePreview').classList.add('show');
   haptic('light'); playUiSound('preview');
 }
@@ -3297,6 +3359,7 @@ function selectCaseCount(count) {
 }
 function closeCasePreview() {
   document.getElementById('casePreview').classList.remove('show');
+  document.getElementById('page-cases').classList.remove('case-preview-active');
   selectedCaseId = null;
   pendingCaseRequest = null;
 }
@@ -3332,6 +3395,7 @@ async function confirmOpenCase() {
       const winnerKeys=Array.from({length:count},()=>c.id==='starter'&&!boostEnabled?pickWeighted(starterWeights):pool[Math.floor(Math.random()*pool.length)]);
       pendingCaseRequest=null;
       document.getElementById('casePreview').classList.remove('show');
+      document.getElementById('page-cases').classList.remove('case-preview-active');
       showCaseOverlay(c,winnerKeys,false,true,caseFastOpen);
       return;
     }
@@ -3343,6 +3407,7 @@ async function confirmOpenCase() {
     const rewards = count === 1 ? [data.reward] : data.rewards;
     const winnerKeys = rewards.map(reward=>reward.type==='stars'?'stars_'+reward.amount:reward.type==='nothing'?'nothing':reward.key);
     pendingCaseRequest=null; document.getElementById('casePreview').classList.remove('show');
+    document.getElementById('page-cases').classList.remove('case-preview-active');
     showCaseOverlay(c,winnerKeys,false,false,caseFastOpen);
   } catch (error) {
     btn.disabled = false;
@@ -4811,6 +4876,7 @@ function copyRefLink() {
 
 /* ===== INIT ===== */
 syncVibrationToggle();
+setAppTheme(appTheme);
 renderAdminGiftOptions();
 // The upgrade picker is authored directly under <body>, outside animated .page containers.
 document.querySelectorAll('[data-ic]').forEach(e => e.innerHTML = IC[e.dataset.ic]);

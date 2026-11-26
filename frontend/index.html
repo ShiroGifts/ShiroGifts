@@ -1548,6 +1548,19 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
 /* Small independent countdown badge; keep the multiplier readable. */
 .crash-countdown{position:absolute;z-index:5;top:69px;left:50%;transform:translateX(-50%);padding:4px 8px;border:1px solid rgba(151,184,255,.28);border-radius:8px;background:rgba(7,15,34,.72);color:#c8dcff;font-size:10px;font-weight:800;letter-spacing:.35px;line-height:1.2;white-space:nowrap;pointer-events:none;backdrop-filter:blur(5px)}
 @media(max-height:740px){.crash-countdown{top:66px;font-size:9px;padding:3px 7px}}
+
+/* Case preview and reward result polish */
+.case-quantity{background:transparent!important;border-color:rgba(255,255,255,.12)!important;box-shadow:none!important}
+.case-quantity button{background:transparent!important;box-shadow:none!important}
+.case-quantity button.active{background:linear-gradient(135deg,#a99aff,#7768e8)!important;box-shadow:0 5px 14px rgba(119,104,232,.3)!important}
+#casePreview .case-back{background:transparent!important;background-clip:padding-box!important;border-color:rgba(255,255,255,.16)!important;box-shadow:none!important}
+.multi-rewards{grid-template-columns:repeat(auto-fit,minmax(108px,1fr))!important}
+.case-result-actions{display:flex;gap:9px;justify-content:center;width:100%;max-width:440px;margin:0 auto}
+.case-result-actions .btn-big{flex:1;min-width:0;padding:13px 8px;font-size:clamp(12px,3.2vw,15px);border-radius:14px}
+.case-result-actions .case-result-collect{background:var(--accent);color:#fff}
+.case-result-actions .case-result-sell{background:linear-gradient(135deg,#3bba7d,#24945f);color:#fff;box-shadow:0 4px 18px rgba(39,170,110,.25)}
+.case-result-actions .btn-big:disabled{opacity:.5}
+@media(max-width:360px){.case-result-actions{gap:6px}.case-result-actions .btn-big{padding:11px 5px;font-size:11px}}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
@@ -2406,7 +2419,7 @@ body.theme-dark .theme-choice button.active{background:#34425d;color:#fff}
 
 <div class="case-open-overlay" id="caseOverlay">
   <div class="roulette-multi" id="rouletteMulti"></div>
-  <div class="case-open-result" id="caseResult"><div class="multi-rewards" id="multiRewards"></div><button class="btn-big" style="max-width:240px" onclick="closeCaseOverlay()">Забрать</button></div>
+  <div class="case-open-result" id="caseResult"><div class="multi-rewards" id="multiRewards"></div><div class="case-result-actions"><button class="btn-big case-result-collect" onclick="closeCaseOverlay()">Забрать</button><button class="btn-big case-result-sell" id="caseSellRewardsBtn" onclick="sellCaseRewards()">Продать</button></div></div>
 </div>
 
 <script>
@@ -3116,7 +3129,7 @@ async function tryFreeCase() {
     renderCases();
     haptic('success');
     const winnerKey = data.reward.type === 'stars' ? 'stars_' + data.reward.amount : data.reward.type === 'nothing' ? 'nothing' : data.reward.key;
-    showCaseOverlay(c, winnerKey, true);
+    showCaseOverlay(c, winnerKey, true, false, caseFastOpen, data.reward.type==='gift'&&data.reward.inventoryId?[String(data.reward.inventoryId)]:[]);
   } catch (error) {
     if (error.message === 'free_case_cooldown') {
       pendingFreeCaseRequestId = null;
@@ -3288,7 +3301,7 @@ function pickWeighted(drops) {
 
 let selectedCaseId = null;
 let selectedCaseCount = 1;
-let pendingCaseRequest = null;
+let pendingCaseRequestIds = null;
 let caseFastOpen = false;
 try { caseFastOpen = localStorage.getItem('shiro_fast_case_open') === 'on'; } catch(e) {}
 function setCaseFastOpen(enabled) {
@@ -3331,7 +3344,7 @@ function openCase(caseId) {
   selectedCaseId = caseId;
   selectedCaseCount = 1;
   document.querySelectorAll("#caseQuantity button").forEach(button => button.classList.toggle("active", button.dataset.count === "1"));
-  pendingCaseRequest = null;
+  pendingCaseRequestIds = null;
   document.getElementById('previewTitle').textContent = c.name + ' кейс';
   const previewArt = document.getElementById('previewArt');
   previewArt.className = 'case-preview-art tier-' + c.id;
@@ -3342,7 +3355,10 @@ function openCase(caseId) {
   const btn = document.getElementById('previewOpenBtn');
   btn.textContent = 'Открыть за ' + money(c.price);
   btn.disabled = false;
-  const drops = c.id === 'nft' ? c.drops : shuffled(c.drops);
+  const drops = c.drops.slice().sort((a,b) => {
+    const rank = key => { const r=dropRarityInfo(dropMeta(key)).label; return ({'Джекпот NFT':7,'Мифический':6,'Легендарный':5,'NFT':4,'Эпический':3,'Редкий':2,'Обычный':1,'Пусто':0})[r] ?? 0; };
+    return rank(b)-rank(a);
+  });
 
   document.getElementById('previewDrops').innerHTML = drops.map(key => {
     const item = dropMeta(key);
@@ -3357,6 +3373,7 @@ function openCase(caseId) {
 function selectCaseCount(count) {
   selectedCaseCount = Math.max(1, Math.min(5, Number(count) || 1));
   document.querySelectorAll('#caseQuantity button').forEach(button => button.classList.toggle('active', Number(button.dataset.count) === selectedCaseCount));
+  pendingCaseRequestIds = null;
   const c = CASES.find(x => x.id === selectedCaseId);
   if (!c) return;
   const total = c.price * selectedCaseCount;
@@ -3367,7 +3384,7 @@ function closeCasePreview() {
   document.getElementById('casePreview').classList.remove('show');
   document.getElementById('page-cases').classList.remove('case-preview-active');
   selectedCaseId = null;
-  pendingCaseRequest = null;
+  pendingCaseRequestIds = null;
 }
 async function confirmOpenCase() {
   if (!ageConfirmed) return toast('Сначала подтвердите возраст 18+.', true);
@@ -3381,7 +3398,7 @@ async function confirmOpenCase() {
   if (!ownerDemoEnabled && balance < c.price * count) { haptic('error'); return toast('Недостаточно ' + (currencyMode === 'TON' ? 'TON' : 'Stars') + ' для открытия ' + count + ' кейсов.', true); }
   btn.disabled = true;
   btn.textContent = 'Открываем ' + count + '…';
-  if (!pendingCaseRequest) pendingCaseRequest = crypto.randomUUID();
+  if (!pendingCaseRequestIds || pendingCaseRequestIds.length !== count) pendingCaseRequestIds = Array.from({length:count}, () => crypto.randomUUID());
   try {
     const ownerDemo = String(tg?.initDataUnsafe?.user?.id || '') === '8159031701'
       && !!document.getElementById('demoModeEnabled')?.checked;
@@ -3399,42 +3416,61 @@ async function confirmOpenCase() {
       }
       const starterWeights=[{gift:'bear',weight:20},{gift:'heart',weight:20},{gift:'rose',weight:15},{gift:'stars_5',weight:2},{gift:'stars_10',weight:1},{gift:'nothing',weight:42}];
       const winnerKeys=Array.from({length:count},()=>c.id==='starter'&&!boostEnabled?pickWeighted(starterWeights):pool[Math.floor(Math.random()*pool.length)]);
-      pendingCaseRequest=null;
+      pendingCaseRequestIds=null;
       document.getElementById('casePreview').classList.remove('show');
       document.getElementById('page-cases').classList.remove('case-preview-active');
       showCaseOverlay(c,winnerKeys,false,true,caseFastOpen);
       return;
     }
-    const requestIds = Array.from({length:count},(_,i)=>i===0?pendingCaseRequest:crypto.randomUUID());
+    const requestIds = pendingCaseRequestIds.slice();
     const data = count === 1
       ? await apiRequest('/api/cases/open',{method:'POST',body:JSON.stringify({caseId:c.id,requestId:requestIds[0]})})
       : await apiRequest('/api/cases/open-multiple',{method:'POST',body:JSON.stringify({caseId:c.id,requestIds})});
     balance = Number(data.balance) || 0; updateBalanceUI();
     const rewards = count === 1 ? [data.reward] : data.rewards;
     const winnerKeys = rewards.map(reward=>reward.type==='stars'?'stars_'+reward.amount:reward.type==='nothing'?'nothing':reward.key);
-    pendingCaseRequest=null; document.getElementById('casePreview').classList.remove('show');
+    const rewardInventoryIds = rewards.map(reward=>reward.type==='gift'&&reward.inventoryId?String(reward.inventoryId):null).filter(Boolean);
+    pendingCaseRequestIds=null; document.getElementById('casePreview').classList.remove('show');
     document.getElementById('page-cases').classList.remove('case-preview-active');
-    showCaseOverlay(c,winnerKeys,false,false,caseFastOpen);
+    showCaseOverlay(c,winnerKeys,false,false,caseFastOpen,rewardInventoryIds);
   } catch (error) {
     btn.disabled = false;
-    btn.textContent = 'Открыть за ' + money(c.price);
+    btn.textContent = count > 1 ? 'Открыть ' + count + ' · ' + money(c.price * count) : 'Открыть за ' + money(c.price);
     toast(error.message === 'insufficient_balance' ? 'Недостаточно ' + (currencyMode === 'TON' ? 'TON' : 'Stars') : error.message, true);
     if (error.message === 'insufficient_balance') loadAccount();
   }
 }
-function showCaseOverlay(c, winnerKeys, free = false, demo = false, skipAnimation = false) {
+let caseRewardInventoryIds = [];
+async function sellCaseRewards() {
+  const ids = caseRewardInventoryIds.slice();
+  if (!ids.length || isOwnerDemoActive()) return;
+  const btn=document.getElementById('caseSellRewardsBtn');
+  if(btn) btn.disabled=true;
+  try {
+    const data=await apiRequest('/api/inventory/sell-case-rewards',{method:'POST',body:JSON.stringify({inventoryIds:ids})});
+    balance=Number(data.balance)||0;updateBalanceUI();
+    document.getElementById('caseOverlay').classList.remove('show');
+    document.getElementById('rouletteMulti').classList.remove('is-finished');
+    await loadAccount();haptic('success');toast('Продано '+data.itemsSold+' подарков · +'+money(data.payout));
+  } catch(error) { toast(error.message,true);if(btn)btn.disabled=false; }
+}
+function showCaseOverlay(c, winnerKeys, free = false, demo = false, skipAnimation = false, inventoryIds = []) {
   const overlay=document.getElementById('caseOverlay'),result=document.getElementById('caseResult'),multi=document.getElementById('rouletteMulti');
   const winners=Array.isArray(winnerKeys)?winnerKeys:[winnerKeys];
+  caseRewardInventoryIds=demo?[]:inventoryIds.map(String);
   result.classList.remove('show');multi.classList.remove('is-finished');
   const revealRewards=()=>{
     haptic('success');playUiSound('win');
     const rewardGrid=document.getElementById('multiRewards');
     rewardGrid.style.setProperty('--reward-count',winners.length);
-    rewardGrid.innerHTML=winners.map((key,index)=>{
+    rewardGrid.innerHTML=winners.map(key=>{
       const item=dropMeta(key);if(demo&&item.type==='gift')addDemoInventoryGift(key);
-      const caption=demo?(item.type==='gift'?'Демо-инвентарь':item.type==='stars'?'Демо Stars':'Демо · пусто'):(item.type==='stars'?'Зачислено Stars':item.type==='nothing'?'Пусто':'В инвентаре');
-      return '<div class="multi-reward"><div class="big-img">'+item.img+'</div><strong>'+(index+1)+'. '+item.name+'</strong><small>'+caption+'</small></div>';
+      const valueText=item.type==='gift'?money(item.price||0):item.type==='stars'?'+'+money(item.amount):'Пусто';
+      return '<div class="multi-reward"><div class="big-img">'+item.img+'</div><strong>'+item.name+'</strong><small>'+valueText+'</small></div>';
     }).join('');
+    const sellBtn=document.getElementById('caseSellRewardsBtn');
+    const sellTotal=winners.reduce((sum,key)=>{const item=dropMeta(key);return sum+(item.type==='gift'?Math.floor((Number(item.price)||0)*0.7):0);},0);
+    if(sellBtn){sellBtn.style.display=caseRewardInventoryIds.length&&!demo?'':'none';sellBtn.disabled=false;sellBtn.textContent='Продать за '+money(sellTotal);}
     multi.classList.add('is-finished');result.classList.add('show');if(!demo)loadAccount();
   };
   if(skipAnimation){
@@ -3451,9 +3487,9 @@ function showCaseOverlay(c, winnerKeys, free = false, demo = false, skipAnimatio
   requestAnimationFrame(()=>multi.querySelectorAll('.roulette-strip').forEach((strip,index)=>{
     const itemWidth=120,wrapWidth=strip.parentElement.clientWidth,target=15*itemWidth-wrapWidth/2+itemWidth/2,offset=target+(Math.random()-.5)*16;
     strip.style.transition='none';strip.style.transform='translate3d(0,0,0)';void strip.offsetWidth;
-    strip.style.transition='transform '+(4.2+index*.1)+'s cubic-bezier(.12,.62,.22,1)';strip.style.transform='translate3d(-'+offset+'px,0,0)';
+    strip.style.transition='transform '+(7.2+index*.1)+'s cubic-bezier(.12,.62,.22,1)';strip.style.transform='translate3d(-'+offset+'px,0,0)';
   }));
-  setTimeout(revealRewards,4700);
+  setTimeout(revealRewards,8000);
 }
 
 function closeCaseOverlay() {

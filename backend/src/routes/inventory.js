@@ -44,7 +44,7 @@ router.post('/inventory/sell', async (req, res) => {
 router.post('/inventory/sell-case-rewards', async (req, res) => {
   const inventoryIds = req.body && req.body.inventoryIds;
   if (!Array.isArray(inventoryIds) || inventoryIds.length < 1 || inventoryIds.length > 5 ||
-      inventoryIds.some(id => !/^\\d+$/.test(String(id))) ||
+      inventoryIds.some(id => !/^[0-9]+$/.test(String(id))) ||
       new Set(inventoryIds.map(String)).size !== inventoryIds.length) {
     return res.status(400).json({ ok:false, error:'invalid_inventory_ids' });
   }

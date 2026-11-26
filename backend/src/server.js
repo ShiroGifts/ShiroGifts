@@ -14,6 +14,7 @@ const subscriptionRoutes = require('./routes/subscription');
 const { router: crashRoutes, startCrashEngine } = require('./routes/crash');
 const minesRoutes = require('./routes/mines');
 const { migrate } = require('./db/migrate');
+const { startDailyNftPriceRefresh } = require('./game/nftPrices');
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -77,6 +78,7 @@ async function start() {
     await migrate();
     console.log('[DB] Migrations applied');
     await startCrashEngine();
+    startDailyNftPriceRefresh();
   } else {
     console.warn('[DB] DATABASE_URL missing; account and payment APIs are unavailable');
   }

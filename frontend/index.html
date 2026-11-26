@@ -4943,6 +4943,7 @@ renderHistory(); renderCrashUI(); renderProfile(); requestAnimationFrame(crashFr
 loadFreeCaseStatus();
 renderCases();
 loadDynamicNftPrices();
+setInterval(loadDynamicNftPrices, 60 * 60 * 1000);
 renderInventory();
 renderUpgrade();
 updateBalanceUI();

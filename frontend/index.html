@@ -2677,7 +2677,7 @@ Object.values(GIFTS).forEach(gift => {
 
 const CASES = [
   { id: 'farm', name: 'Фарм', price: 1, icon: chest('#14534f','#36b99d'), drops: ['random_nft','nothing'] },
-  { id: 'starter', name: 'Стартовый', price: 10, icon: chest('#74372f','#ff9b6b'), drops: ['bear','heart','rose','stars_5','stars_10','nothing'] },
+  { id: 'starter', name: 'Стартовый', price: 10, icon: chest('#74372f','#ff9b6b'), drops: ['bear','heart','rose','stars_5','stars_10','stars_1'] },
   { id: 'mini', name: 'Мини', price: 25, icon: chest('#78521f','#e9b84f'), drops: ['bear','heart','rose','cake','stars_10','stars_25','bouquet'] },
   { id: 'bronze', name: 'Бронзовый', price: 50, icon: chest('#76502f','#b87943'), drops: ['bear','stars_10','rose','heart','stars_25','cake','rocket','bouquet','stars_50'] },
   { id: 'silver', name: 'Серебряный', price: 75, icon: chest('#344d69','#a8c8e7'), drops: ['cup','rose','stars_15','cake','ring','bouquet','stars_75','champ','rocket','stars_35'] },
@@ -3436,7 +3436,7 @@ async function confirmOpenCase() {
         const ordinaryDrops=c.drops.filter(key=>!isNftKey(key));
         pool=Math.random()<demoChance&&nftDrops.length?nftDrops:ordinaryDrops.length?ordinaryDrops:c.drops;
       }
-      const starterWeights=[{gift:'bear',weight:20},{gift:'heart',weight:20},{gift:'rose',weight:15},{gift:'stars_5',weight:2},{gift:'stars_10',weight:1},{gift:'nothing',weight:42}];
+      const starterWeights=[{gift:'bear',weight:15},{gift:'heart',weight:15},{gift:'rose',weight:10},{gift:'stars_5',weight:2},{gift:'stars_10',weight:1},{gift:'stars_1',weight:57}];
       const winnerKeys=Array.from({length:count},()=>c.id==='starter'&&!boostEnabled?pickWeighted(starterWeights):pool[Math.floor(Math.random()*pool.length)]);
       pendingCaseRequestIds=null;
       document.getElementById('casePreview').classList.remove('show');

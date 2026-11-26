@@ -1,6 +1,5 @@
 const { GIFT_DATA } = require('./cases');
 const { pool } = require('../db/pool');
-
 const API = 'https://starprice.net/api/v1/gifts';
 const MAX_CONCURRENCY = 3;
 function collectTelegramStarPrices(data) {
@@ -21,14 +20,12 @@ async function fetchGiftCollection(name) {
   return response.json();
 }
 async function updateNftPrices() {
-  const nftKeys = Object.entries(GIFT_DATA).filter(([key, gift]) =>
-    key !== 'random_nft' && String(gift.rarity || '').toUpperCase().includes('NFT')
-  );
+  const nftKeys = Object.entries(GIFT_DATA).filter(([key, gift]) => key !== 'random_nft' && String(gift.rarity || '').toUpperCase().includes('NFT'));
   let updated = 0;
   for (let i = 0; i < nftKeys.length; i += MAX_CONCURRENCY) {
     const batch = nftKeys.slice(i, i + MAX_CONCURRENCY);
     const results = await Promise.allSettled(batch.map(async ([key, gift]) => {
-      const name = key === 'plush_pepe_royal' ? 'Plush Pepe' : String(gift.name || '').replace(/\\s*NFT(?:\\s*·.*)?$/i, '').trim();
+      const name = key === 'plush_pepe_royal' ? 'Plush Pepe' : String(gift.name || '').replace(/\s*NFT(?:\s*·.*)?$/i, '').trim();
       const data = await fetchGiftCollection(name);
       const prices = collectTelegramStarPrices(data).sort((a, b) => a - b).slice(0, 5);
       if (!prices.length) return null;

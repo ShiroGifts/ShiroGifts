@@ -1549,31 +1549,27 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
 .crash-countdown{position:absolute;z-index:5;top:69px;left:50%;transform:translateX(-50%);padding:4px 8px;border:1px solid rgba(151,184,255,.28);border-radius:8px;background:rgba(7,15,34,.72);color:#c8dcff;font-size:10px;font-weight:800;letter-spacing:.35px;line-height:1.2;white-space:nowrap;pointer-events:none;backdrop-filter:blur(5px)}
 @media(max-height:740px){.crash-countdown{top:66px;font-size:9px;padding:3px 7px}}
 
-/* Light theme refinement: clean white surfaces, restrained lavender accents. */
-body:not(.theme-dark){
-  --bg:#f7f8fc;--surface:#ffffff;--surface-2:#f0f2f7;--surface-3:#e7eaf2;
-  --text:#202538;--text-dim:#737b90;--border:#e1e5ef;
-  background:linear-gradient(180deg,#ffffff 0%,#f7f8fc 58%,#f2f4f9 100%)!important;
-  color:var(--text)!important;
+/* Revert overly-white light-theme pass. Keep the existing colorful lavender/blue atmosphere;
+   add only a subtle neutral lift without flattening the cards or page backgrounds. */
+body:not(.theme-dark){background-color:#f3f2fa!important}
+body:not(.theme-dark) #page-cases.active{
+  background-image:linear-gradient(rgba(255,255,255,.07),rgba(255,255,255,.07)),radial-gradient(ellipse at 50% 0%,rgba(166,151,255,.22),transparent 58%),linear-gradient(180deg,#f0edff,#e9e9fa)!important;
 }
-body:not(.theme-dark) .header{background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,255,255,.86))!important}
-body:not(.theme-dark) .nav{background:rgba(255,255,255,.96)!important;border-top:1px solid #e4e7ef!important}
-body:not(.theme-dark) #page-cases.active{background:radial-gradient(ellipse at 50% 0%,rgba(226,231,243,.62),transparent 54%),linear-gradient(180deg,#fff,#f6f7fb)!important}
-body:not(.theme-dark) #page-cases:before{opacity:.08!important}
-body:not(.theme-dark) .case-card,body:not(.theme-dark) .inv-item,body:not(.theme-dark) .upgrade-box,body:not(.theme-dark) .ref-box,body:not(.theme-dark) .picker-item,body:not(.theme-dark) .upgrade-slot{
-  background:linear-gradient(150deg,#fff,#f6f7fb)!important;border-color:#e3e7f0!important;color:var(--text)!important;
-  box-shadow:0 7px 22px rgba(37,49,78,.055)!important
+/* Final high-specificity selector: quantity picker stays dark in light and dark themes. */
+body #caseQuantity.case-quantity{
+  background:linear-gradient(145deg,#172238,#101827)!important;
+  border:1px solid rgba(130,151,190,.34)!important;
+  box-shadow:0 6px 18px rgba(13,20,39,.2)!important;
 }
-body:not(.theme-dark) .online-badge,body:not(.theme-dark) .balance{background:#fff!important;border-color:#e4e7ef!important;color:var(--text)!important}
-body:not(.theme-dark) .case-preview-overlay{background:#f8f9fc!important;color:#202538!important}
-body:not(.theme-dark) .preview-drop{background:#fff!important;border-color:#e3e7f0!important}
-body:not(.theme-dark) .case-preview-top .case-back{background:#fff!important;color:#202538!important;border-color:#e1e5ef!important}
-/* Keep the case quantity selector dark in both themes for contrast. */
-.case-quantity{background:linear-gradient(145deg,#172238,#101827)!important;border-color:rgba(130,151,190,.28)!important}
-.case-quantity button{background:rgba(255,255,255,.055)!important;color:#c5cee0!important;border-color:rgba(180,197,225,.2)!important}
-.case-quantity button.active{background:linear-gradient(135deg,#d9bd70,#a77b2c)!important;color:#241a08!important;border-color:rgba(255,232,165,.65)!important;box-shadow:0 4px 13px rgba(193,145,54,.24)!important}
-.wheel-x2-marker{color:#382407!important;background:radial-gradient(circle at 32% 24%,#fffbe0 0%,#ffe48a 28%,#f4bd3e 62%,#a86b18 100%)!important;border:2px solid #fff1b7!important;box-shadow:0 0 0 2px rgba(255,210,91,.18),0 0 16px rgba(245,184,55,.58),inset 0 2px 3px rgba(255,255,255,.82)!important;text-shadow:0 1px 0 rgba(255,255,255,.5)!important}
-
+body #caseQuantity.case-quantity button{
+  background:linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.025))!important;
+  color:#d5dced!important;border:1px solid rgba(180,197,225,.22)!important;
+}
+body #caseQuantity.case-quantity button.active{
+  background:linear-gradient(135deg,#d9bd70,#a77b2c)!important;
+  color:#241a08!important;border-color:rgba(255,232,165,.72)!important;
+  box-shadow:0 4px 13px rgba(193,145,54,.28),inset 0 1px 0 rgba(255,255,255,.4)!important;
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 

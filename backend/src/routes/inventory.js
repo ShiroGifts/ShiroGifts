@@ -41,6 +41,49 @@ router.post('/inventory/sell', async (req, res) => {
 });
 
 
+router.post('/inventory/sell-case-rewards', async (req, res) => {
+  const inventoryIds = req.body && req.body.inventoryIds;
+  if (!Array.isArray(inventoryIds) || inventoryIds.length < 1 || inventoryIds.length > 5 ||
+      inventoryIds.some(id => !/^\\d+$/.test(String(id))) ||
+      new Set(inventoryIds.map(String)).size !== inventoryIds.length) {
+    return res.status(400).json({ ok:false, error:'invalid_inventory_ids' });
+  }
+  const telegramId = String(req.telegramUser.id);
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const items = await client.query(
+      "SELECT id, value_stars FROM inventory WHERE id = ANY($1::bigint[]) AND telegram_id = $2 AND status = 'owned' ORDER BY id FOR UPDATE",
+      [inventoryIds.map(String), telegramId]
+    );
+    if (items.rowCount !== inventoryIds.length) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ ok:false, error:'case_reward_not_sellable' });
+    }
+    const payout = items.rows.reduce((sum, item) => sum + Math.floor(Number(item.value_stars) * 0.7), 0);
+    if (!Number.isSafeInteger(payout) || payout < 1) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ ok:false, error:'case_reward_not_sellable' });
+    }
+    const updated = await client.query(
+      "UPDATE inventory SET status = 'sold' WHERE telegram_id = $1 AND status = 'owned' AND id = ANY($2::bigint[])",
+      [telegramId, inventoryIds.map(String)]
+    );
+    if (updated.rowCount !== inventoryIds.length) throw new Error('case_reward_sale_race');
+    await client.query(
+      "INSERT INTO wallet_ledger (telegram_id, amount_stars, entry_type, reference_id) VALUES ($1, $2, 'sale', $3)",
+      [telegramId, payout, 'case-rewards-sale:' + randomUUID()]
+    );
+    const wallet = await client.query('SELECT COALESCE(SUM(amount_stars),0)::bigint AS balance FROM wallet_ledger WHERE telegram_id = $1', [telegramId]);
+    await client.query('COMMIT');
+    res.json({ ok:true, payout, itemsSold:inventoryIds.length, balance:Number(wallet.rows[0].balance) });
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => {});
+    console.error('[CASE REWARD SALE ERROR]', error.code || error.message);
+    res.status(500).json({ ok:false, error:'case_reward_sale_failed' });
+  } finally { client.release(); }
+});
+
 router.post('/inventory/sell-all', async (req, res) => {
   const telegramId = String(req.telegramUser.id);
   const client = await pool.connect();

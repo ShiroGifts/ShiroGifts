@@ -535,22 +535,6 @@ body{font-family:'Manrope',system-ui,sans-serif;font-weight:500;background:radia
 @media(max-width:380px){.logo{font-size:19px}.online-badge{padding:6px 8px}.balance{padding:7px 9px}.nav-item{font-size:8px}.case-card{padding:14px 9px}}
 
 .case-card[class*="tier-"]{background:linear-gradient(160deg,#1a2532,#121a24);border-color:#314052}
-/* Themed case artwork: real Telegram NFT models sit inside each chest */
-.case-card .gift-img.case-art{width:100%;height:124px;margin:0 auto 9px;position:relative;display:flex;align-items:flex-end;justify-content:center;overflow:visible;filter:none}
-.case-art .case-chest-base{width:104px;height:104px;position:relative;z-index:1;filter:drop-shadow(0 8px 8px rgba(0,0,0,.4))}
-.case-art .case-nft-peek{position:absolute;z-index:2;top:0;left:50%;transform:translateX(-50%);width:100%;height:72px;display:flex;align-items:flex-start;justify-content:center;gap:0;pointer-events:none}
-.case-art .case-nft-peek img{width:58px;height:66px;object-fit:contain;filter:drop-shadow(0 5px 8px rgba(0,0,0,.5));background:transparent!important}
-.case-art .case-nft-peek img:nth-child(2){width:48px;height:55px;margin-left:-13px;margin-top:8px;transform:rotate(9deg)}
-.case-art .case-nft-peek img:nth-child(3){width:42px;height:48px;margin-left:-12px;margin-top:15px;transform:rotate(-8deg)}
-.case-art .case-nameplate{position:absolute;z-index:3;bottom:15px;left:50%;transform:translateX(-50%);min-width:72px;max-width:92%;padding:3px 8px;border:1px solid var(--case-bright,#d9b77a);border-radius:5px;background:linear-gradient(180deg,#29221b,#100e0c);color:var(--case-bright,#f3ca54);font-size:9px;line-height:1.2;font-weight:1000;letter-spacing:.5px;text-shadow:0 1px 2px #000;white-space:nowrap;box-shadow:0 2px 6px #0008}
-.case-preview-art.case-art{height:210px;position:relative;display:flex;align-items:flex-end;justify-content:center;overflow:visible;filter:none}
-.case-preview-art.case-art .case-chest-base{width:190px;height:190px;filter:drop-shadow(0 15px 16px rgba(0,0,0,.48))}
-.case-preview-art.case-art .case-nft-peek{top:0;height:125px}
-.case-preview-art.case-art .case-nft-peek img{width:98px;height:112px}
-.case-preview-art.case-art .case-nft-peek img:nth-child(2){width:82px;height:94px;margin-left:-22px;margin-top:13px}
-.case-preview-art.case-art .case-nft-peek img:nth-child(3){width:72px;height:82px;margin-left:-18px;margin-top:24px}
-.case-preview-art.case-art .case-nameplate{bottom:27px;font-size:12px;padding:5px 12px}
-
 .case-card .gift-img img{width:100%;height:78px;object-fit:contain}
 .roulette-item .gift-img img{width:58px;height:58px;object-fit:contain}
 .case-open-result .big-img img,.modal-card .big-img img{width:104px;height:104px;object-fit:contain}
@@ -3258,33 +3242,6 @@ function switchPage(name) {
   if (name === 'promo') { loadPromoAdminStatus(); togglePromoMode(); }
   refreshPepeEasterEggs(name);
 }
-function caseArtwork(c, large = false) {
-  const models = {
-    farm: ['bday_candle'],
-    starter: ['jelly_bunny','plush_pepe'],
-    mini: ['vice_cream','lol_pop'],
-    bronze: ['loot_bag','durovs_cap'],
-    silver: ['diamond_ring','swiss_watch'],
-    gold: ['swiss_watch','diamond_ring','durovs_glasses'],
-    legend: ['astral_shard','crystal_ball','heroic_helmet'],
-    ruby: ['precious_peach','love_potion','diamond_ring'],
-    diamond: ['diamond_ring','astral_shard','swiss_watch'],
-    cosmic: ['astral_shard','plush_pepe','crystal_ball'],
-    nft: ['plush_pepe','diamond_ring','durovs_glasses'],
-    nft2: ['snow_globe','moon_pendant','jelly_bunny']
-  };
-  const keys = (models[c.id] || []).filter(key => GIFTS[key] && GIFTS[key].img);
-  const colors = {
-    farm:['#14534f','#36b99d'],starter:['#74372f','#ff9b6b'],mini:['#78521f','#e9b84f'],
-    bronze:['#76502f','#b87943'],silver:['#344d69','#a8c8e7'],gold:['#765018','#f3ca54'],
-    legend:['#452b78','#b38aff'],ruby:['#76264f','#f078ad'],diamond:['#155c7b','#67d9f4'],
-    cosmic:['#30245f','#8c7bff'],nft:['#5d4426','#e6bd75'],nft2:['#274b67','#62c8df']
-  };
-  const [base, bright] = colors[c.id] || ['#493827','#d9b77a'];
-  const imgs = keys.slice(0,3).map((key,i) => GIFTS[key].img.replace('<img ', '<img class="case-model case-model-'+i+'" ')).join('');
-  return '<div class="case-nft-peek">'+imgs+'</div><div class="case-chest-base" style="--case-base:'+base+';--case-bright:'+bright+'">'+c.icon+'</div><div class="case-nameplate" style="--case-bright:'+bright+'">'+c.name.toUpperCase()+'</div>';
-}
-
 function renderCases() {
   const grid = document.getElementById('casesGrid');
   let html = '';
@@ -3313,7 +3270,7 @@ function renderCases() {
     return `
       <div class="case-card tier-${c.id}" onclick="openCase('${c.id}')">
         ${tag}
-        <div class="gift-img case-art">${caseArtwork(c)}</div>
+        <div class="gift-img">${imageAsset(CHEST_ART, "Сундук " + c.name)}</div>
         <div class="name">${c.name}</div>
         <div class="price">${money(c.price)}</div>
         ${nftHint}
@@ -3378,8 +3335,7 @@ function openCase(caseId) {
   document.getElementById('previewTitle').textContent = c.name + ' кейс';
   const previewArt = document.getElementById('previewArt');
   previewArt.className = 'case-preview-art tier-' + c.id;
-  previewArt.classList.add('case-art');
-  previewArt.innerHTML = caseArtwork(c, true);
+  previewArt.innerHTML = imageAsset(CHEST_ART, 'Сундук ' + c.name);
   document.getElementById('previewPrice').textContent = money(c.price);
   const fastToggle = document.getElementById('caseFastOpenToggle');
   if (fastToggle) fastToggle.checked = caseFastOpen;

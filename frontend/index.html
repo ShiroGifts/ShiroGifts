@@ -2073,9 +2073,9 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
 .theme-setting-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
 .theme-setting-copy b{font-size:13px;font-weight:850}
 .theme-setting-copy span{font-size:10px;line-height:1.35;color:var(--text-dim)}
-.theme-choice{display:flex;gap:4px;padding:3px;border-radius:11px;background:rgba(10,15,27,.24);border:1px solid rgba(255,255,255,.1);flex:none}
-.theme-choice button{border:0;border-radius:8px;padding:7px 9px;background:transparent;color:var(--text-dim);font:800 10px Manrope,sans-serif;cursor:pointer}
-.theme-choice button.active{background:rgba(255,255,255,.19);color:var(--text);box-shadow:0 1px 5px rgba(0,0,0,.12)}
+.theme-icon-btn{display:flex;align-items:center;justify-content:center;flex:0 0 42px;width:42px;height:42px;padding:0;border:1px solid rgba(255,255,255,.16);border-radius:13px;background:rgba(10,15,27,.2);color:var(--text);font-size:23px;line-height:1;cursor:pointer;transition:transform .16s,background .16s,border-color .16s}
+.theme-icon-btn:active{transform:scale(.92)}
+.theme-icon-btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 /* Dark theme — a separate charcoal/indigo palette; the current gradient remains the light theme. */
 body.theme-dark{
   --bg:#080c14;--surface:#111827;--surface-2:#192438;--surface-3:#24334d;
@@ -2161,10 +2161,7 @@ body.theme-dark .theme-choice button.active{background:#34425d;color:#fff}
   </div>
   <div class="theme-setting">
     <div class="theme-setting-copy"><b>Тема оформления</b><span>Выбери светлый или тёмный вид приложения</span></div>
-    <div class="theme-choice" role="group" aria-label="Тема оформления">
-      <button id="themeLightBtn" type="button" onclick="setAppTheme('light')" aria-pressed="true">Светлая</button>
-      <button id="themeDarkBtn" type="button" onclick="setAppTheme('dark')" aria-pressed="false">Тёмная</button>
-    </div>
+    <button id="themeToggleBtn" class="theme-icon-btn" type="button" onclick="toggleAppTheme()" aria-label="Включить тёмную тему" aria-pressed="false"><span id="themeToggleIcon" aria-hidden="true">🌙</span></button>
   </div>
   <div class="promo-panel profile-reward-panel" id="dailyNameRewardPanel">
     <div class="promo-heading">🎁 Награда за ник · 10 ★</div>
@@ -2436,13 +2433,20 @@ function setAppTheme(theme) {
   appTheme = theme === 'dark' ? 'dark' : 'light';
   document.body.classList.toggle('theme-dark', appTheme === 'dark');
   try { localStorage.setItem('shiro_theme', appTheme); } catch(e) {}
-  const light = document.getElementById('themeLightBtn'), dark = document.getElementById('themeDarkBtn');
-  if (light) { light.classList.toggle('active', appTheme === 'light'); light.setAttribute('aria-pressed', appTheme === 'light' ? 'true' : 'false'); }
-  if (dark) { dark.classList.toggle('active', appTheme === 'dark'); dark.setAttribute('aria-pressed', appTheme === 'dark' ? 'true' : 'false'); }
+  const toggle = document.getElementById('themeToggleBtn');
+  const icon = document.getElementById('themeToggleIcon');
+  if (icon) icon.textContent = appTheme === 'dark' ? '☀️' : '🌙';
+  if (toggle) {
+    toggle.setAttribute('aria-label', appTheme === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему');
+    toggle.setAttribute('aria-pressed', appTheme === 'dark' ? 'true' : 'false');
+  }
   try {
     if (tg?.setHeaderColor) tg.setHeaderColor(appTheme === 'dark' ? '#080c14' : '#38558f');
     if (tg?.setBackgroundColor) tg.setBackgroundColor(appTheme === 'dark' ? '#080c14' : '#514b91');
   } catch(e) {}
+}
+function toggleAppTheme() {
+  setAppTheme(appTheme === 'dark' ? 'light' : 'dark');
 }
 function haptic(type) {
   if (!vibrationEnabled || !tg?.HapticFeedback) return;

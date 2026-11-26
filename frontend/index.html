@@ -1555,12 +1555,15 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
 .case-quantity button.active{background:linear-gradient(135deg,#a99aff,#7768e8)!important;box-shadow:0 5px 14px rgba(119,104,232,.3)!important}
 #casePreview .case-back{background:transparent!important;background-clip:padding-box!important;border-color:rgba(255,255,255,.16)!important;box-shadow:none!important}
 .multi-rewards{grid-template-columns:repeat(auto-fit,minmax(108px,1fr))!important}
-.case-result-actions{display:flex;gap:9px;justify-content:center;width:100%;max-width:440px;margin:0 auto}
-.case-result-actions .btn-big{flex:1;min-width:0;padding:13px 8px;font-size:clamp(12px,3.2vw,15px);border-radius:14px}
+.case-result-actions{display:flex;flex-direction:column;gap:9px;justify-content:center;width:100%;max-width:440px;margin:0 auto}
+.case-result-actions .btn-big{width:100%;flex:1;min-width:0;padding:13px 8px;font-size:clamp(12px,3.2vw,15px);border-radius:14px}
+.multi-rewards.has-many{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;justify-content:flex-start!important;gap:8px!important;padding:0 2px 8px!important;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.multi-rewards.has-many .multi-reward{flex:0 0 calc((100% - 16px)/3);max-width:calc((100% - 16px)/3);scroll-snap-align:start}
+.case-result-actions .case-result-collect,.case-result-actions .case-result-sell{min-height:48px}
 .case-result-actions .case-result-collect{background:var(--accent);color:#fff}
 .case-result-actions .case-result-sell{background:linear-gradient(135deg,#3bba7d,#24945f);color:#fff;box-shadow:0 4px 18px rgba(39,170,110,.25)}
 .case-result-actions .btn-big:disabled{opacity:.5}
-@media(max-width:360px){.case-result-actions{gap:6px}.case-result-actions .btn-big{padding:11px 5px;font-size:11px}}
+@media(max-width:360px){.case-result-actions{gap:6px}.case-result-actions .btn-big{padding:11px 5px;font-size:11px}.multi-rewards.has-many .multi-reward{flex-basis:calc((100% - 12px)/2);max-width:calc((100% - 12px)/2)}}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
@@ -3255,6 +3258,18 @@ function switchPage(name) {
   if (name === 'promo') { loadPromoAdminStatus(); togglePromoMode(); }
   refreshPepeEasterEggs(name);
 }
+async function loadDynamicNftPrices() {
+  try {
+    const data = await apiRequest('/api/cases/nft/prices');
+    for (const [key, price] of Object.entries(data.prices || {})) {
+      if (GIFTS[key] && Number(price) > 0) GIFTS[key].price = Number(price);
+    }
+    renderCases();
+  } catch (error) {
+    console.warn('[NFT PRICES] Could not load latest price map:', error.message);
+  }
+}
+
 function renderCases() {
   const grid = document.getElementById('casesGrid');
   let html = '';
@@ -3463,13 +3478,14 @@ function showCaseOverlay(c, winnerKeys, free = false, demo = false, skipAnimatio
     haptic('success');playUiSound('win');
     const rewardGrid=document.getElementById('multiRewards');
     rewardGrid.style.setProperty('--reward-count',winners.length);
+    rewardGrid.classList.toggle('has-many',winners.length>3);
     rewardGrid.innerHTML=winners.map(key=>{
       const item=dropMeta(key);if(demo&&item.type==='gift')addDemoInventoryGift(key);
       const valueText=item.type==='gift'?money(item.price||0):item.type==='stars'?'+'+money(item.amount):'Пусто';
       return '<div class="multi-reward"><div class="big-img">'+item.img+'</div><strong>'+item.name+'</strong><small>'+valueText+'</small></div>';
     }).join('');
     const sellBtn=document.getElementById('caseSellRewardsBtn');
-    const sellTotal=winners.reduce((sum,key)=>{const item=dropMeta(key);return sum+(item.type==='gift'?Math.floor((Number(item.price)||0)*0.7):0);},0);
+    const sellTotal=winners.reduce((sum,key)=>{const item=dropMeta(key);return sum+(item.type==='gift'?(Number(item.price)||0):0);},0);
     if(sellBtn){sellBtn.style.display=caseRewardInventoryIds.length&&!demo?'':'none';sellBtn.disabled=false;sellBtn.textContent='Продать за '+money(sellTotal);}
     multi.classList.add('is-finished');result.classList.add('show');if(!demo)loadAccount();
   };
@@ -3530,10 +3546,10 @@ function askSell(uid) {
   if (!item) return;
   const g = GIFTS[item.gift];
   const value = Number(item.price) || Number(g?.price) || 0;
-  const payout = Math.floor(value * 0.7);
+  const payout = value;
   document.getElementById('modalImg').innerHTML = g?.img || '🎁';
   document.getElementById('modalTitle').textContent = 'Продать подарок?';
-  document.getElementById('modalText').textContent = `«${g?.name || item.name}» будет продан за ${money(payout)} (70% от внутренней стоимости).`;
+  document.getElementById('modalText').textContent = `«${g?.name || item.name}» будет продан за ${money(payout)} (100% внутренней стоимости).`;
   document.getElementById('modal').classList.add('show');
   modalAction = async () => {
     closeModal(); showLoader('Продажа...');
@@ -3554,11 +3570,11 @@ function askSellAll() {
   const estimated = owned.reduce((sum,item) => {
     const gift = GIFTS[item.gift];
     const value = Number(item.price) || Number(gift?.price) || 0;
-    return sum + Math.floor(value * 0.7);
+    return sum + value;
   },0);
   document.getElementById('modalImg').innerHTML = '💰';
   document.getElementById('modalTitle').textContent = 'Продать весь инвентарь?';
-  document.getElementById('modalText').textContent = `Будут проданы все ${owned.length} предметов. На баланс поступит примерно ${money(estimated)} (70% от внутренней стоимости каждого предмета). Выводимые и уже проданные предметы не затрагиваются.`;
+  document.getElementById('modalText').textContent = `Будут проданы все ${owned.length} предметов. На баланс поступит примерно ${money(estimated)} (100% внутренней стоимости каждого предмета). Выводимые и уже проданные предметы не затрагиваются.`;
   document.getElementById('modal').classList.add('show');
   modalAction = async () => {
     closeModal(); showLoader('Продаём весь инвентарь...');
@@ -4926,6 +4942,7 @@ if (String(tg?.initDataUnsafe?.user?.id || '') !== '8159031701') document.queryS
 renderHistory(); renderCrashUI(); renderProfile(); requestAnimationFrame(crashFrame);
 loadFreeCaseStatus();
 renderCases();
+loadDynamicNftPrices();
 renderInventory();
 renderUpgrade();
 updateBalanceUI();

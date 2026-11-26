@@ -1,7 +1,7 @@
 const CASES = [
   { id: 'farm', name: 'Фарм', price: 1, drops: [
     { type: 'gift', key: 'random_nft', weight: 1 },
-    { type: 'stars', amount: 0, weight: 999 }
+    { type: 'nothing', weight: 999 }
   ]},
   { id: 'starter', name: 'Стартовый', price: 10, drops: [
     { type: 'gift', key: 'bear', weight: 15 }, { type: 'gift', key: 'heart', weight: 15 },

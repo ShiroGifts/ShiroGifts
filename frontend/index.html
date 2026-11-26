@@ -3485,7 +3485,20 @@ function showCaseOverlay(c, winnerKeys, free = false, demo = false, skipAnimatio
       return '<div class="multi-reward"><div class="big-img">'+item.img+'</div><strong>'+item.name+'</strong><small>'+valueText+'</small></div>';
     }).join('');
     const sellBtn=document.getElementById('caseSellRewardsBtn');
-    if(sellBtn){sellBtn.style.display=caseRewardInventoryIds.length&&!demo?'':'none';sellBtn.disabled=false;sellBtn.textContent='Проверяем цену продажи…';if(caseRewardInventoryIds.length&&!demo){apiRequest('/api/inventory/sell-case-rewards-preview',{method:'POST',body:JSON.stringify({inventoryIds:caseRewardInventoryIds})}).then(preview=>{if(document.getElementById('caseOverlay').classList.contains('show')&&caseRewardInventoryIds.length){sellBtn.textContent='Продать '+preview.itemsCount+' подарка за '+money(preview.payout);}}).catch(()=>{sellBtn.textContent='Продать подарки';});}}
+    if(sellBtn){sellBtn.style.display=caseRewardInventoryIds.length&&!demo?'':'none';sellBtn.disabled=false;sellBtn.textContent='Проверяем цену продажи…';if(caseRewardInventoryIds.length&&!demo){apiRequest('/api/inventory/sell-case-rewards-preview',{method:'POST',body:JSON.stringify({inventoryIds:caseRewardInventoryIds})}).then(preview=>{
+      if(document.getElementById('caseOverlay').classList.contains('show')&&caseRewardInventoryIds.length){
+        sellBtn.textContent='Продать '+preview.itemsCount+' подарка за '+money(preview.payout);
+        const valuesById=new Map(preview.items.map(item=>[String(item.id),Number(item.valueStars)]));
+        let giftIndex=0;
+        document.querySelectorAll('#multiRewards .multi-reward').forEach((card,index)=>{
+          const key=winners[index],meta=dropMeta(key);
+          if(meta.type!=='gift')return;
+          const id=caseRewardInventoryIds[giftIndex++];
+          const actual=valuesById.get(String(id));
+          if(Number.isFinite(actual))card.querySelector('small').textContent=money(actual);
+        });
+      }
+    }).catch(()=>{sellBtn.textContent='Продать подарки';});}}
     multi.classList.add('is-finished');result.classList.add('show');if(!demo)loadAccount();
   };
   if(skipAnimation){

@@ -2130,7 +2130,14 @@ body.theme-dark .theme-choice button.active{background:#34425d;color:#fff}
 #page-cases.case-preview-active{visibility:hidden!important}
 </style>
 
-</head>
+<style>/* FINAL FIX: case rewards in one fixed row; no horizontal swipe */
+.multi-rewards.has-many{display:grid!important;grid-template-columns:repeat(var(--reward-count),minmax(0,1fr))!important;flex-wrap:nowrap!important;overflow:visible!important;justify-content:stretch!important;gap:clamp(1px,1vw,4px)!important;padding:0!important;scroll-snap-type:none!important}
+.multi-rewards.has-many .multi-reward{flex:initial!important;max-width:none!important;min-width:0!important;scroll-snap-align:none!important;padding:clamp(1px,1vw,4px)!important;gap:1px!important;overflow:hidden!important}
+.multi-rewards.has-many .multi-reward .big-img{height:clamp(14px,7vw,34px)!important;font-size:clamp(12px,5vw,27px)!important;max-width:100%!important;overflow:hidden!important}
+.multi-rewards.has-many .multi-reward .big-img img{max-height:clamp(14px,7vw,32px)!important;max-width:100%!important}
+.multi-rewards.has-many .multi-reward strong{font-size:clamp(6px,2.4vw,10px)!important;line-height:1.05!important;white-space:normal!important;overflow-wrap:anywhere!important}
+.multi-rewards.has-many .multi-reward small{font-size:clamp(6px,2vw,9px)!important;line-height:1.05!important;white-space:normal!important}
+@media(max-width:360px){.multi-rewards.has-many{gap:1px!important}.multi-rewards.has-many .multi-reward{padding:1px!important}}</style></head>
 <body>
 
 <div class="header">
@@ -2679,8 +2686,8 @@ const CASES = [
   { id: 'ruby', name: 'Рубиновый', price: 300, icon: chest('#76264f','#f078ad'), drops: ['stars_150','diamond','bouquet','stars_750','random_nft','ring','stars_75','cup','stars_300','champ'] },
   { id: 'diamond', name: 'Алмазный', price: 500, icon: chest('#155c7b','#67d9f4'), drops: ['stars_250','random_nft','stars_2500','ring','diamond','stars_100','stars_1000','cup','stars_500','stars_250'] },
   { id: 'cosmic', name: 'Космический', price: 1000, icon: chest('#30245f','#8c7bff'), drops: ['stars_500','diamond','stars_5000','random_nft','plush_pepe_royal','stars_200','ring','stars_2000','stars_1000','stars_500','diamond'] },
-  { id: 'nft', name: 'НФТ', price: 750, icon: chest('#5d4426','#e6bd75'), drops: ['plush_pepe', 'diamond_ring', 'durovs_glasses', 'durovs_cap', 'resistance_dog', 'precious_peach', 'scared_cat', 'heroic_helmet', 'astral_shard', 'loot_bag', 'vice_cream', 'lol_pop', 'chill_flame', 'mirage_lamp', 'snoop_dogg', 'love_candle', 'love_potion', 'snoop_cigar', 'crystal_ball', 'sky_stilettos', 'ufc_strike', 'ionic_dryer', 'neko_helmet', 'swiss_watch', 'perfume_bottle', 'nothing'] },
-  { id: 'nft2', name: 'НФТ 2', price: 600, icon: chest('#274b67','#62c8df'), drops: ['bday_candle', 'desk_calendar', 'jelly_bunny', 'jack_in_the_box', 'jester_hat', 'joyful_bundle', 'party_sparkler', 'pet_snake', 'bunny_muffin', 'jolly_chimp', 'ginger_cookie', 'snow_globe', 'moon_pendant', 'input_key', 'faith_amulet', 'top_hat', 'easter_egg', 'mousse_cake', 'money_pot', 'holiday_drink', 'winter_wreath', 'nothing'] },
+  { id: 'nft', name: 'НФТ', price: 750, icon: chest('#5d4426','#e6bd75'), drops: ['plush_pepe', 'diamond_ring', 'durovs_glasses', 'durovs_cap', 'resistance_dog', 'precious_peach', 'scared_cat', 'heroic_helmet', 'astral_shard', 'loot_bag', 'vice_cream', 'lol_pop', 'chill_flame', 'mirage_lamp', 'snoop_dogg', 'love_candle', 'love_potion', 'snoop_cigar', 'crystal_ball', 'sky_stilettos', 'ufc_strike', 'ionic_dryer', 'neko_helmet', 'swiss_watch', 'perfume_bottle', 'stars_38'] },
+  { id: 'nft2', name: 'НФТ 2', price: 600, icon: chest('#274b67','#62c8df'), drops: ['bday_candle', 'desk_calendar', 'jelly_bunny', 'jack_in_the_box', 'jester_hat', 'joyful_bundle', 'party_sparkler', 'pet_snake', 'bunny_muffin', 'jolly_chimp', 'ginger_cookie', 'snow_globe', 'moon_pendant', 'input_key', 'faith_amulet', 'top_hat', 'easter_egg', 'mousse_cake', 'money_pot', 'holiday_drink', 'winter_wreath', 'stars_30'] },
 ];
 
 let balance = 0;

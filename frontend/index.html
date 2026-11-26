@@ -1548,28 +1548,6 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
 /* Small independent countdown badge; keep the multiplier readable. */
 .crash-countdown{position:absolute;z-index:5;top:69px;left:50%;transform:translateX(-50%);padding:4px 8px;border:1px solid rgba(151,184,255,.28);border-radius:8px;background:rgba(7,15,34,.72);color:#c8dcff;font-size:10px;font-weight:800;letter-spacing:.35px;line-height:1.2;white-space:nowrap;pointer-events:none;backdrop-filter:blur(5px)}
 @media(max-height:740px){.crash-countdown{top:66px;font-size:9px;padding:3px 7px}}
-
-/* Revert overly-white light-theme pass. Keep the existing colorful lavender/blue atmosphere;
-   add only a subtle neutral lift without flattening the cards or page backgrounds. */
-body:not(.theme-dark){background-color:#f3f2fa!important}
-body:not(.theme-dark) #page-cases.active{
-  background-image:linear-gradient(rgba(255,255,255,.07),rgba(255,255,255,.07)),radial-gradient(ellipse at 50% 0%,rgba(166,151,255,.22),transparent 58%),linear-gradient(180deg,#f0edff,#e9e9fa)!important;
-}
-/* Final high-specificity selector: quantity picker stays dark in light and dark themes. */
-body #caseQuantity.case-quantity{
-  background:linear-gradient(145deg,#172238,#101827)!important;
-  border:1px solid rgba(130,151,190,.34)!important;
-  box-shadow:0 6px 18px rgba(13,20,39,.2)!important;
-}
-body #caseQuantity.case-quantity button{
-  background:linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.025))!important;
-  color:#d5dced!important;border:1px solid rgba(180,197,225,.22)!important;
-}
-body #caseQuantity.case-quantity button.active{
-  background:linear-gradient(135deg,#d9bd70,#a77b2c)!important;
-  color:#241a08!important;border-color:rgba(255,232,165,.72)!important;
-  box-shadow:0 4px 13px rgba(193,145,54,.28),inset 0 1px 0 rgba(255,255,255,.4)!important;
-}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
@@ -3850,20 +3828,14 @@ function showUpgradeDoubleReward(toGift){
 function renderUpgradeWheelSecret(chance,available){
   const seg=document.getElementById('wheelSegments'),marker=document.getElementById('wheelX2Marker'),wheel=document.getElementById('wheel');
   if(!seg||!marker||!wheel)return;
-  const blueWidth=Math.max(0,Math.min(360,chance*360));
-  // Золотой сектор занимает ровно 5% окружности и не появляется при шансе ниже 10%.
-  const showGold=!!available&&chance>=0.10&&blueWidth>=18;
-  const goldWidth=18;
-  const goldStart=showGold?Math.max(0,Math.min(blueWidth-goldWidth,(blueWidth-goldWidth)/2)):blueWidth;
-  const goldEnd=goldStart+goldWidth;
-  seg.style.background=showGold
-    ? `conic-gradient(from 0deg,var(--accent) 0deg ${goldStart}deg,#fff1a8 ${goldStart}deg ${goldStart+2}deg,#f8c94d ${goldStart+2}deg ${goldEnd-2}deg,#9b6418 ${goldEnd-2}deg ${goldEnd}deg,var(--accent) ${goldEnd}deg ${blueWidth}deg,#24202a ${blueWidth}deg 360deg)`
-    : `conic-gradient(var(--accent) 0deg ${blueWidth}deg,#24202a ${blueWidth}deg 360deg)`;
-  if(!showGold){marker.style.display='none';return;}
-  const angle=(goldStart+goldWidth/2)*Math.PI/180,radius=wheel.clientWidth/2-marker.offsetWidth/2-5;
+  const blueWidth=chance*360;
+  if(!available||blueWidth<=0){seg.style.background=`conic-gradient(var(--accent) 0deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;marker.style.display='none';return;}
+  const secretWidth=Math.min(18,blueWidth),secretStart=(blueWidth-secretWidth)/2,secretEnd=secretStart+secretWidth;
+  // Keep the x2 hit area invisible on the wheel; only its floating marker is shown.
+  seg.style.background=`conic-gradient(var(--accent) 0deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;
+  const angle=(secretStart+secretEnd)/2*Math.PI/180,radius=Math.max(16,wheel.clientWidth/2-marker.offsetWidth/2-4);
   marker.style.left=`calc(50% + ${Math.sin(angle)*radius}px)`;
-  marker.style.top=`calc(50% - ${Math.cos(angle)*radius}px)`;
-  marker.style.display='grid';
+  marker.style.top=`calc(50% - ${Math.cos(angle)*radius}px)`;marker.style.display='grid';
 }
 function renderWheel(){
   const seg=document.getElementById('wheelSegments'),pointer=document.getElementById('wheelPointer'),chanceEl=document.getElementById('chanceVal');

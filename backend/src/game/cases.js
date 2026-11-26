@@ -4,15 +4,15 @@ const CASES = [
     { type: 'nothing', weight: 999 }
   ]},
   { id: 'starter', name: 'Стартовый', price: 10, drops: [
-    { type: 'gift', key: 'bear', weight: 20 }, { type: 'gift', key: 'heart', weight: 20 },
-    { type: 'gift', key: 'rose', weight: 15 }, { type: 'stars', amount: 5, weight: 2 },
-    { type: 'stars', amount: 10, weight: 1 }, { type: 'nothing', weight: 42 }
+    { type: 'gift', key: 'bear', weight: 15 }, { type: 'gift', key: 'heart', weight: 15 },
+    { type: 'gift', key: 'rose', weight: 10 }, { type: 'stars', amount: 5, weight: 2 },
+    { type: 'stars', amount: 10, weight: 1 }, { type: 'nothing', weight: 57 }
   ]},
   { id: 'mini', name: 'Мини', price: 25, drops: [
-    { type: 'gift', key: 'bear', weight: 20 }, { type: 'gift', key: 'heart', weight: 18 },
-    { type: 'gift', key: 'rose', weight: 18 }, { type: 'gift', key: 'cake', weight: 10 },
-    { type: 'stars', amount: 10, weight: 20 }, { type: 'stars', amount: 25, weight: 10 },
-    { type: 'gift', key: 'bouquet', weight: 4 }
+    { type: 'gift', key: 'bear', weight: 15 }, { type: 'gift', key: 'heart', weight: 14 },
+    { type: 'gift', key: 'rose', weight: 14 }, { type: 'gift', key: 'cake', weight: 8 },
+    { type: 'stars', amount: 10, weight: 15 }, { type: 'stars', amount: 25, weight: 7 },
+    { type: 'gift', key: 'bouquet', weight: 3 }, { type: 'nothing', weight: 24 }
   ]},
   { id: 'bronze', name: 'Бронзовый', price: 50, drops: [
     { type: 'gift', key: 'bear', weight: 28 }, { type: 'gift', key: 'heart', weight: 22 },
@@ -50,18 +50,18 @@ const CASES = [
     { type: 'stars', amount: 300, weight: 8 }, { type: 'stars', amount: 750, weight: 6 }
   ]},
   { id: 'diamond', name: 'Алмазный', price: 500, drops: [
-    { type: 'gift', key: 'cup', weight: 8 }, { type: 'gift', key: 'ring', weight: 12 },
-    { type: 'gift', key: 'diamond', weight: 16 }, { type: 'gift', key: 'random_nft', weight: 8 },
+    { type: 'gift', key: 'cup', weight: 10 }, { type: 'gift', key: 'ring', weight: 12 },
+    { type: 'gift', key: 'diamond', weight: 15 }, { type: 'gift', key: 'random_nft', weight: 5 },
     { type: 'stars', amount: 100, weight: 14 }, { type: 'stars', amount: 250, weight: 14 },
-    { type: 'stars', amount: 500, weight: 12 }, { type: 'stars', amount: 1000, weight: 10 },
-    { type: 'stars', amount: 2500, weight: 6 }
+    { type: 'stars', amount: 500, weight: 12 }, { type: 'stars', amount: 1000, weight: 8 },
+    { type: 'stars', amount: 2500, weight: 2 }
   ]},
   { id: 'cosmic', name: 'Космический', price: 1000, drops: [
-    { type: 'gift', key: 'ring', weight: 79920 }, { type: 'gift', key: 'diamond', weight: 149850 },
-    { type: 'gift', key: 'random_nft', weight: 119880 }, { type: 'gift', key: 'plush_pepe_royal', weight: 1000 },
-    { type: 'stars', amount: 200, weight: 119880 }, { type: 'stars', amount: 500, weight: 149850 },
-    { type: 'stars', amount: 1000, weight: 149850 }, { type: 'stars', amount: 2000, weight: 129870 },
-    { type: 'stars', amount: 5000, weight: 99900 }
+    { type: 'gift', key: 'ring', weight: 200000 }, { type: 'gift', key: 'diamond', weight: 300000 },
+    { type: 'gift', key: 'random_nft', weight: 30000 }, { type: 'gift', key: 'plush_pepe_royal', weight: 10 },
+    { type: 'stars', amount: 200, weight: 120000 }, { type: 'stars', amount: 500, weight: 150000 },
+    { type: 'stars', amount: 1000, weight: 150000 }, { type: 'stars', amount: 2000, weight: 100000 },
+    { type: 'stars', amount: 5000, weight: 50000 }
   ]},
   { id: 'nft', name: 'НФТ', price: 750, drops: [
     { type: 'gift', key: 'plush_pepe', weight: 100 },
@@ -92,28 +92,28 @@ const CASES = [
     { type: 'nothing', weight: 407100 },
   ]},
   { id: 'nft2', name: 'НФТ 2', price: 600, drops: [
-    { type: 'gift', key: 'bday_candle', weight: 10 },
-    { type: 'gift', key: 'desk_calendar', weight: 10 },
-    { type: 'gift', key: 'jelly_bunny', weight: 10 },
-    { type: 'gift', key: 'jack_in_the_box', weight: 10 },
-    { type: 'gift', key: 'jester_hat', weight: 10 },
-    { type: 'gift', key: 'joyful_bundle', weight: 10 },
-    { type: 'gift', key: 'party_sparkler', weight: 10 },
-    { type: 'gift', key: 'pet_snake', weight: 10 },
-    { type: 'gift', key: 'bunny_muffin', weight: 10 },
-    { type: 'gift', key: 'jolly_chimp', weight: 10 },
-    { type: 'gift', key: 'ginger_cookie', weight: 10 },
-    { type: 'gift', key: 'snow_globe', weight: 10 },
-    { type: 'gift', key: 'moon_pendant', weight: 10 },
-    { type: 'gift', key: 'input_key', weight: 10 },
-    { type: 'gift', key: 'faith_amulet', weight: 10 },
-    { type: 'gift', key: 'top_hat', weight: 10 },
-    { type: 'gift', key: 'easter_egg', weight: 10 },
-    { type: 'gift', key: 'mousse_cake', weight: 10 },
-    { type: 'gift', key: 'money_pot', weight: 10 },
-    { type: 'gift', key: 'holiday_drink', weight: 10 },
-    { type: 'gift', key: 'winter_wreath', weight: 10 },
-    { type: 'nothing', weight: 1800 }
+    { type: 'gift', key: 'bday_candle', weight: 600 },
+    { type: 'gift', key: 'desk_calendar', weight: 50 },
+    { type: 'gift', key: 'jelly_bunny', weight: 50 },
+    { type: 'gift', key: 'jack_in_the_box', weight: 600 },
+    { type: 'gift', key: 'jester_hat', weight: 600 },
+    { type: 'gift', key: 'joyful_bundle', weight: 50 },
+    { type: 'gift', key: 'party_sparkler', weight: 600 },
+    { type: 'gift', key: 'pet_snake', weight: 600 },
+    { type: 'gift', key: 'bunny_muffin', weight: 50 },
+    { type: 'gift', key: 'jolly_chimp', weight: 50 },
+    { type: 'gift', key: 'ginger_cookie', weight: 600 },
+    { type: 'gift', key: 'snow_globe', weight: 50 },
+    { type: 'gift', key: 'moon_pendant', weight: 50 },
+    { type: 'gift', key: 'input_key', weight: 50 },
+    { type: 'gift', key: 'faith_amulet', weight: 50 },
+    { type: 'gift', key: 'top_hat', weight: 50 },
+    { type: 'gift', key: 'easter_egg', weight: 600 },
+    { type: 'gift', key: 'mousse_cake', weight: 600 },
+    { type: 'gift', key: 'money_pot', weight: 600 },
+    { type: 'gift', key: 'holiday_drink', weight: 600 },
+    { type: 'gift', key: 'winter_wreath', weight: 600 },
+    { type: 'nothing', weight: 12800 }
   ]}
 ];
 

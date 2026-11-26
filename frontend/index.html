@@ -1548,6 +1548,32 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
 /* Small independent countdown badge; keep the multiplier readable. */
 .crash-countdown{position:absolute;z-index:5;top:69px;left:50%;transform:translateX(-50%);padding:4px 8px;border:1px solid rgba(151,184,255,.28);border-radius:8px;background:rgba(7,15,34,.72);color:#c8dcff;font-size:10px;font-weight:800;letter-spacing:.35px;line-height:1.2;white-space:nowrap;pointer-events:none;backdrop-filter:blur(5px)}
 @media(max-height:740px){.crash-countdown{top:66px;font-size:9px;padding:3px 7px}}
+
+/* Light theme refinement: clean white surfaces, restrained lavender accents. */
+body:not(.theme-dark){
+  --bg:#f7f8fc;--surface:#ffffff;--surface-2:#f0f2f7;--surface-3:#e7eaf2;
+  --text:#202538;--text-dim:#737b90;--border:#e1e5ef;
+  background:linear-gradient(180deg,#ffffff 0%,#f7f8fc 58%,#f2f4f9 100%)!important;
+  color:var(--text)!important;
+}
+body:not(.theme-dark) .header{background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,255,255,.86))!important}
+body:not(.theme-dark) .nav{background:rgba(255,255,255,.96)!important;border-top:1px solid #e4e7ef!important}
+body:not(.theme-dark) #page-cases.active{background:radial-gradient(ellipse at 50% 0%,rgba(226,231,243,.62),transparent 54%),linear-gradient(180deg,#fff,#f6f7fb)!important}
+body:not(.theme-dark) #page-cases:before{opacity:.08!important}
+body:not(.theme-dark) .case-card,body:not(.theme-dark) .inv-item,body:not(.theme-dark) .upgrade-box,body:not(.theme-dark) .ref-box,body:not(.theme-dark) .picker-item,body:not(.theme-dark) .upgrade-slot{
+  background:linear-gradient(150deg,#fff,#f6f7fb)!important;border-color:#e3e7f0!important;color:var(--text)!important;
+  box-shadow:0 7px 22px rgba(37,49,78,.055)!important
+}
+body:not(.theme-dark) .online-badge,body:not(.theme-dark) .balance{background:#fff!important;border-color:#e4e7ef!important;color:var(--text)!important}
+body:not(.theme-dark) .case-preview-overlay{background:#f8f9fc!important;color:#202538!important}
+body:not(.theme-dark) .preview-drop{background:#fff!important;border-color:#e3e7f0!important}
+body:not(.theme-dark) .case-preview-top .case-back{background:#fff!important;color:#202538!important;border-color:#e1e5ef!important}
+/* Keep the case quantity selector dark in both themes for contrast. */
+.case-quantity{background:linear-gradient(145deg,#172238,#101827)!important;border-color:rgba(130,151,190,.28)!important}
+.case-quantity button{background:rgba(255,255,255,.055)!important;color:#c5cee0!important;border-color:rgba(180,197,225,.2)!important}
+.case-quantity button.active{background:linear-gradient(135deg,#d9bd70,#a77b2c)!important;color:#241a08!important;border-color:rgba(255,232,165,.65)!important;box-shadow:0 4px 13px rgba(193,145,54,.24)!important}
+.wheel-x2-marker{color:#382407!important;background:radial-gradient(circle at 32% 24%,#fffbe0 0%,#ffe48a 28%,#f4bd3e 62%,#a86b18 100%)!important;border:2px solid #fff1b7!important;box-shadow:0 0 0 2px rgba(255,210,91,.18),0 0 16px rgba(245,184,55,.58),inset 0 2px 3px rgba(255,255,255,.82)!important;text-shadow:0 1px 0 rgba(255,255,255,.5)!important}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
@@ -3828,14 +3854,20 @@ function showUpgradeDoubleReward(toGift){
 function renderUpgradeWheelSecret(chance,available){
   const seg=document.getElementById('wheelSegments'),marker=document.getElementById('wheelX2Marker'),wheel=document.getElementById('wheel');
   if(!seg||!marker||!wheel)return;
-  const blueWidth=chance*360;
-  if(!available||blueWidth<=0){seg.style.background=`conic-gradient(var(--accent) 0deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;marker.style.display='none';return;}
-  const secretWidth=Math.min(18,blueWidth),secretStart=(blueWidth-secretWidth)/2,secretEnd=secretStart+secretWidth;
-  // Keep the x2 hit area invisible on the wheel; only its floating marker is shown.
-  seg.style.background=`conic-gradient(var(--accent) 0deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;
-  const angle=(secretStart+secretEnd)/2*Math.PI/180,radius=Math.max(16,wheel.clientWidth/2-marker.offsetWidth/2-4);
+  const blueWidth=Math.max(0,Math.min(360,chance*360));
+  // Золотой сектор занимает ровно 5% окружности и не появляется при шансе ниже 10%.
+  const showGold=!!available&&chance>=0.10&&blueWidth>=18;
+  const goldWidth=18;
+  const goldStart=showGold?Math.max(0,Math.min(blueWidth-goldWidth,(blueWidth-goldWidth)/2)):blueWidth;
+  const goldEnd=goldStart+goldWidth;
+  seg.style.background=showGold
+    ? `conic-gradient(from 0deg,var(--accent) 0deg ${goldStart}deg,#fff1a8 ${goldStart}deg ${goldStart+2}deg,#f8c94d ${goldStart+2}deg ${goldEnd-2}deg,#9b6418 ${goldEnd-2}deg ${goldEnd}deg,var(--accent) ${goldEnd}deg ${blueWidth}deg,#24202a ${blueWidth}deg 360deg)`
+    : `conic-gradient(var(--accent) 0deg ${blueWidth}deg,#24202a ${blueWidth}deg 360deg)`;
+  if(!showGold){marker.style.display='none';return;}
+  const angle=(goldStart+goldWidth/2)*Math.PI/180,radius=wheel.clientWidth/2-marker.offsetWidth/2-5;
   marker.style.left=`calc(50% + ${Math.sin(angle)*radius}px)`;
-  marker.style.top=`calc(50% - ${Math.cos(angle)*radius}px)`;marker.style.display='grid';
+  marker.style.top=`calc(50% - ${Math.cos(angle)*radius}px)`;
+  marker.style.display='grid';
 }
 function renderWheel(){
   const seg=document.getElementById('wheelSegments'),pointer=document.getElementById('wheelPointer'),chanceEl=document.getElementById('chanceVal');

@@ -2227,7 +2227,15 @@ body.theme-dark .theme-choice button.active{background:#34425d;color:#fff}
 }
 </style><style>
 /* Upgrade wheel: fixed probability sector, rotating pointer only. */
-#page-upgrade .wheel{transform:rotate(0deg)!important;}
+#page-upgrade .wheel{
+  width:240px!important;height:240px!important;flex:0 0 240px!important;
+  transform:none!important;transition:none!important;will-change:auto!important;
+}
+#page-upgrade .wheel-segments{
+  /* Keep the probability highlight on the rim only: no radial wedge from the center. */
+  -webkit-mask:radial-gradient(circle,transparent 0 76%,#000 77% 100%);
+  mask:radial-gradient(circle,transparent 0 76%,#000 77% 100%);
+}
 #page-upgrade .wheel-pointer{top:0!important;left:0!important;width:100%!important;height:100%!important;border:0!important;transform:rotate(0deg);transform-origin:50% 50%;pointer-events:none;}
 #page-upgrade .wheel-pointer::before{content:"";position:absolute;left:50%;top:-7px;transform:translateX(-50%);width:0;height:0;border-left:13px solid transparent;border-right:13px solid transparent;border-top:21px solid var(--accent);filter:drop-shadow(0 3px 8px rgba(91,141,239,.5));}
 #page-upgrade .wheel-pointer.fail::before{border-top-color:var(--danger);filter:drop-shadow(0 3px 8px rgba(232,93,93,.5));}
@@ -4186,8 +4194,6 @@ async function doUpgrade() {
     await new Promise(resolve => setTimeout(resolve, spin.ms + 100));
     pointer.style.transition = 'none';
     pointer.style.transform = 'rotate(0deg)';
-    wheel.style.transition = 'none';
-    wheel.style.transform = 'rotate(0deg)';
     if (wheelCenter) { wheelCenter.replaceChildren(); wheelCenter.classList.remove('has-gift'); }
 
     pointer.classList.toggle('fail', !success);
@@ -4211,8 +4217,6 @@ async function doUpgrade() {
         removeDemoInventoryItem(fromItem.uid);
         toast('🎬 ДЕМО: предмет сгорел только в записи. Исходный инвентарь восстановится при выключении режима.', true, 5000);
       }
-      wheel.style.transition='none'; wheel.style.transform='rotate(0deg)'; void wheel.offsetWidth;
-      wheel.style.transition='transform 5.5s cubic-bezier(.12,.62,.22,1)';
       upgradeFromUid = null;
       upgradeToKey = null;
       upgradeBusy=false; renderInventory(); renderUpgrade(); return;
@@ -4221,10 +4225,7 @@ async function doUpgrade() {
     upgradeFromUid = null;
     upgradeToKey = null;
     await loadAccount();
-    wheel.style.transition = 'none';
-    wheel.style.transform = 'rotate(0deg)';
     void wheel.offsetWidth;
-    wheel.style.transition = 'transform 5.5s cubic-bezier(.12,.62,.22,1)';
     upgradeFromUid = null;
     upgradeToKey = null;
   } catch (error) {

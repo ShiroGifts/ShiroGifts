@@ -2024,7 +2024,7 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
 .upgrade-x2-name{font-size:14px;font-weight:900;color:#fff;margin-bottom:18px}
 .upgrade-x2-continue{width:100%;padding:14px;border:0;border-radius:14px;background:linear-gradient(135deg,#ffe28a,#e7a82e);color:#392609;font-size:14px;font-weight:1000;cursor:pointer;box-shadow:0 5px 20px rgba(255,183,45,.24)}
 @keyframes x2FadeIn{from{opacity:0}to{opacity:1}}@keyframes x2CardPop{from{opacity:0;transform:scale(.72) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}@keyframes x2GiftBounce{0%{opacity:0;transform:translateY(25px) scale(.45) rotate(-12deg)}70%{transform:translateY(-8px) scale(1.12) rotate(4deg)}100%{opacity:1;transform:translateY(0) scale(1) rotate(0)}}@keyframes x2PlusPulse{from{transform:scale(.85);opacity:.65}to{transform:scale(1.2);opacity:1}}
-.wheel-x2-marker{position:absolute;z-index:4;width:26px;height:26px;transform:translate(-50%,-50%);border-radius:50%;display:grid;place-items:center;box-sizing:border-box;color:#49300a;font-size:16px;font-weight:1000;line-height:1;background:radial-gradient(circle at 35% 25%,#fff5b0 0%,#ffd64e 44%,#e69b19 100%);border:2px solid #fff0a0;box-shadow:0 2px 8px rgba(255,191,48,.65),inset 0 1px 2px rgba(255,255,255,.75);pointer-events:none;text-shadow:0 1px 0 rgba(255,255,255,.3)}
+.wheel-x2-marker{position:absolute;z-index:4;width:54px;height:22px;transform:translate(-50%,-50%);border-radius:7px;display:grid;place-items:center;box-sizing:border-box;color:#fff;font-size:15px;font-weight:1000;line-height:1;background:linear-gradient(180deg,#ffd84f 0%,#e9a91e 100%);border:1.5px solid rgba(255,241,184,.95);box-shadow:0 2px 9px rgba(255,191,48,.7),inset 0 1px 2px rgba(255,255,255,.45);pointer-events:none;text-shadow:0 1px 3px rgba(90,55,0,.45)}
 #upgradePickerBackdrop .upgrade-picker-sheet{background:linear-gradient(145deg,#172947,#101b31)!important;border:1px solid rgba(207,222,255,.18)!important}
 #upgradePickerBackdrop .upgrade-picker-head{margin-bottom:10px!important}
 #upgradePickerBackdrop .upgrade-chance-control{flex:0 0 auto!important;width:100%!important;margin:0 0 12px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
@@ -2089,7 +2089,7 @@ body{background:linear-gradient(145deg,#38558f 0%,#514b91 52%,#77518c 100%) fixe
 .mines-cell.safe-open .mines-ton-glow .currency-logo{width:36px;height:36px}
 .mines-action-cashout{background:linear-gradient(135deg,#4fd6a4,#2caa91)!important;color:#092b2b!important;box-shadow:0 7px 18px rgba(43,190,154,.2)!important}
 .mines-start:disabled{opacity:.42}
-.wheel-x2-marker{width:33px!important;height:33px!important;font-size:12px!important}
+.wheel-x2-marker{width:54px!important;height:22px!important;font-size:15px!important;border-radius:7px!important}
 #page-upgrade .chance{font-size:29px!important}
 #page-upgrade .chance small{font-size:10px!important}
 
@@ -4080,13 +4080,18 @@ function renderUpgradeWheelSecret(chance,available){
   const seg=document.getElementById('wheelSegments'),marker=document.getElementById('wheelX2Marker'),wheel=document.getElementById('wheel');
   if(!seg||!marker||!wheel)return;
   const blueWidth=chance*360;
-  if(!available||blueWidth<=0){seg.style.background=`conic-gradient(var(--accent) 0deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;marker.style.display='none';return;}
-  const secretWidth=Math.min(18,blueWidth),secretStart=(blueWidth-secretWidth)/2,secretEnd=secretStart+secretWidth;
-  // Keep the x2 hit area invisible on the wheel; only its floating marker is shown.
+  if(!available||chance<=0.10||blueWidth<=36){seg.style.background=`conic-gradient(var(--accent) 0deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;marker.style.display='none';return;}
+  const secretWidth=36,secretStart=(blueWidth-secretWidth)/2,secretEnd=secretStart+secretWidth;
+  // The gold x2 marker occupies exactly 10% of the full wheel and stays inside the success sector.
   seg.style.background=`conic-gradient(var(--accent) 0deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;
-  const angle=(secretStart+secretEnd)/2*Math.PI/180,radius=Math.max(16,wheel.clientWidth/2-marker.offsetWidth/2-4);
+  const angleDeg=(secretStart+secretEnd)/2,angle=angleDeg*Math.PI/180;
+  const radius=wheel.clientWidth/2-18;
+  const arcLength=radius*secretWidth*Math.PI/180;
+  marker.style.width=Math.max(30,arcLength)+'px';
   marker.style.left=`calc(50% + ${Math.sin(angle)*radius}px)`;
-  marker.style.top=`calc(50% - ${Math.cos(angle)*radius}px)`;marker.style.display='grid';
+  marker.style.top=`calc(50% - ${Math.cos(angle)*radius}px)`;
+  marker.style.transform=`translate(-50%,-50%) rotate(${angleDeg+90}deg)`;
+  marker.style.display='grid';
 }
 function renderWheel(){
   const seg=document.getElementById('wheelSegments'),pointer=document.getElementById('wheelPointer'),chanceEl=document.getElementById('chanceVal');
@@ -4137,7 +4142,7 @@ async function doUpgrade() {
       const demoChance = boostEnabled
         ? (Number.isFinite(configured) ? Math.max(0,Math.min(100,configured))/100 : 0.30)
         : actualChance;
-      const demoSuccess=Math.random()<demoChance,x2AppearanceChance=Math.min(1,0.05/actualChance),x2SectorShare=Math.min(1,0.05/actualChance),x2Available=Math.random()<x2AppearanceChance,doubleReward=demoSuccess&&x2Available&&Math.random()<x2SectorShare;
+      const demoSuccess=Math.random()<demoChance,x2AppearanceChance=Math.min(1,0.05/actualChance),x2SectorShare=actualChance>0.10?Math.min(1,0.10/actualChance):0,x2Available=actualChance>0.10&&Math.random()<x2AppearanceChance,doubleReward=demoSuccess&&x2Available&&Math.random()<x2SectorShare;
       result = { chance:actualChance,success:demoSuccess,doubleReward,x2Available,x2Chance:actualChance*x2AppearanceChance*x2SectorShare,demo:true };
     } else {
       result = await apiRequest('/api/upgrade', {

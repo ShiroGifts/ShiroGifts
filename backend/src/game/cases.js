@@ -117,6 +117,7 @@ const CASES = [
   ]}
 ];
 
+// NFT seed values use public Portals floor snapshots (TON × 100 Stars); runtime refresh updates available floors.
 const GIFT_DATA = {
   bear: { name: 'Мишка', emoji: '🧸', rarity: 'Обычный', value: 15 },
   heart: { name: 'Сердце', emoji: '❤️', rarity: 'Обычный', value: 15 },

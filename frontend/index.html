@@ -1564,6 +1564,14 @@ body:has(#page-crash.active),html:has(#page-crash.active){height:auto!important;
 .case-result-actions .case-result-sell{background:linear-gradient(135deg,#3bba7d,#24945f);color:#fff;box-shadow:0 4px 18px rgba(39,170,110,.25)}
 .case-result-actions .btn-big:disabled{opacity:.5}
 @media(max-width:360px){.case-result-actions{gap:6px}.case-result-actions .btn-big{padding:11px 5px;font-size:11px}.multi-rewards.has-many .multi-reward{flex-basis:calc((100% - 12px)/2);max-width:calc((100% - 12px)/2)}}
+
+/* Upgrade Lab sizing: remove the redundant heading and enlarge the full module by 25%. */
+#page-upgrade > .upgrade-box {
+  zoom: 1.25;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
@@ -2284,7 +2292,6 @@ body.theme-dark .theme-choice button.active{background:#34425d;color:#fff}
   </div>
 </div>
 <div class="page" id="page-upgrade">
-  <div class="section-title">Апгрейд подарка</div>
   <div class="upgrade-box">
     <div class="upgrade-row">
       <button class="upgrade-slot upgrade-select-card" id="slotFrom" type="button" aria-label="Выбрать предмет из инвентаря" onclick="openUpgradePicker('from')"><span class="gift-img">＋</span><span class="label">Выбрать предмет</span></button>

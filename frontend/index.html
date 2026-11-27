@@ -3801,17 +3801,14 @@ function syncUpgradeChanceButtons() {
 function setUpgradeDesiredChance(value) {
   const preset = Number(value);
   if (![10,30,50,80].includes(preset)) return;
+  // Selecting a chance must not silently select a gift or close the picker.
+  // Keep the user in the target picker so they can choose the gift explicitly.
   upgradeDesiredChance = preset;
-  const fromItem = upgradeFromUid ? inventory.find(i => i.uid === upgradeFromUid) : null;
-  if (fromItem) {
-    const key = nearestUpgradeTarget(fromItem,upgradeDesiredChance);
-    upgradeToKey = key;
-    if (document.getElementById('upgradePickerBackdrop')?.classList.contains('show')) renderToPicker();
-    renderUpgrade();
-  }
+  upgradeToKey = null;
   updateUpgradeChanceLabel();
   syncUpgradeChanceButtons();
-  closeUpgradePicker();
+  renderToPicker();
+  renderUpgrade();
 }
 function renderToPicker() {
   const wrap = document.getElementById('pickerList');

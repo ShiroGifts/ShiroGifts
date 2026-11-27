@@ -2372,10 +2372,10 @@ body.theme-dark .theme-choice button.active{background:#34425d;color:#fff}
     <div class="upgrade-picker-head"><b id="upgradePickerTitle">Выберите предмет</b><button type="button" onclick="closeUpgradePicker()">✕</button></div>
     <div class="upgrade-chance-control" id="upgradeChanceControl" style="display:none">
       <div class="upgrade-chance-presets" role="group" aria-label="Желаемый шанс апгрейда">
-        <button type="button" data-chance="10" onclick="setUpgradeDesiredChance(10)">10%</button>
-        <button type="button" data-chance="30" class="active" onclick="setUpgradeDesiredChance(30)">30%</button>
-        <button type="button" data-chance="50" onclick="setUpgradeDesiredChance(50)">50%</button>
-        <button type="button" data-chance="80" onclick="setUpgradeDesiredChance(80)">80%</button>
+        <button type="button" data-chance="10" onclick="event.stopPropagation();setUpgradeDesiredChance(10)">10%</button>
+        <button type="button" data-chance="30" class="active" onclick="event.stopPropagation();setUpgradeDesiredChance(30)">30%</button>
+        <button type="button" data-chance="50" onclick="event.stopPropagation();setUpgradeDesiredChance(50)">50%</button>
+        <button type="button" data-chance="80" onclick="event.stopPropagation();setUpgradeDesiredChance(80)">80%</button>
       </div>
     </div>
     <div class="picker-list" id="pickerList"></div>
@@ -3818,10 +3818,11 @@ function renderToPicker() {
     return;
   }
   const eligible = new Set(eligibleUpgradeTargetKeys(fromItem));
-  // Show the complete concrete NFT catalogue. Cheaper NFTs stay visible but
-  // disabled because the server correctly forbids upgrading to a cheaper item.
+  // Selected percentage is a maximum-chance filter. Show only eligible gifts
+  // whose calculated chance is at or below the selected percentage.
+  const maxChance = upgradeDesiredChance / 100;
   const keys = Object.keys(GIFTS).filter(k =>
-    k !== 'random_nft' && (eligible.has(k) || isConcreteNftUpgradeTarget(k))
+    eligible.has(k) && calcChance(fromItem.gift, k) <= maxChance + 1e-9
   );
   if (keys.length === 0) {
     wrap.innerHTML = `<div style="color:var(--text-dim);font-size:12px;padding:8px">Нет подходящих целей</div>`;

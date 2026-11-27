@@ -8,6 +8,14 @@ const { notifyAdminGift } = require('../telegram/notifications');
 const router = express.Router();
 router.use(requireTelegramUser, requireAgeConfirmed);
 
+router.get('/upgrade/catalog', async (_req, res) => {
+  const gifts = Object.entries(GIFT_DATA)
+    .filter(([key, gift]) => key !== 'random_nft' && Number.isSafeInteger(Number(gift.value)) && Number(gift.value) > 0)
+    .map(([key, gift]) => ({ key, name: gift.name, value: Number(gift.value), rarity: gift.rarity, emoji: gift.emoji }));
+  res.set('Cache-Control', 'no-store');
+  res.json({ ok: true, gifts });
+});
+
 router.post('/upgrade', async (req, res) => {
   const inventoryId = String(req.body && req.body.inventoryId || '');
   const targetKey = String(req.body && req.body.targetKey || '');

@@ -2592,6 +2592,7 @@ const nftStack = () => '<div class="nft-stack">' +
   ['plush_pepe','diamond_ring','durovs_glasses','vice_cream','snoop_dogg'].map((name,i) =>
     '<img class="nft-stack-item nft-stack-'+i+'" src="https://cdn.jsdelivr.net/gh/ssamy2/TG_Photos@main/webp/by_name/'+name+'.webp" alt="Telegram NFT" loading="lazy" onerror="this.style.display=\'none\'">').join('') +
   '</div>';
+// NFT images and floor-price seeds follow the Telegram gift asset catalogue; live values sync from the backend on account load.
 const GIFTS = {
   bear: { name: 'Мишка', price: 15, img: tgGift('5170233102089322756','Telegram подарок — плюшевый мишка'), rarity: 'Обычный' },
   heart: { name: 'Сердце', price: 15, img: tgGift('5170145012310081615','Telegram подарок — сердце'), rarity: 'Обычный' },
@@ -3876,10 +3877,7 @@ function updateUpgradeChanceLabel() {
     hint.textContent = 'Сначала выбери предмет, затем подберём ближайшую цель.';
     return;
   }
-  const key = nearestUpgradeTarget(fromItem,upgradeDesiredChance);
-  hint.textContent = key
-    ? 'Ближайшая цель: ' + GIFTS[key].name + ' · ' + (calcChance(fromItem.gift,key)*100).toFixed(2) + '%'
-    : 'Для этого предмета пока нет подходящих целей с шансом от 1%.';
+  hint.textContent = 'Фильтр: показываем подарки с шансом не выше ' + upgradeDesiredChance + '%.';
 }
 function syncUpgradeChanceButtons() {
   const presets = [10,30,50,80];
@@ -3913,7 +3911,7 @@ function renderToPicker() {
   const maxChance = upgradeDesiredChance / 100;
   const keys = Object.keys(GIFTS).filter(k =>
     eligible.has(k) && calcChance(fromItem.gift, k) <= maxChance + 1e-9
-  );
+  ).sort((a,b) => GIFTS[a].price - GIFTS[b].price);
   if (keys.length === 0) {
     wrap.innerHTML = `<div style="color:var(--text-dim);font-size:12px;padding:8px">Нет подходящих целей</div>`;
     return;

@@ -197,7 +197,14 @@
     will-change:transform;
     background:var(--surface-2);
   }
-  .wheel-segments { position:absolute; inset:0; border-radius:50%; }
+  .wheel-segments { position:absolute; inset:0; border-radius:50%; pointer-events:none; }
+  .wheel-segments::before {
+    content:""; position:absolute; inset:0; border-radius:50%;
+    background:var(--success-ring-gradient,transparent);
+    -webkit-mask:radial-gradient(circle closest-side,transparent calc(100% - 8px),#000 calc(100% - 7.5px));
+    mask:radial-gradient(circle closest-side,transparent calc(100% - 8px),#000 calc(100% - 7.5px));
+    filter:drop-shadow(0 0 4px var(--accent)) drop-shadow(0 0 8px rgba(53,214,255,.8));
+  }
   .wheel-center {
     position:absolute; inset:50% auto auto 50%; transform:translate(-50%,-50%);
     width:64px; height:64px; border-radius:50%; background:var(--surface);
@@ -4087,14 +4094,16 @@ function showUpgradeDoubleReward(toGift){
 function renderUpgradeWheelSecret(chance,available){
   const seg=document.getElementById('wheelSegments'),marker=document.getElementById('wheelX2Marker'),wheel=document.getElementById('wheel');
   if(!seg||!marker||!wheel)return;
-  const blueWidth=chance*360;
-  // Keep the success sector centered at the bottom (180°), directly opposite the fixed top pointer.
-  const successStart=180-blueWidth/2,successEnd=180+blueWidth/2;
-  const gradient=`conic-gradient(from ${successStart}deg, var(--accent) 0deg ${blueWidth}deg, #2a2017 ${blueWidth}deg 360deg)`;
-  if(!available||chance<=0.10||blueWidth<=36){seg.style.background=gradient;marker.style.display='none';return;}
+  const blueWidth=Math.max(0,Math.min(360,Number(chance)||0)*360);
+  // Success is shown only as a bright lower rim arc, centered opposite the fixed top pointer.
+  const successStart=180-blueWidth/2;
+  const gradient=`conic-gradient(from ${successStart}deg, var(--accent) 0deg ${blueWidth}deg, transparent ${blueWidth}deg 360deg)`;
+  seg.style.background='transparent';
+  seg.style.setProperty('--success-ring-gradient',gradient);
+  marker.style.display='none';
+  if(!available||chance<=0.10||blueWidth<=36)return;
+  // Keep the optional gold bonus marker centered on the same lower arc.
   const secretWidth=36;
-  // The 10%-of-wheel gold marker is centered at the bottom and remains inside the success sector.
-  seg.style.background=gradient;
   const angleDeg=180,angle=angleDeg*Math.PI/180;
   const radius=wheel.clientWidth/2-18;
   const arcLength=radius*secretWidth*Math.PI/180;

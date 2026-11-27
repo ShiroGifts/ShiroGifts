@@ -4080,11 +4080,14 @@ function renderUpgradeWheelSecret(chance,available){
   const seg=document.getElementById('wheelSegments'),marker=document.getElementById('wheelX2Marker'),wheel=document.getElementById('wheel');
   if(!seg||!marker||!wheel)return;
   const blueWidth=chance*360;
-  if(!available||chance<=0.10||blueWidth<=36){seg.style.background=`conic-gradient(var(--accent) 0deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;marker.style.display='none';return;}
-  const secretWidth=36,secretStart=(blueWidth-secretWidth)/2,secretEnd=secretStart+secretWidth;
-  // The gold x2 marker occupies exactly 10% of the full wheel and stays inside the success sector.
-  seg.style.background=`conic-gradient(var(--accent) 0deg ${blueWidth}deg,#2a2017 ${blueWidth}deg 360deg)`;
-  const angleDeg=(secretStart+secretEnd)/2,angle=angleDeg*Math.PI/180;
+  // Keep the success sector centered at the bottom (180°), directly opposite the fixed top pointer.
+  const successStart=180-blueWidth/2,successEnd=180+blueWidth/2;
+  const gradient=`conic-gradient(from ${successStart}deg, var(--accent) 0deg ${blueWidth}deg, #2a2017 ${blueWidth}deg 360deg)`;
+  if(!available||chance<=0.10||blueWidth<=36){seg.style.background=gradient;marker.style.display='none';return;}
+  const secretWidth=36;
+  // The 10%-of-wheel gold marker is centered at the bottom and remains inside the success sector.
+  seg.style.background=gradient;
+  const angleDeg=180,angle=angleDeg*Math.PI/180;
   const radius=wheel.clientWidth/2-18;
   const arcLength=radius*secretWidth*Math.PI/180;
   marker.style.width=Math.max(30,arcLength)+'px';
@@ -4160,14 +4163,20 @@ async function doUpgrade() {
     const spin = ({fast:{ms:2500,turns:5,ease:'cubic-bezier(.2,.7,.25,1)'},classic:{ms:5500,turns:7,ease:'cubic-bezier(.12,.62,.22,1)'},gamble:{ms:8500,turns:12,ease:'cubic-bezier(.08,.72,.12,1)'}})[upgradeSpinMode];
     const x2Available=!!result.x2Available,doubleReward=!!result.doubleReward;
     renderUpgradeWheelSecret(chance,x2Available);
-    const blueWidth=chance*360,secretWidth=Math.min(18,blueWidth);
+    const blueWidth=chance*360,secretWidth=Math.min(36,blueWidth);
+    const successStart=180-blueWidth/2,successEnd=180+blueWidth/2;
     let sectorCenter,sectorSize;
-    if(success&&x2Available&&doubleReward){sectorCenter=blueWidth/2;sectorSize=secretWidth;}
-    else if(success&&x2Available){const secretStart=(blueWidth-secretWidth)/2,secretEnd=secretStart+secretWidth;if(Math.random()<0.5){sectorCenter=secretStart/2;sectorSize=secretStart;}else{sectorCenter=(secretEnd+blueWidth)/2;sectorSize=blueWidth-secretEnd;}}
-    else if(success){sectorCenter=blueWidth/2;sectorSize=blueWidth;}
-    else{sectorCenter=blueWidth+(360-blueWidth)/2;sectorSize=360-blueWidth;}
+    if(success&&x2Available&&doubleReward){sectorCenter=180;sectorSize=secretWidth;}
+    else if(success&&x2Available){
+      const secretStart=180-secretWidth/2,secretEnd=180+secretWidth/2;
+      const leftSize=secretStart-successStart,rightSize=successEnd-secretEnd;
+      if(Math.random()<0.5){sectorCenter=successStart+leftSize/2;sectorSize=leftSize;}
+      else{sectorCenter=secretEnd+rightSize/2;sectorSize=rightSize;}
+    }
+    else if(success){sectorCenter=180;sectorSize=blueWidth;}
+    else{sectorCenter=(successEnd+(360-blueWidth)/2)%360;sectorSize=360-blueWidth;}
     const jitter=(Math.random()-0.5)*sectorSize*0.45;
-    // The probability sector stays fixed; only the pointer rotates to the server result.
+    // The success sector stays fixed at the bottom; the pointer rotates to the matching result angle.
     const finalRotation=360*spin.turns+(sectorCenter+jitter);
     pointer.style.transition = 'none';
     pointer.style.transform = 'rotate(0deg)';
